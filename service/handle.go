@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/api"
+	"github.com/mhchlib/mconfig-api/api/sdk"
 )
 
 type MConfig struct {
@@ -13,7 +13,7 @@ func NewMConfig() *MConfig {
 	return &MConfig{}
 }
 
-func (M MConfig) GetVStream(ctx context.Context, request *api.GetVRequest, stream api.MConfig_GetVStreamStream) error {
+func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, stream sdk.MConfig_GetVStreamStream) error {
 	defer func() {
 		_ = stream.Close()
 	}()
@@ -41,7 +41,7 @@ func (M MConfig) GetVStream(ctx context.Context, request *api.GetVRequest, strea
 	for {
 		select {
 		case <-client.MsgChan:
-			//log.Println("client: ", client.Id, " get msg event, configid: ", configId)
+			log.Println("client: ", client.Id, " get msg event, configid: ", configId)
 			configCache, err = GetConfigFromCache(configId)
 			if err != nil {
 				log.Error(err)
@@ -55,8 +55,8 @@ func (M MConfig) GetVStream(ctx context.Context, request *api.GetVRequest, strea
 	}
 }
 
-func sendConfig(stream api.MConfig_GetVStreamStream, config ConfigJSONStr) error {
-	err := stream.Send(&api.GetVResponse{
+func sendConfig(stream sdk.MConfig_GetVStreamStream, config ConfigJSONStr) error {
+	err := stream.Send(&sdk.GetVResponse{
 		Config: string(config),
 	})
 	if err != nil {

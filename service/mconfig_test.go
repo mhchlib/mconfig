@@ -26,7 +26,7 @@ func TestCheckConfigsSchema(t *testing.T) {
 func TestCheckConfigSchema(t *testing.T) {
 
 	examples := [][]string{
-		{`{"a":"b"}`, `{"type": "object","properties":{"a":{"type":"string"}}}`},
+		{`{"a":111}`, `{"type": "object","properties":{"a":{"type":"string"}}}`},
 		{`{"age":1111}`, `{"type":"object","properties":{"age":{"type":"integer"}}}`},
 		{`{"age":1111,"name":"1111"}`, `{"type":"object","properties":{"age":{"type":"integer"}}}`},
 		{``, ``},
