@@ -3,7 +3,8 @@ package service
 import (
 	"context"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/sdk"
+	"github.com/mhchlib/mconfig-api/api/v1/common"
+	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
 type MConfig struct {
@@ -12,37 +13,38 @@ type MConfig struct {
 func NewMConfig() *MConfig {
 	return &MConfig{}
 }
-
 func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, stream sdk.MConfig_GetVStreamStream) error {
 	defer func() {
 		_ = stream.Close()
 	}()
-	configId := ConfigId(request.Configid)
-	configCache, err := GetConfigFromCache(configId)
+	appId := AppId(request.AppId)
+	configCache, err := GetConfigFromCache(appId)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
-	if configCache == "" {
+	if configCache == nil {
 		//no cache
 		// pull mconfig from store
-		config, err := GetConfigFromStore(configId)
+		configCache, err = GetConfigFromStore(appId)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
-		err = sendConfig(stream, config)
-		if err != nil {
-			return err
-		}
+
 	}
+	err = sendConfig(stream, configCache)
+	if err != nil {
+		return err
+	}
+
 	client, err := NewClient()
-	clientChanMap.AddClient(client.Id, configId, client.MsgChan)
+	clientChanMap.AddClient(client.Id, appId, client.MsgChan)
 	for {
 		select {
 		case <-client.MsgChan:
-			log.Println("client: ", client.Id, " get msg event, configid: ", configId)
-			configCache, err = GetConfigFromCache(configId)
+			log.Println("client: ", client.Id, " get msg event, appId: ", appId)
+			configCache, err = GetConfigFromCache(appId)
 			if err != nil {
 				log.Error(err)
 				return err
@@ -55,12 +57,29 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 	}
 }
 
-func sendConfig(stream sdk.MConfig_GetVStreamStream, config ConfigJSONStr) error {
+func sendConfig(stream sdk.MConfig_GetVStreamStream, configs []ConfigEntity) error {
 	err := stream.Send(&sdk.GetVResponse{
-		Config: string(config),
+		Configs: convConfigs(configs),
 	})
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func convConfigs(configEntitys []ConfigEntity) []*common.ConfigEntityForClient {
+	configs := make([]*common.ConfigEntityForClient, len(configChangeChan))
+	for _, v := range configEntitys {
+		configs = append(configs,
+			&common.ConfigEntityForClient{
+				Schema:     v.Schema,
+				Config:     v.Config,
+				Status:     v.Status,
+				Desc:       v.Desc,
+				CreateTime: v.CreateTime,
+				UpdateTime: v.UpdateTime,
+			},
+		)
+	}
+	return configs
 }

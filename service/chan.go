@@ -4,29 +4,29 @@ import "sync"
 
 type ClientChanMap struct {
 	sync.RWMutex
-	m map[ConfigId]map[ClientId]chan interface{}
+	m map[AppId]map[ClientId]chan interface{}
 }
 
 var (
 	//用于收到store配置改变事件后通知更新客户端
-	configChangeChan chan ConfigId
+	configChangeChan chan AppId
 	clientChanMap    *ClientChanMap
 )
 
 func init() {
-	configChangeChan = make(chan ConfigId, 10)
+	configChangeChan = make(chan AppId, 10)
 	clientChanMap = &ClientChanMap{
-		m: make(map[ConfigId]map[ClientId]chan interface{}),
+		m: make(map[AppId]map[ClientId]chan interface{}),
 	}
 }
 
-func (ch *ClientChanMap) AddClient(clientId ClientId, configId ConfigId, clientMsgChan chan interface{}) {
+func (ch *ClientChanMap) AddClient(clientId ClientId, appid AppId, clientMsgChan chan interface{}) {
 	ch.Lock()
 	defer ch.Unlock()
-	v, ok := ch.m[configId]
+	v, ok := ch.m[appid]
 	if ok == false {
 		v = make(map[ClientId]chan interface{})
-		ch.m[configId] = v
+		ch.m[appid] = v
 	}
 	msgChan, ok := v[clientId]
 	if ok == true {
@@ -35,10 +35,10 @@ func (ch *ClientChanMap) AddClient(clientId ClientId, configId ConfigId, clientM
 	v[clientId] = clientMsgChan
 }
 
-func (ch *ClientChanMap) RemoveClient(clientId ClientId, configId ConfigId) {
+func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid AppId) {
 	ch.Lock()
 	defer ch.Unlock()
-	v, ok := ch.m[configId]
+	v, ok := ch.m[appid]
 	if ok == false {
 		return
 	}
@@ -51,10 +51,10 @@ func (ch *ClientChanMap) RemoveClient(clientId ClientId, configId ConfigId) {
 	return
 }
 
-func (ch *ClientChanMap) GetClientsChan(configId ConfigId) []chan interface{} {
+func (ch *ClientChanMap) GetClientsChan(appid AppId) []chan interface{} {
 	chs := []chan interface{}{}
 	ch.RLock()
-	v, ok := ch.m[configId]
+	v, ok := ch.m[appid]
 	if ok == false {
 		return nil
 	}

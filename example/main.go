@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/mhchlib/mconfig-api/api/sdk"
+	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig-api/api/v1/common"
+	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/micro/go-micro/v2"
-	log "github.com/micro/go-micro/v2/util/log"
 	"sync"
 )
 
@@ -16,17 +17,28 @@ func main() {
 			mService := micro.NewService()
 			mService.Init()
 			mConfigService := sdk.NewMConfigService("", mService.Client())
-			resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{Configid: "1000"})
+			resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
+				AppId:    "1000",
+				ConfigId: []string{"100", "101"},
+				ExtraData: []*common.ExtraData{
+					{
+						Key:   "ip",
+						Value: "10.92.12.3",
+					},
+				},
+			})
 			if err != nil {
 				log.Fatal(err)
+				return
 			}
 			//log.Info(a)
 			for {
 				config, err := resp.Recv()
 				if err != nil {
 					log.Fatal(err)
+					return
 				}
-				log.Info(config.Config)
+				log.Println(config.Configs)
 			}
 			group.Done()
 		}(i)

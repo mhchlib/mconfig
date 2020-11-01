@@ -77,14 +77,14 @@ func (e EtcdStore) WatchConfig(key string, rev int64, ctx context.Context) (chan
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &service.ConfigEvent{
-							Key:   (service.ConfigId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							Key:   (service.AppId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
 							Value: (service.ConfigJSONStr)(event.Kv.Value),
 						}
-						//case mvccpb.DELETE:
-						//	configChan <- &service.ConfigEvent{
-						//		Key:   (service.ConfigId)(event.Kv.Key),
-						//		Value: (service.ConfigJSONStr)(event.Kv.Value),
-						//	}
+					case mvccpb.DELETE:
+						configChan <- &service.ConfigEvent{
+							Key:       (service.AppId)(event.Kv.Key),
+							EventType: service.Event_Delete,
+						}
 					}
 				}
 			case <-ctx.Done():
@@ -119,14 +119,15 @@ func (e EtcdStore) WatchConfigWithPrefix(ctx context.Context) (chan *service.Con
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &service.ConfigEvent{
-							Key:   (service.ConfigId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
-							Value: (service.ConfigJSONStr)(event.Kv.Value),
+							Key:       (service.AppId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							Value:     (service.ConfigJSONStr)(event.Kv.Value),
+							EventType: service.Event_Update,
 						}
-						//case mvccpb.DELETE:
-						//	configChan <- &service.ConfigEvent{
-						//		Key:   (service.ConfigId)(event.Kv.Key),
-						//		Value: (service.ConfigJSONStr)(event.Kv.Value),
-						//	}
+					case mvccpb.DELETE:
+						configChan <- &service.ConfigEvent{
+							Key:       (service.AppId)(event.Kv.Key),
+							EventType: service.Event_Delete,
+						}
 					}
 				}
 			case <-ctx.Done():
@@ -157,6 +158,5 @@ func Prefix(prefix string, v string) string {
 }
 
 func RemovePrefix(prefix string, v string) string {
-	new := ""
-	return strings.ReplaceAll(v, prefix, new)
+	return strings.ReplaceAll(v, prefix, "")
 }
