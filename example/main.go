@@ -38,7 +38,7 @@ func main() {
 					log.Fatal(err)
 					return
 				}
-				log.Println(config.Configs)
+				log.Info(config.Configs)
 			}
 			group.Done()
 		}(i)

@@ -15,7 +15,7 @@ func ParseConfigJSONStr(value ConfigJSONStr) ([]ConfigEntity, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(mconfigs)
+	log.Info(mconfigs)
 	return mconfigs, nil
 }
 
@@ -28,7 +28,7 @@ func CheckConfigsSchema(configs []ConfigEntity) error {
 				return err
 			}
 			if ok == false {
-				log.Println("CheckConfigsSchema failer...  ", config)
+				log.Info("CheckConfigsSchema failer...  ", config)
 				return errors.New("CheckConfigsSchema failer ")
 			}
 		}

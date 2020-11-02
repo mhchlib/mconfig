@@ -22,10 +22,10 @@ func dispatchMsgToClient(ctx context.Context) {
 			if !ok {
 				return
 			}
-			log.Println("start notify change event to client ", ConfigId)
+			log.Info("start notify change event to client ", ConfigId)
 			notifyClients(ConfigId)
 		case <-ctx.Done():
-			log.Println("dispatchMsgToClient done ...")
+			log.Info("dispatchMsgToClient done ...")
 			return
 		}
 	}
@@ -66,18 +66,18 @@ func handleEventMsg(configChan chan *ConfigEvent, ctx context.Context) {
 			if !ok {
 				return
 			}
-			log.Println("get change event ", v.Key)
+			log.Info("get change event ", v.Key)
 			//config 2 cache
 			_, err := mconfigCache.putConfigCache(v.Key, v.Value)
 			if err != nil {
 				log.Error(err)
 				break
 			}
-			log.Println("start push change event to client ", v.Key)
+			log.Info("start push change event to client ", v.Key)
 			//notify client
 			configChangeChan <- v.Key
 		case <-ctx.Done():
-			log.Println("handleEventMsg done ... ")
+			log.Info("handleEventMsg done ... ")
 			return
 		}
 	}

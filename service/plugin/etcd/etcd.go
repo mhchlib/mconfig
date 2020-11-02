@@ -73,7 +73,7 @@ func (e EtcdStore) WatchConfig(key string, rev int64, ctx context.Context) (chan
 				}
 				events := v.Events
 				for _, event := range events {
-					log.Println("get event value : ", string(event.Kv.Value))
+					log.Info("get event value : ", string(event.Kv.Value))
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &service.ConfigEvent{
@@ -88,7 +88,7 @@ func (e EtcdStore) WatchConfig(key string, rev int64, ctx context.Context) (chan
 					}
 				}
 			case <-ctx.Done():
-				log.Println("watcher done ...")
+				log.Info("watcher done ...")
 				return
 			}
 		}
@@ -115,7 +115,7 @@ func (e EtcdStore) WatchConfigWithPrefix(ctx context.Context) (chan *service.Con
 				}
 				events := v.Events
 				for _, event := range events {
-					log.Println("get event value : ", string(event.Kv.Value))
+					log.Info("get event value : ", string(event.Kv.Value))
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &service.ConfigEvent{
@@ -131,7 +131,7 @@ func (e EtcdStore) WatchConfigWithPrefix(ctx context.Context) (chan *service.Con
 					}
 				}
 			case <-ctx.Done():
-				log.Println("watcher done ...")
+				log.Info("watcher done ...")
 				return
 			}
 		}

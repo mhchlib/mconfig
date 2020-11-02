@@ -43,7 +43,7 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 	for {
 		select {
 		case <-client.MsgChan:
-			log.Println("client: ", client.Id, " get msg event, appId: ", appId)
+			log.Info("client: ", client.Id, " get msg event, appId: ", appId)
 			configCache, err = GetConfigFromCache(appId)
 			if err != nil {
 				log.Error(err)
