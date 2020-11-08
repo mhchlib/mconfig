@@ -1,4 +1,4 @@
-package service
+package pkg
 
 import (
 	"github.com/go-acme/lego/v3/log"

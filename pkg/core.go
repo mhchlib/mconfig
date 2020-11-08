@@ -1,4 +1,4 @@
-package service
+package pkg
 
 import (
 	"context"
@@ -38,6 +38,7 @@ func notifyClients(id AppId) {
 			v <- &struct{}{}
 		}
 	}
+	log.Info("send app config info to ", len(clientsChans), " clients")
 }
 
 func GetConfigFromStore(key AppId) ([]ConfigEntity, error) {

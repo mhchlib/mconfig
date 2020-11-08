@@ -1,4 +1,4 @@
-package service
+package pkg
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ func ParseConfigJSONStr(value ConfigJSONStr) ([]ConfigEntity, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info(mconfigs)
+	//log.Info(mconfigs)
 	return mconfigs, nil
 }
 

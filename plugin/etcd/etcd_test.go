@@ -2,7 +2,7 @@ package etcd
 
 import (
 	"context"
-	"github.com/mhchlib/mconfig/service"
+	"github.com/mhchlib/mconfig/pkg"
 	"log"
 	"testing"
 	"time"
@@ -29,7 +29,7 @@ func TestEtcdStore_WatchConfig(t *testing.T) {
 	}
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	configChan, err := e.WatchConfig("1000", rev, ctx)
-	go func(configChan chan *service.ConfigEvent) {
+	go func(configChan chan *pkg.ConfigEvent) {
 		for {
 			select {
 			case v, ok := <-configChan:
@@ -52,7 +52,7 @@ func TestEtcdStore_WatchConfigWithPrefix(t *testing.T) {
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	configChan, _ := e.WatchConfigWithPrefix(ctx)
-	go func(configChan chan *service.ConfigEvent) {
+	go func(configChan chan *pkg.ConfigEvent) {
 		for {
 			select {
 			case v, ok := <-configChan:

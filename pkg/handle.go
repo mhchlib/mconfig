@@ -1,4 +1,4 @@
-package service
+package pkg
 
 import (
 	"context"
@@ -31,15 +31,26 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 			log.Error(err)
 			return err
 		}
-
 	}
 	err = sendConfig(stream, configCache)
 	if err != nil {
 		return err
 	}
-
 	client, err := NewClient()
 	clientChanMap.AddClient(client.Id, appId, client.MsgChan)
+	defer func() {
+		clientChanMap.RemoveClient(client.Id, appId)
+	}()
+	clietnStreamMsg := make(chan interface{})
+	go func() {
+		msg := &struct{}{}
+		err := stream.RecvMsg(&msg)
+		if err != nil {
+			log.Error("client id：", client.Id, err)
+		}
+		clietnStreamMsg <- msg
+	}()
+
 	for {
 		select {
 		case <-client.MsgChan:
@@ -53,6 +64,8 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 			if err != nil {
 				return err
 			}
+		case <-clietnStreamMsg:
+			return nil
 		}
 	}
 }

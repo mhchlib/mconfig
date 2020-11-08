@@ -1,6 +1,9 @@
-package service
+package pkg
 
-import "sync"
+import (
+	log "github.com/mhchlib/logger"
+	"sync"
+)
 
 type ClientChanMap struct {
 	sync.RWMutex
@@ -33,6 +36,7 @@ func (ch *ClientChanMap) AddClient(clientId ClientId, appid AppId, clientMsgChan
 		close(msgChan)
 	}
 	v[clientId] = clientMsgChan
+	log.Info("Add Client: ", clientId, " Appid: ", appid)
 }
 
 func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid AppId) {
@@ -46,6 +50,7 @@ func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid AppId) {
 	if ok == true {
 		close(msgChan)
 		delete(v, clientId)
+		log.Info("Remove Client: ", clientId, " Appid: ", appid)
 		return
 	}
 	return

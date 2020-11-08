@@ -12,7 +12,6 @@ require (
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/xeipuuv/gojsonschema v1.1.0
 	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0 // indirect
-	gopkg.in/square/go-jose.v2 v2.3.1
 )
 
 replace github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc => ../logger

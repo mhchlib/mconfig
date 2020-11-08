@@ -19,3 +19,29 @@
 ### Feature
 
  * 配置数据value支持复杂JSON，并且此JSON需要提前schema定义
+ 
+ 
+#### config example
+
+```go
+type ConfigEntity struct {
+	Id         string
+	Schema     string
+	Config     string
+	Status     common.ConfigStatus
+	Desc       string
+	CreateTime int64
+	UpdateTime int64
+}
+```
+```json
+{
+    "100":[
+        {"id":"1000","config":"{'name':'demo1','age':12}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
+        {"id":"1001","config":"{'name':'demo2','age':13}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
+        {"id":"1002","config":"{'name':'demo3','age':14}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
+        {"id":"1003","config":"{'name':'demo4','age':15}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
+        {"id":"1004","config":"{'name':'demo5','age':16}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0}
+    ]
+}
+```
