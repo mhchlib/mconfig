@@ -1,536 +1,579 @@
 {
   "1000": {
     "1000-100": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1000-101": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1000-102": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1000-103": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1000-104": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     }
   },
   "1001": {
     "1001-100": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1001-101": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1001-102": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1001-103": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1001-104": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     }
   },
   "1002": {
     "1002-100": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1002-101": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1002-102": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1002-103": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1002-104": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     }
   },
   "1003": {
     "1003-100": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1003-101": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1003-102": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1003-103": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     },
     "1003-104": {
-      "configs": [
-        "0",
-        {
+      "configs": {
+        "0": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "1",
-        {
+        "1": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         },
-        "2",
-        {
+        "2": {
           "config": "{'name':'demo1','age':12}",
           "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
           "create_time": 1604249335,
           "update_time": 1604249335
         }
-      ],
-      "desc": "test"
+      },
+      "desc": "test",
+      "create_time": 1604249335,
+      "update_time": 1604249335,
+      "ABFilters": {
+        "ip": "192.0.0.1"
+      }
     }
   },
   "1004": {
-    "configs": [],
+    "configs": {},
     "desc": "test",
     "create_time": 1604249335,
-    "update_time": 1604249335
+    "update_time": 1604249335,
+    "ABFilters": {
+      "ip": "192.0.0.1"
+    }
   }
 }

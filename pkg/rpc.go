@@ -3,7 +3,6 @@ package pkg
 import (
 	"context"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/v1/common"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
@@ -18,21 +17,21 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 		_ = stream.Close()
 	}()
 	appId := AppId(request.AppId)
-	configCache, err := GetConfigFromCache(appId)
+	configsCache, err := GetConfigFromCache(appId, request.Filters)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
-	if configCache == nil {
+	if configsCache == nil {
 		//no cache
 		// pull mconfig from store
-		configCache, err = GetConfigFromStore(appId)
+		configsCache, err = GetConfigFromStore(appId, request.Filters)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
 	}
-	err = sendConfig(stream, configCache)
+	err = sendConfig(stream, configsCache)
 	if err != nil {
 		return err
 	}
@@ -55,12 +54,12 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 		select {
 		case <-client.MsgChan:
 			log.Info("client: ", client.Id, " get msg event, appId: ", appId)
-			configCache, err = GetConfigFromCache(appId)
+			configsCache, err = GetConfigFromCache(appId, request.Filters)
 			if err != nil {
 				log.Error(err)
 				return err
 			}
-			err := sendConfig(stream, configCache)
+			err := sendConfig(stream, configsCache)
 			if err != nil {
 				return err
 			}
@@ -70,29 +69,12 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 	}
 }
 
-func sendConfig(stream sdk.MConfig_GetVStreamStream, configs []ConfigEntity) error {
+func sendConfig(stream sdk.MConfig_GetVStreamStream, configs []*sdk.Config) error {
 	err := stream.Send(&sdk.GetVResponse{
-		Configs: convConfigs(configs),
+		Configs: configs,
 	})
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func convConfigs(configEntitys []ConfigEntity) []*common.ConfigEntityForClient {
-	configs := make([]*common.ConfigEntityForClient, len(configChangeChan))
-	for _, v := range configEntitys {
-		configs = append(configs,
-			&common.ConfigEntityForClient{
-				Schema:     v.Schema,
-				Config:     v.Config,
-				Status:     v.Status,
-				Desc:       v.Desc,
-				CreateTime: v.CreateTime,
-				UpdateTime: v.UpdateTime,
-			},
-		)
-	}
-	return configs
 }

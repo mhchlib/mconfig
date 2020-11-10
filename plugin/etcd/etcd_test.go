@@ -8,27 +8,27 @@ import (
 	"time"
 )
 
-func TestEtcdStore_GetConfig(t *testing.T) {
+func TestEtcdStore_GetAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	config, rev, err := e.GetConfig("1000")
+	config, rev, err := e.GetAppConfigs("1000")
 	log.Println(config, rev, err)
 }
 
-func TestEtcdStore_PutConfig(t *testing.T) {
+func TestEtcdStore_PutAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	err := e.PutConfig("1000", "{'aaa':'ccc'}")
+	err := e.PutAppConfigs("1000", "{'aaa':'ccc'}")
 	log.Println(err)
 }
 
-func TestEtcdStore_WatchConfig(t *testing.T) {
+func TestEtcdStore_WatchAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	_, rev, err := e.GetConfig("1000")
+	_, rev, err := e.GetAppConfigs("1000")
 	log.Println("get mconfig rev: ", rev)
 	if err != nil {
 		log.Fatal(err)
 	}
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	configChan, err := e.WatchConfig("1000", rev, ctx)
+	configChan, err := e.WatchAppConfigs("1000", rev, ctx)
 	go func(configChan chan *pkg.ConfigEvent) {
 		for {
 			select {
@@ -47,11 +47,11 @@ func TestEtcdStore_WatchConfig(t *testing.T) {
 	log.Println("over...")
 }
 
-func TestEtcdStore_WatchConfigWithPrefix(t *testing.T) {
+func TestEtcdStore_WatchAppConfigsWithPrefix(t *testing.T) {
 	e := &EtcdStore{}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	configChan, _ := e.WatchConfigWithPrefix(ctx)
+	configChan, _ := e.WatchAppConfigsWithPrefix(ctx)
 	go func(configChan chan *pkg.ConfigEvent) {
 		for {
 			select {

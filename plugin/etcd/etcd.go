@@ -25,23 +25,25 @@ type EtcdStore struct {
 func init() {
 	//Init etcd link
 	initEtcd()
-	//mcok store
-	pkg.ConfigStore = &EtcdStore{}
+	err := pkg.RegisterAppConfigStore(&EtcdStore{})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func (e EtcdStore) GetConfig(key string) (pkg.ConfigJSONStr, int64, error) {
+func (e EtcdStore) GetAppConfigs(key string) (pkg.AppConfigsJSONStr, int64, error) {
 	get, err := kv.Get(context.TODO(), Prefix(PREFIX_CONFIG, key))
 	if err != nil {
 		log.Error(err)
 	}
 	if get.Count == 1 {
-		return pkg.ConfigJSONStr(string(get.Kvs[0].Value)), get.Header.Revision, nil
+		return pkg.AppConfigsJSONStr(string(get.Kvs[0].Value)), get.Header.Revision, nil
 	} else {
 		return "", 0, errors.New("configid: " + key + " no value")
 	}
 }
 
-func (e EtcdStore) PutConfig(key string, value pkg.ConfigJSONStr) error {
+func (e EtcdStore) PutAppConfigs(key string, value pkg.AppConfigsJSONStr) error {
 	//TODO:version control
 	_, err := kv.Put(context.TODO(), PREFIX_CONFIG+key, string(value))
 	if err != nil {
@@ -50,7 +52,7 @@ func (e EtcdStore) PutConfig(key string, value pkg.ConfigJSONStr) error {
 	return nil
 }
 
-func (e EtcdStore) WatchConfig(key string, rev int64, ctx context.Context) (chan *pkg.ConfigEvent, error) {
+func (e EtcdStore) WatchAppConfigs(key string, rev int64, ctx context.Context) (chan *pkg.ConfigEvent, error) {
 	var watchChan clientv3.WatchChan
 	if rev != 0 {
 		watchChan = watcher.Watch(ctx, Prefix(PREFIX_CONFIG, key), clientv3.WithRev(rev))
@@ -78,7 +80,7 @@ func (e EtcdStore) WatchConfig(key string, rev int64, ctx context.Context) (chan
 					case mvccpb.PUT:
 						configChan <- &pkg.ConfigEvent{
 							Key:   (pkg.AppId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
-							Value: (pkg.ConfigJSONStr)(event.Kv.Value),
+							Value: (pkg.AppConfigsJSONStr)(event.Kv.Value),
 						}
 					case mvccpb.DELETE:
 						configChan <- &pkg.ConfigEvent{
@@ -96,7 +98,7 @@ func (e EtcdStore) WatchConfig(key string, rev int64, ctx context.Context) (chan
 	return configChan, nil
 }
 
-func (e EtcdStore) WatchConfigWithPrefix(ctx context.Context) (chan *pkg.ConfigEvent, error) {
+func (e EtcdStore) WatchAppConfigsWithPrefix(ctx context.Context) (chan *pkg.ConfigEvent, error) {
 	var watchChan clientv3.WatchChan
 	watchChan = watcher.Watch(ctx, Prefix(PREFIX_CONFIG, ""), clientv3.WithPrefix())
 	configChan := make(chan *pkg.ConfigEvent)
@@ -120,7 +122,7 @@ func (e EtcdStore) WatchConfigWithPrefix(ctx context.Context) (chan *pkg.ConfigE
 					case mvccpb.PUT:
 						configChan <- &pkg.ConfigEvent{
 							Key:       (pkg.AppId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
-							Value:     (pkg.ConfigJSONStr)(event.Kv.Value),
+							Value:     (pkg.AppConfigsJSONStr)(event.Kv.Value),
 							EventType: pkg.Event_Update,
 						}
 					case mvccpb.DELETE:

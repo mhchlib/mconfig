@@ -10,7 +10,7 @@ import (
 )
 
 const PREFIX_CONFIG = "/mconfig/"
-const MOCK_DATA_PATH = "/Users/huchenhao/Documents/goproject/github.com/mhchlib/mconfig/example/mcok/data.json"
+const MOCK_DATA_PATH = "/Users/huchenhao/Documents/goproject/github.com/mhchlib/mconfig/mock/data.json"
 
 func main() {
 	cli, err := clientv3.New(clientv3.Config{

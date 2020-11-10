@@ -3,25 +3,23 @@ package main
 import (
 	"context"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/v1/common"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/micro/go-micro/v2"
-	"math/rand"
 	"strconv"
 )
 
 func main() {
-	appid := 1000 + rand.Intn(10)
+	//appid := 1000 + rand.Intn(4)
+	appid := 1000
 	mService := micro.NewService()
 	mService.Init()
 	mConfigService := sdk.NewMConfigService("", mService.Client())
 	resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
-		AppId:    strconv.Itoa(appid),
-		ConfigId: []string{"100", "101"},
-		ExtraData: []*common.ExtraData{
-			{
-				Key:   "ip",
-				Value: "10.92.12.3",
+		AppId: strconv.Itoa(appid),
+		Filters: &sdk.ConfigFilters{
+			ConfigIds: []string{"1000-100", "1000-103"},
+			ExtraData: map[string]string{
+				"ip": "1111",
 			},
 		},
 	})
@@ -35,14 +33,14 @@ func main() {
 	}()
 	//log.Info(a)
 	for {
-		//config, err := resp.Recv()
-		_, err := resp.Recv()
+		config, err := resp.Recv()
+		//_, err := resp.Recv()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 		log.Info(appid, " get msg")
 		log.Info(" ------------------- ")
-		//log.Info(config.Configs)
+		log.Info(config.Configs)
 	}
 }

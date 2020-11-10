@@ -2,34 +2,39 @@ package pkg
 
 import (
 	"context"
-	"github.com/mhchlib/mconfig-api/api/v1/common"
 )
 
 type AppId string
-type ConfigJSONStr string
-
+type AppConfigsJSONStr string
 type EventType int
 
 var Event_Update EventType = 0
 var Event_Delete EventType = 1
 
+var (
+	appConfigStore AppConfigStore
+	Cancel         context.CancelFunc
+)
+
 type ConfigEvent struct {
 	Key       AppId
-	Value     ConfigJSONStr
+	Value     AppConfigsJSONStr
 	EventType EventType
 }
 
-var (
-	ConfigStore Store
-	Cancel      context.CancelFunc
-)
-
-type ConfigEntity struct {
-	Id         string
+type Config struct {
 	Schema     string
 	Config     string
-	Status     common.ConfigStatus
-	Desc       string
-	CreateTime int64
-	UpdateTime int64
+	CreateTime int64 `json:"create_time"`
+	UpdateTime int64 `json:"update_time"`
 }
+
+type Configs struct {
+	Configs    map[string]Config
+	Desc       string
+	CreateTime int64             `json:"create_time"`
+	UpdateTime int64             `json:"update_time"`
+	ABFilters  map[string]string `json:"ABFilters"`
+}
+
+type AppConfigs map[string]Configs
