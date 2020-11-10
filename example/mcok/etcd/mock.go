@@ -10,6 +10,7 @@ import (
 )
 
 const PREFIX_CONFIG = "/mconfig/"
+const MOCK_DATA_PATH = "/Users/huchenhao/Documents/goproject/github.com/mhchlib/mconfig/example/mcok/data.json"
 
 func main() {
 	cli, err := clientv3.New(clientv3.Config{
@@ -22,7 +23,7 @@ func main() {
 	}
 	kv := clientv3.NewKV(cli)
 	//_ = kv
-	data, err := ioutil.ReadFile("/Users/huchenhao/Documents/goproject/github.com/mhchlib/mconfig/example/mcok/data.json")
+	data, err := ioutil.ReadFile(MOCK_DATA_PATH)
 	if err != nil {
 		log.Fatal(err)
 	}
