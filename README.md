@@ -1,7 +1,7 @@
 ## MConfig
 
-```
-                                   / action UPDATE
+```				    action UPDATE
+                                   / 
                                   /
                                  /
     app -> prefix + appid -> JSON ---- action ADD
