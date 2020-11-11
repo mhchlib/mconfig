@@ -10,17 +10,20 @@ import (
 
 func main() {
 	//appid := 1000 + rand.Intn(4)
-	appid := 1000
+	appId := 1000
+	configIds := []string{"1000-100", "1000-103"}
+	extreData := map[string]string{
+		"ip": "192.168.1.1",
+	}
+	log.Info("client listen app ", appId, " config ", configIds, " with data ", extreData)
 	mService := micro.NewService()
 	mService.Init()
 	mConfigService := sdk.NewMConfigService("", mService.Client())
 	resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
-		AppId: strconv.Itoa(appid),
+		AppId: strconv.Itoa(appId),
 		Filters: &sdk.ConfigFilters{
-			ConfigIds: []string{"1000-100", "1000-103"},
-			ExtraData: map[string]string{
-				"ip": "1111",
-			},
+			ConfigIds: configIds,
+			ExtraData: extreData,
 		},
 	})
 	if err != nil {
@@ -39,7 +42,7 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		log.Info(appid, " get msg")
+		log.Info(appId, " get msg")
 		log.Info(" ------------------- ")
 		log.Info(config.Configs)
 	}

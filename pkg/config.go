@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func parseAppConfigsJSONStr(value AppConfigsJSONStr) (AppConfigs, error) {
+func parseAppConfigsJSONStr(value AppConfigsJSONStr) (*AppConfigsMap, error) {
 	//parse AppConfigsJSONStr
 	var appConfigs = make(AppConfigs)
 	err := json.Unmarshal([]byte(value), &appConfigs)
@@ -17,7 +17,9 @@ func parseAppConfigsJSONStr(value AppConfigsJSONStr) (AppConfigs, error) {
 		log.Error(Error_ParserAppConfigFail, err)
 		return nil, Error_ParserAppConfigFail
 	}
-	return appConfigs, nil
+	return &AppConfigsMap{
+		AppConfigs: appConfigs,
+	}, nil
 }
 
 //
@@ -48,14 +50,15 @@ func CheckConfigSchema(config string, schema string) (bool, error) {
 	return result.Valid(), nil
 }
 
-func filterConfigsForClient(appConfigs AppConfigs, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 	configIdLen := len(filters.ConfigIds)
 	configsForClient := make([]*sdk.Config, 0)
 	defaultChoose := common.ConfigStatus_Published
 	for i := 0; i < configIdLen; i++ {
 		needConfigId := filters.ConfigIds[i]
-		appConfig, ok := appConfigs[needConfigId]
-		log.Info(appConfigs, needConfigId)
+		appConfigs.mutex.RLock()
+		appConfig, ok := appConfigs.AppConfigs[needConfigId]
+		appConfigs.mutex.RUnlock()
 		if !ok {
 			continue
 		}
@@ -77,7 +80,10 @@ func filterConfigsForClient(appConfigs AppConfigs, filters *sdk.ConfigFilters) (
 		if matchABFilters {
 			defaultChoose = common.ConfigStatus_ABPublished
 		}
-		if config, ok := appConfig.Configs[strconv.Itoa(int(defaultChoose))]; ok {
+		appConfig.Configs.mutex.RLock()
+		config, ok := appConfig.Configs.Entry[strconv.Itoa(int(defaultChoose))]
+		appConfig.Configs.mutex.RUnlock()
+		if ok {
 			configsForClient = append(configsForClient, &sdk.Config{
 				Id:         needConfigId,
 				Schema:     config.Config,

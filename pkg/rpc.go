@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/json"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
@@ -12,7 +14,9 @@ type MConfig struct {
 func NewMConfig() *MConfig {
 	return &MConfig{}
 }
+
 func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, stream sdk.MConfig_GetVStreamStream) error {
+	localConfiCacheMd5 := ""
 	defer func() {
 		_ = stream.Close()
 	}()
@@ -59,14 +63,29 @@ func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, strea
 				log.Error(err)
 				return err
 			}
-			err := sendConfig(stream, configsCache)
-			if err != nil {
-				return err
+			if ok, md5 := checkNeedNotifyClient(localConfiCacheMd5, configsCache); ok {
+				err := sendConfig(stream, configsCache)
+				if err != nil {
+					log.Error(err)
+					return err
+				}
+				localConfiCacheMd5 = md5
 			}
 		case <-clietnStreamMsg:
 			return nil
 		}
 	}
+}
+
+func checkNeedNotifyClient(localConfiCacheMd5 string, cache []*sdk.Config) (bool, string) {
+	hash := md5.New()
+	bs, _ := json.Marshal(cache)
+	hash.Write(bs)
+	sum := hash.Sum(nil)
+	if localConfiCacheMd5 == string(sum) {
+		return false, ""
+	}
+	return true, string(sum)
 }
 
 func sendConfig(stream sdk.MConfig_GetVStreamStream, configs []*sdk.Config) error {

@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"sync"
 )
 
 type AppId string
@@ -30,11 +31,21 @@ type Config struct {
 }
 
 type Configs struct {
-	Configs    map[string]Config
+	Configs    ConfigsMap
 	Desc       string
 	CreateTime int64             `json:"create_time"`
 	UpdateTime int64             `json:"update_time"`
 	ABFilters  map[string]string `json:"ABFilters"`
+}
+
+type AppConfigsMap struct {
+	mutex sync.RWMutex
+	AppConfigs
+}
+
+type ConfigsMap struct {
+	mutex sync.RWMutex
+	Entry map[string]Config
 }
 
 type AppConfigs map[string]Configs

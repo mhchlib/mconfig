@@ -48,9 +48,9 @@ func GetConfigFromStore(key AppId, filters *sdk.ConfigFilters) ([]*sdk.Config, e
 		return nil, Error_AppConfigNotFound
 	}
 	//paser config str to ob
-	log.Info(appConfigsStr)
+	//log.Info(appConfigsStr)
 	appConfigs, err := parseAppConfigsJSONStr(appConfigsStr)
-	log.Info(appConfigs, err)
+	log.Info(appConfigs.AppConfigs, err)
 	if err != nil {
 		return nil, err
 	}

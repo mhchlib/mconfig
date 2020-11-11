@@ -75,7 +75,7 @@ func (e EtcdStore) WatchAppConfigs(key string, rev int64, ctx context.Context) (
 				}
 				events := v.Events
 				for _, event := range events {
-					log.Info("get event value : ", string(event.Kv.Value))
+					//log.Info("get event value : ", string(event.Kv.Value))
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &pkg.ConfigEvent{
@@ -117,7 +117,7 @@ func (e EtcdStore) WatchAppConfigsWithPrefix(ctx context.Context) (chan *pkg.Con
 				}
 				events := v.Events
 				for _, event := range events {
-					log.Info("get event value : ", string(event.Kv.Value))
+					//log.Info("get event value : ", string(event.Kv.Value))
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &pkg.ConfigEvent{
