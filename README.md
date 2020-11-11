@@ -1,6 +1,7 @@
 ## MConfig
 
-```				    action UPDATE
+```
+				   action UPDATE
                                    / 
                                   /
                                  /
