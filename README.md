@@ -1,7 +1,7 @@
 ## MConfig
 
 ```
-				   action UPDATE
+				   													action UPDATE
                                    / 
                                   /
                                  /
@@ -17,32 +17,169 @@
  缓存功能缓存大小为5(暂定), mconfig-admin 服务为管理界面 并管理着etcd中的配置内容，mconfig服务会监听每一个连接他的服务需要的appid配置的
  key变化,收到变化后,diff mconfig本地的配置 并把修改内容推送给连接的服务
 
+[TOC]
+
+
+
 ### Feature
 
- * 配置数据value支持复杂JSON，并且此JSON需要提前schema定义
- 
- 
-#### config example
+- [x] 配置数据value支持复杂JSON，并且此JSON需要提前Schema定义 
+- [x] 灰度发布配置
+- [x] 基本功能达到
 
-```go
-type ConfigEntity struct {
-	Id         string
-	Schema     string
-	Config     string
-	Status     common.ConfigStatus
-	Desc       string
-	CreateTime int64
-	UpdateTime int64
-}
-```
+### config example
+
 ```json
 {
-    "100":[
-        {"id":"1000","config":"{'name':'demo1','age':12}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
-        {"id":"1001","config":"{'name':'demo2','age':13}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
-        {"id":"1002","config":"{'name':'demo3','age':14}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
-        {"id":"1003","config":"{'name':'demo4','age':15}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0},
-        {"id":"1004","config":"{'name':'demo5','age':16}","schema":"{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}","create_time":1604249335,"update_time":1604249335,"desc":"test","status":0}
-    ]
+    "1000-100": {
+        "ABFilters": {
+            "ip": "192.168.1.12"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo13','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':24}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':23}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-101": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-102": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':13}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-103": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':22}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-104": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    }
 }
 ```
