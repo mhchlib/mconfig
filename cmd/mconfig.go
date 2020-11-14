@@ -2,6 +2,7 @@ package main
 
 import (
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig-api/api/v1/cli"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/mhchlib/mconfig/pkg"
 	"github.com/micro/go-micro/v2"
@@ -15,11 +16,19 @@ func main() {
 	defer pkg.InitMconfig()()
 	mService := micro.NewService(Opt_RegistryTimeout)
 	mService.Init()
-	err := sdk.RegisterMConfigHandler(mService.Server(), pkg.NewMConfig())
+	initRpc(mService)
+	err := mService.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = mService.Run()
+}
+
+func initRpc(mService micro.Service) {
+	err := sdk.RegisterMConfigHandler(mService.Server(), pkg.NewMConfigSDK())
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = cli.RegisterMConfigCliHandler(mService.Server(), pkg.NewMConfigCLI())
 	if err != nil {
 		log.Fatal(err)
 	}

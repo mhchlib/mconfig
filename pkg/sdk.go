@@ -8,14 +8,14 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
-type MConfig struct {
+type MConfigSDK struct {
 }
 
-func NewMConfig() *MConfig {
-	return &MConfig{}
+func NewMConfigSDK() *MConfigSDK {
+	return &MConfigSDK{}
 }
 
-func (M MConfig) GetVStream(ctx context.Context, request *sdk.GetVRequest, stream sdk.MConfig_GetVStreamStream) error {
+func (m *MConfigSDK) GetVStream(ctx context.Context, request *sdk.GetVRequest, stream sdk.MConfig_GetVStreamStream) error {
 	localConfiCacheMd5 := ""
 	defer func() {
 		_ = stream.Close()

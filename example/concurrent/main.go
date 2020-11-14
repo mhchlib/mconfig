@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/v1/common"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/micro/go-micro/v2"
 	"strconv"
@@ -21,14 +20,8 @@ func main() {
 			mService.Init()
 			mConfigService := sdk.NewMConfigService("", mService.Client())
 			resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
-				AppId:    appid,
-				ConfigId: []string{"100", "101"},
-				ExtraData: []*common.ExtraData{
-					{
-						Key:   "ip",
-						Value: "10.92.12.3",
-					},
-				},
+				AppId:   appid,
+				Filters: &sdk.ConfigFilters{},
 			})
 
 			if err != nil {

@@ -44,7 +44,6 @@ func (e EtcdStore) GetAppConfigs(key string) (pkg.AppConfigsJSONStr, int64, erro
 }
 
 func (e EtcdStore) PutAppConfigs(key string, value pkg.AppConfigsJSONStr) error {
-	//TODO:version control
 	_, err := kv.Put(context.TODO(), PREFIX_CONFIG+key, string(value))
 	if err != nil {
 		return err
