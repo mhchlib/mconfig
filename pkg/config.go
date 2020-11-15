@@ -86,8 +86,8 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 		if ok {
 			configsForClient = append(configsForClient, &sdk.Config{
 				Id:         needConfigId,
-				Schema:     config.Config,
-				Config:     config.Schema,
+				Schema:     config.Schema,
+				Config:     config.Config,
 				Status:     defaultChoose,
 				Desc:       appConfig.Desc,
 				CreateTime: config.CreateTime,

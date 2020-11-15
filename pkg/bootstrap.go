@@ -50,7 +50,7 @@ func GetConfigFromStore(key AppId, filters *sdk.ConfigFilters) ([]*sdk.Config, e
 	//paser config str to ob
 	//log.Info(appConfigsStr)
 	appConfigs, err := parseAppConfigsJSONStr(appConfigsStr)
-	log.Info(appConfigs.AppConfigs, err)
+	//log.Info(appConfigs.AppConfigs, err)
 	if err != nil {
 		return nil, err
 	}
