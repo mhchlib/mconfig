@@ -10,8 +10,8 @@ import (
 
 func main() {
 	//appid := 1000 + rand.Intn(4)
-	appId := 1000
-	configIds := []string{"1000-100", "1000-103"}
+	appId := 1003
+	configIds := []string{"1003-100", "1003-103"}
 	extreData := map[string]string{
 		"ip": "192.168.1.1",
 	}

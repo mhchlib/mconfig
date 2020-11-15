@@ -24,15 +24,15 @@ type ConfigEvent struct {
 }
 
 type Config struct {
-	Schema     string
-	Config     string
-	CreateTime int64 `json:"create_time"`
-	UpdateTime int64 `json:"update_time"`
+	Schema     string `json:"schema"`
+	Config     string `json:"config"`
+	CreateTime int64  `json:"create_time"`
+	UpdateTime int64  `json:"update_time"`
 }
 
 type Configs struct {
-	Configs    ConfigsMap
-	Desc       string
+	Configs    ConfigsMap        `json:"configs"`
+	Desc       string            `json:"desc"`
 	CreateTime int64             `json:"create_time"`
 	UpdateTime int64             `json:"update_time"`
 	ABFilters  map[string]string `json:"ABFilters"`
@@ -45,7 +45,7 @@ type AppConfigsMap struct {
 
 type ConfigsMap struct {
 	mutex sync.RWMutex
-	Entry map[string]Config
+	Entry map[string]*Config `json:"entry"`
 }
 
-type AppConfigs map[string]Configs
+type AppConfigs map[string]*Configs

@@ -39,7 +39,7 @@ func (e EtcdStore) GetAppConfigs(key string) (pkg.AppConfigsJSONStr, int64, erro
 	if get.Count == 1 {
 		return pkg.AppConfigsJSONStr(string(get.Kvs[0].Value)), get.Header.Revision, nil
 	} else {
-		return "", 0, errors.New("configid: " + key + " no value")
+		return "", 0, errors.New("app id: " + key + " not found")
 	}
 }
 
