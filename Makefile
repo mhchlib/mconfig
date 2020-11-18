@@ -1,6 +1,12 @@
 
 build:
-	go build cmd/mconfig.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -o mconfig cmd/mconfig.go cmd/plugin.go
+
+docker: build
+	docker build -t dockerhcy/mconfig:v0.1  .
+
+push: docker
+	docker push dockerhcy/mconfig:v0.1
 
 dev:
 	go run cmd/mconfig.go cmd/plugin.go --registry=etcd --registry_address=etcd.u.hcyang.top:31770
@@ -11,6 +17,7 @@ example01:
 example02:
 	go run example/concurrent/main.go --registry=etcd --registry_address=etcd.u.hcyang.top:31770
 
-
+clear:
+	rm mconfig
 
 .PHONY: example

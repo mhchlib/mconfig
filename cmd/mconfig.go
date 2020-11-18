@@ -15,6 +15,7 @@ func main() {
 	defer pkg.InitMconfig()()
 	mService := micro.NewService(
 		micro.Name("com.github.mhchlib.mconfig"),
+		micro.Address("0.0.0.0:8080"),
 	)
 	mService.Init()
 	initRpc(mService)
