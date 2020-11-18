@@ -15,10 +15,10 @@ func main() {
 	group.Add(count)
 	for i := 0; i < count; i++ {
 		go func(a int) {
-			appid := strconv.Itoa(1000 + i%9)
+			appid := strconv.Itoa(1000 + i%5)
 			mService := micro.NewService()
 			mService.Init()
-			mConfigService := sdk.NewMConfigService("", mService.Client())
+			mConfigService := sdk.NewMConfigService("com.github.mhchlib.mconfig", mService.Client())
 			resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
 				AppId:   appid,
 				Filters: &sdk.ConfigFilters{},
