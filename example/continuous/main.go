@@ -18,7 +18,7 @@ func main() {
 	log.Info("client listen app ", appId, " config ", configIds, " with data ", extreData)
 	mService := micro.NewService()
 	mService.Init()
-	mConfigService := sdk.NewMConfigService("", mService.Client())
+	mConfigService := sdk.NewMConfigService("com.github.mhchlib.mconfig", mService.Client())
 	resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
 		AppId: strconv.Itoa(appId),
 		Filters: &sdk.ConfigFilters{
