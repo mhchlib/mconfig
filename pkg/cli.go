@@ -13,18 +13,23 @@ import (
 type MConfigCLI struct {
 }
 
-func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconfigRequest, response *cli.PutMconfigResponse) error {
+func NewMConfigCLI() *MConfigCLI {
+	return &MConfigCLI{}
+}
+
+func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconfigRequest) (*cli.PutMconfigResponse, error) {
 	configsData, _, err := appConfigStore.GetAppConfigs(request.AppKey)
+	response := &cli.PutMconfigResponse{}
 	if err != nil {
 		response.Code = 500
 		response.Msg = err.Error()
-		return nil
+		return response, nil
 	}
 	appConfigs, err := parseAppConfigsJSONStr(configsData)
 	if err != nil {
 		response.Code = 500
 		response.Msg = err.Error()
-		return nil
+		return response, nil
 	}
 	configs, ok := appConfigs.AppConfigs[request.ConfigKey]
 	if !ok {
@@ -70,14 +75,15 @@ func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconf
 	}
 	response.Msg = "success"
 	response.Code = 200
-	return nil
+	return response, nil
 }
 
-func (M *MConfigCLI) DeleteMconfigConfig(ctx context.Context, request *cli.DeleteMconfigConfigRequest, response *cli.DeleteMconfigConfigResponse) error {
+func (M *MConfigCLI) DeleteMconfigConfig(ctx context.Context, request *cli.DeleteMconfigConfigRequest) (*cli.DeleteMconfigConfigResponse, error) {
 	panic("implement me")
 }
 
-func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfigAppRequest, response *cli.InitMconfigAppResponse) error {
+func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfigAppRequest) (*cli.InitMconfigAppResponse, error) {
+	response := &cli.InitMconfigAppResponse{}
 	configsData, _, _ := appConfigStore.GetAppConfigs(request.AppKey)
 	if configsData != "" {
 		response.Code = 500
@@ -85,21 +91,17 @@ func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfi
 	}
 	err := appConfigStore.PutAppConfigs(request.AppKey, "{}")
 	if err != nil {
-		return err
+		return response, err
 	}
 	response.Code = 200
 	response.Msg = "Init app " + request.AppKey + " success"
-	return nil
+	return response, nil
 }
 
-func (M *MConfigCLI) UpdateMconfigApp(ctx context.Context, request *cli.UpdateMconfigAppRequest, response *cli.UpdateMconfigAppResponse) error {
+func (M *MConfigCLI) UpdateMconfigApp(ctx context.Context, request *cli.UpdateMconfigAppRequest) (*cli.UpdateMconfigAppResponse, error) {
 	panic("implement me")
 }
 
-func (M *MConfigCLI) DeleteMconfigApp(ctx context.Context, request *cli.DeleteMconfigAppRequest, response *cli.DeleteMconfigAppResponse) error {
+func (M *MConfigCLI) DeleteMconfigApp(ctx context.Context, request *cli.DeleteMconfigAppRequest) (*cli.DeleteMconfigAppResponse, error) {
 	panic("implement me")
-}
-
-func NewMConfigCLI() *MConfigCLI {
-	return &MConfigCLI{}
 }

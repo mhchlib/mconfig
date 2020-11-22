@@ -9,7 +9,7 @@ push: docker
 	docker push dockerhcy/mconfig:v0.1
 
 dev:
-	go run cmd/mconfig.go cmd/plugin.go --registry=etcd --registry_address=etcd.u.hcyang.top:31770
+	go run cmd/mconfig.go cmd/plugin.go --registry_type=etcd --registry_address=etcd.u.hcyang.top:31770 --store_address=etcd.u.hcyang.top:31770 --store_type=etcd
 
 example01:
 	go run example/continuous/main.go --registry=etcd --registry_address=etcd.u.hcyang.top:31770

@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"context"
 	"crypto/md5"
 	"encoding/json"
 	log "github.com/mhchlib/logger"
@@ -15,11 +14,14 @@ func NewMConfigSDK() *MConfigSDK {
 	return &MConfigSDK{}
 }
 
-func (m *MConfigSDK) GetVStream(ctx context.Context, request *sdk.GetVRequest, stream sdk.MConfig_GetVStreamStream) error {
+func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
+	request := &sdk.GetVRequest{}
+	err := stream.RecvMsg(request)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	localConfiCacheMd5 := ""
-	defer func() {
-		_ = stream.Close()
-	}()
 	appId := AppId(request.AppId)
 	configsCache, err := GetConfigFromCache(appId, request.Filters)
 	if err != nil {
@@ -28,7 +30,7 @@ func (m *MConfigSDK) GetVStream(ctx context.Context, request *sdk.GetVRequest, s
 	}
 	if configsCache == nil {
 		//no cache
-		// pull mconfig from store
+		// pull pkg from store
 		configsCache, err = GetConfigFromStore(appId, request.Filters)
 		if err != nil {
 			log.Error(err)
@@ -48,6 +50,7 @@ func (m *MConfigSDK) GetVStream(ctx context.Context, request *sdk.GetVRequest, s
 	go func() {
 		msg := &struct{}{}
 		err := stream.RecvMsg(&msg)
+		log.Error(err)
 		if err != nil {
 			log.Error("client id：", client.Id, err)
 		}
@@ -88,7 +91,7 @@ func checkNeedNotifyClient(localConfiCacheMd5 string, cache []*sdk.Config) (bool
 	return true, string(sum)
 }
 
-func sendConfig(stream sdk.MConfig_GetVStreamStream, configs []*sdk.Config) error {
+func sendConfig(stream sdk.MConfig_GetVStreamServer, configs []*sdk.Config) error {
 	err := stream.Send(&sdk.GetVResponse{
 		Configs: configs,
 	})
