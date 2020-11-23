@@ -7,6 +7,7 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg"
+	"google.golang.org/grpc"
 	"strings"
 	"time"
 )
@@ -31,26 +32,18 @@ func Init(addr string) (pkg.AppConfigStore, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   address,
 		DialTimeout: time.Second * 5,
+		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("dial to etcd err", err)
 	}
 	kv = clientv3.NewKV(cli)
 	watcher = clientv3.NewWatcher(cli)
-	ctx := context.Background()
-
 	var list *clientv3.MemberListResponse
-	go func() {
-		select {
-		case <-time.After(time.Second * 5):
-			if list == nil {
-				log.Fatal("etcd get meber timeout...")
-			}
-		}
-	}()
-	list, err = cli.MemberList(ctx)
+	timeoutCtx, _ := context.WithTimeout(context.Background(), time.Second*5)
+	list, err = cli.MemberList(timeoutCtx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("etcd member list error :", err)
 	}
 	log.Info("etcd member list : ", list.Members)
 	return &EtcdStore{}, nil

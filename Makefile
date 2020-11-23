@@ -3,10 +3,10 @@ build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -o mconfig cmd/mconfig.go cmd/plugin.go
 
 docker: build
-	docker build -t dockerhcy/mconfig:v0.1  .
+	docker build -t dockerhcy/mconfig:v0.2  .
 
 push: docker
-	docker push dockerhcy/mconfig:v0.1
+	docker push dockerhcy/mconfig:v0.2
 
 dev:
 	go run cmd/mconfig.go cmd/plugin.go --registry_type=etcd --registry_address=etcd.u.hcyang.top:31770 --store_address=etcd.u.hcyang.top:31770 --store_type=etcd
