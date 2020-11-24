@@ -18,7 +18,7 @@ var (
 	watcher clientv3.Watcher
 )
 
-const PREFIX_CONFIG = "/mconfig/"
+const PREFIX_CONFIG = "/client/"
 
 type EtcdStore struct {
 }
@@ -35,7 +35,7 @@ func Init(addr string) (pkg.AppConfigStore, error) {
 		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 	})
 	if err != nil {
-		log.Fatal("dial to etcd err", err)
+		log.Fatal("dial to store etcd err :", err, "addr: ", addr)
 	}
 	kv = clientv3.NewKV(cli)
 	watcher = clientv3.NewWatcher(cli)
