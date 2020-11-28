@@ -12,8 +12,11 @@ import (
 	etcd_kit "github.com/mhchlib/register/etcd-kit"
 	"google.golang.org/grpc"
 	"net"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 var namspace = flag.String("namespace", "com.github.mhchlib", "Input Your Namespace")
@@ -29,13 +32,19 @@ func init() {
 }
 
 func main() {
+	done := make(chan os.Signal, 1)
 	defer pkg.InitMconfig(*store_type, *store_address)()
 	reg, err := InitRegister(*registry_type, *registry_address)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	reg.RegisterService("mconfig-cli")
 	reg.RegisterService("mconfig-sdk")
+	defer func() {
+		reg.UnRegisterService("mconfig-sdk")
+	}()
+
 	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(*server_port))
 	if err != nil {
 		log.Fatal(err)
@@ -43,10 +52,16 @@ func main() {
 	server := grpc.NewServer()
 	sdk.RegisterMConfigServer(server, pkg.NewMConfigSDK())
 	cli.RegisterMConfigCliServer(server, pkg.NewMConfigCLI())
-	err = server.Serve(listener)
-	if err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		err = server.Serve(listener)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	<-done
+
 }
 
 func InitRegister(registry_type, registry_address string) (register.Register, error) {
