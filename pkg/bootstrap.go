@@ -7,10 +7,10 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
-func InitMconfig(store_type, store_address string) func() {
+func InitMconfig(mconfig *MConfig) func() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	Cancel = cancelFunc
-	InitStore(store_type, store_address)
+	InitStore(*mconfig.StoreType, *mconfig.StoreAddress)
 	configChan, _ := appConfigStore.WatchAppConfigsWithPrefix(ctx)
 	go handleEventMsg(configChan, ctx)
 	go dispatchMsgToClient(ctx)

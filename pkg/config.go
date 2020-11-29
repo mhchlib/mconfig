@@ -65,16 +65,20 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 		//match ab filter
 		abFilters := appConfig.ABFilters
 		matchABFilters := true
-		for k, v := range abFilters {
-			//judge the extra data include abfilter map
-			if data, ok := filters.ExtraData[k]; ok {
-				if data != v {
+		if len(abFilters) == 0 {
+			matchABFilters = false
+		} else {
+			for k, v := range abFilters {
+				//judge the extra data include abfilter map
+				if data, ok := filters.ExtraData[k]; ok {
+					if data != v {
+						matchABFilters = false
+						break
+					}
+				} else {
 					matchABFilters = false
 					break
 				}
-			} else {
-				matchABFilters = false
-				break
 			}
 		}
 		if matchABFilters {
