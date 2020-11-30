@@ -18,7 +18,7 @@ var (
 	watcher clientv3.Watcher
 )
 
-const PREFIX_CONFIG = "/client/"
+const PREFIX_CONFIG = "/mconfig/"
 
 type EtcdStore struct {
 }

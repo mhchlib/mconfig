@@ -33,7 +33,7 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 		// pull pkg from store
 		configsCache, err = GetConfigFromStore(appId, request.Filters)
 		if err != nil {
-			log.Error(err)
+			log.Error(appId, request.Filters, err)
 			return err
 		}
 	}

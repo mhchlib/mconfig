@@ -98,7 +98,7 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 				UpdateTime: config.UpdateTime,
 			})
 		} else {
-			log.Error("no found config id ", needConfigId, " status ", strconv.Itoa(int(defaultChoose)), " in app ")
+			log.Error("not found config id ", needConfigId, " status ", strconv.Itoa(int(defaultChoose)), " in app ")
 			continue
 		}
 	}

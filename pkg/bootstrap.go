@@ -20,12 +20,12 @@ func InitMconfig(mconfig *MConfig) func() {
 func dispatchMsgToClient(ctx context.Context) {
 	for {
 		select {
-		case ConfigId, ok := <-configChangeChan:
+		case AppId, ok := <-configChangeChan:
 			if !ok {
 				return
 			}
-			log.Info("start notify change event to client ", ConfigId)
-			notifyClients(ConfigId)
+			log.Info("start notify App", AppId, " Config change event to clients ")
+			notifyClients(AppId)
 		case <-ctx.Done():
 			log.Info("dispatchMsgToClient done ...")
 			return
