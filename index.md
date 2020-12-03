@@ -1,37 +1,185 @@
-## Welcome to GitHub Pages
+## MConfig
 
-You can use the [editor on GitHub](https://github.com/mhchlib/mconfig/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```
+                                    action UPDATE
+                                   / 
+                                  /
+                                 /
+    app -> prefix + appid -> JSON ---- action ADD
+                               | \
+                               |  \
+                               |   \
+                            action  action
+                            SELECT  DELETE
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+>客户端携带appid(暂时方案)以grpc服务端流的形式访问mconfig服务，mconfig为本次连接建立一个chan通道，并阻塞读取，考虑到网络抖动，此chan具有
+ 缓存功能缓存大小为5(暂定), mconfig-admin 服务为管理界面 并管理着etcd中的配置内容，mconfig服务会监听每一个连接他的服务需要的appid配置的
+ key变化,收到变化后,diff mconfig本地的配置 并把修改内容推送给连接的服务
 
-### Jekyll Themes
+[TOC]
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/mhchlib/mconfig/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
-### Support or Contact
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+### Feature
+
+- [x] 配置数据value支持复杂JSON，并且此JSON需要提前Schema定义 
+- [x] 灰度发布配置
+- [x] 基本功能达到
+
+### config example
+
+```json
+{
+    "1000-100": {
+        "ABFilters": {
+            "ip": "192.168.1.12"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo13','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':24}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':23}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-101": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-102": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':13}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-103": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':22}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    },
+    "1000-104": {
+        "ABFilters": {
+            "ip": "192.0.0.1"
+        },
+        "configs": {
+            "entry": {
+                "0": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "1": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                },
+                "2": {
+                    "config": "{'name':'demo1','age':12}",
+                    "create_time": 1604249335,
+                    "schema": "{'type': 'object','properties':{'name':{'type':'string'},'age':{'type':'integer'}}}",
+                    "update_time": 1604249335
+                }
+            }
+        },
+        "create_time": 1604249335,
+        "desc": "test",
+        "update_time": 1604249335
+    }
+}
+```
