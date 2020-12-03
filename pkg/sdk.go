@@ -22,8 +22,8 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 		return err
 	}
 	localConfiCacheMd5 := ""
-	appId := AppId(request.AppId)
-	configsCache, err := GetConfigFromCache(appId, request.Filters)
+	appKey := Appkey(request.AppKey)
+	configsCache, err := GetConfigFromCache(appKey, request.Filters)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -31,9 +31,9 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 	if configsCache == nil {
 		//no cache
 		// pull pkg from store
-		configsCache, err = GetConfigFromStore(appId, request.Filters)
+		configsCache, err = GetConfigFromStore(appKey, request.Filters)
 		if err != nil {
-			log.Error(appId, request.Filters, err)
+			log.Error(appKey, request.Filters, err)
 			return err
 		}
 	}
@@ -42,9 +42,9 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 		return err
 	}
 	client, err := NewClient()
-	clientChanMap.AddClient(client.Id, appId, client.MsgChan)
+	clientChanMap.AddClient(client.Id, appKey, client.MsgChan)
 	defer func() {
-		clientChanMap.RemoveClient(client.Id, appId)
+		clientChanMap.RemoveClient(client.Id, appKey)
 	}()
 	clietnStreamMsg := make(chan interface{})
 	go func() {
@@ -60,8 +60,8 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 	for {
 		select {
 		case <-client.MsgChan:
-			log.Info("client: ", client.Id, " get msg event, appId: ", appId)
-			configsCache, err = GetConfigFromCache(appId, request.Filters)
+			log.Info("client: ", client.Id, " get msg event, appId: ", appKey)
+			configsCache, err = GetConfigFromCache(appKey, request.Filters)
 			if err != nil {
 				log.Error(err)
 				return err

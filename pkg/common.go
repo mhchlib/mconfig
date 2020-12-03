@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-type AppId string
+type Appkey string
 type AppConfigsJSONStr string
 type EventType int
 
@@ -18,7 +18,7 @@ var (
 )
 
 type ConfigEvent struct {
-	Key       AppId
+	Key       Appkey
 	Value     AppConfigsJSONStr
 	EventType EventType
 }

@@ -15,12 +15,12 @@ func main() {
 	group.Add(count)
 	for i := 0; i < count; i++ {
 		go func(a int) {
-			appid := strconv.Itoa(1000 + i%5)
+			AppKey := strconv.Itoa(1000 + i%5)
 			mService := micro.NewService()
 			mService.Init()
 			mConfigService := sdk.NewMConfigService("com.github.mhchlib.mconfig", mService.Client())
 			resp, err := mConfigService.GetVStream(context.Background(), &sdk.GetVRequest{
-				AppId:   appid,
+				AppKey:  appkey,
 				Filters: &sdk.ConfigFilters{},
 			})
 
@@ -44,7 +44,7 @@ func main() {
 					log.Error(err)
 					return
 				}
-				log.Info(appid, " get msg")
+				log.Info(appkey, " get msg")
 				log.Info(" ------------------- ")
 				//log.Info(config.Configs)
 			}

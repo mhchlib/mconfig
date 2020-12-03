@@ -5,7 +5,7 @@ import (
 )
 
 type MconfigCache struct {
-	cache map[AppId]*AppConfigsMap
+	cache map[Appkey]*AppConfigsMap
 	sync.RWMutex
 }
 
@@ -13,11 +13,11 @@ var mconfigCache *MconfigCache
 
 func init() {
 	mconfigCache = &MconfigCache{
-		cache: make(map[AppId]*AppConfigsMap),
+		cache: make(map[Appkey]*AppConfigsMap),
 	}
 }
 
-func (cache *MconfigCache) getConfigCache(key AppId) (*AppConfigsMap, error) {
+func (cache *MconfigCache) getConfigCache(key Appkey) (*AppConfigsMap, error) {
 	cache.RLock()
 	value, ok := cache.cache[key]
 	cache.RUnlock()
@@ -27,7 +27,7 @@ func (cache *MconfigCache) getConfigCache(key AppId) (*AppConfigsMap, error) {
 	return nil, Error_AppConfigNotFound
 }
 
-func (cache *MconfigCache) putConfigCache(key AppId, configs *AppConfigsMap) error {
+func (cache *MconfigCache) putConfigCache(key Appkey, configs *AppConfigsMap) error {
 	cache.Lock()
 	defer cache.Unlock()
 	cache.cache[key] = configs

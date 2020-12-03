@@ -96,12 +96,12 @@ func (e EtcdStore) WatchAppConfigs(key string, rev int64, ctx context.Context) (
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &pkg.ConfigEvent{
-							Key:   (pkg.AppId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							Key:   (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
 							Value: (pkg.AppConfigsJSONStr)(event.Kv.Value),
 						}
 					case mvccpb.DELETE:
 						configChan <- &pkg.ConfigEvent{
-							Key:       (pkg.AppId)(event.Kv.Key),
+							Key:       (pkg.Appkey)(event.Kv.Key),
 							EventType: pkg.Event_Delete,
 						}
 					}
@@ -138,13 +138,13 @@ func (e EtcdStore) WatchAppConfigsWithPrefix(ctx context.Context) (chan *pkg.Con
 					switch event.Type {
 					case mvccpb.PUT:
 						configChan <- &pkg.ConfigEvent{
-							Key:       (pkg.AppId)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							Key:       (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
 							Value:     (pkg.AppConfigsJSONStr)(event.Kv.Value),
 							EventType: pkg.Event_Update,
 						}
 					case mvccpb.DELETE:
 						configChan <- &pkg.ConfigEvent{
-							Key:       (pkg.AppId)(event.Kv.Key),
+							Key:       (pkg.Appkey)(event.Kv.Key),
 							EventType: pkg.Event_Delete,
 						}
 					}

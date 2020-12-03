@@ -24,26 +24,26 @@ func dispatchMsgToClient(ctx context.Context) {
 			if !ok {
 				return
 			}
-			log.Info("start notify App", AppId, " Config change event to clients ")
+			log.Info("app: ", AppId, "is changed, notify event to clients")
 			notifyClients(AppId)
 		case <-ctx.Done():
-			log.Info("dispatchMsgToClient done ...")
+			log.Info("the function dispatch msg to client is done")
 			return
 		}
 	}
 }
 
-func notifyClients(id AppId) {
+func notifyClients(id Appkey) {
 	clientsChans := clientChanMap.GetClientsChan(id)
 	if clientsChans != nil {
 		for _, v := range clientsChans {
 			v <- &struct{}{}
 		}
 	}
-	log.Info("send app config info to ", len(clientsChans), " clients")
+	log.Info("notify app config change info to ", len(clientsChans), " clients")
 }
 
-func GetConfigFromStore(key AppId, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 	appConfigsStr, _, err := appConfigStore.GetAppConfigs(string(key))
 	if appConfigsStr == "" {
 		return nil, Error_AppConfigNotFound
@@ -61,14 +61,14 @@ func GetConfigFromStore(key AppId, filters *sdk.ConfigFilters) ([]*sdk.Config, e
 			log.Error(err)
 		}
 	}()
-	configsForClient, err := filterConfigsForClient(appConfigs, filters)
+	configsForClient, err := filterConfigsForClient(appConfigs, filters, key)
 	if err != nil {
 		return nil, err
 	}
 	return configsForClient, nil
 }
 
-func GetConfigFromCache(key AppId, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+func GetConfigFromCache(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 	cache, err := mconfigCache.getConfigCache(key)
 	if err != nil {
 		if errors.Is(err, Error_AppConfigNotFound) {
@@ -77,7 +77,7 @@ func GetConfigFromCache(key AppId, filters *sdk.ConfigFilters) ([]*sdk.Config, e
 			return nil, err
 		}
 	}
-	configsForClient, err := filterConfigsForClient(cache, filters)
+	configsForClient, err := filterConfigsForClient(cache, filters, key)
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +91,9 @@ func EndMconfig() func() {
 }
 
 func handleEventMsg(configChan chan *ConfigEvent, ctx context.Context) {
-	log.Info("receive config change event started ")
+	log.Info("receive app config change event is started ")
 	defer func() {
-		log.Error("receive config change event closed ")
+		log.Error("receive app config change event is closed ")
 	}()
 	for {
 		select {
@@ -101,7 +101,7 @@ func handleEventMsg(configChan chan *ConfigEvent, ctx context.Context) {
 			if !ok {
 				return
 			}
-			log.Info("get change event ", v.Key)
+			log.Info("receive app ", v.Key, " config change event ")
 			//config 2 cache
 			appConfigs, err := parseAppConfigsJSONStr(v.Value)
 			if err != nil {
@@ -115,7 +115,7 @@ func handleEventMsg(configChan chan *ConfigEvent, ctx context.Context) {
 			}
 			//notify client
 			configChangeChan <- v.Key
-			log.Info("push config change event to cache ", v.Key)
+			log.Info("push app ", v.Key, " config change event to cache ")
 		case <-ctx.Done():
 			return
 		}

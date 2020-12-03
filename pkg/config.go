@@ -50,7 +50,7 @@ func CheckConfigSchema(config string, schema string) (bool, error) {
 	return result.Valid(), nil
 }
 
-func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters, appkey Appkey) ([]*sdk.Config, error) {
 	configIdLen := len(filters.ConfigIds)
 	configsForClient := make([]*sdk.Config, 0)
 	defaultChoose := common.ConfigStatus_Published
@@ -89,7 +89,7 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 		appConfig.Configs.mutex.RUnlock()
 		if ok {
 			configsForClient = append(configsForClient, &sdk.Config{
-				Id:         needConfigId,
+				Key:        needConfigId,
 				Schema:     config.Schema,
 				Config:     config.Config,
 				Status:     defaultChoose,
@@ -98,7 +98,7 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 				UpdateTime: config.UpdateTime,
 			})
 		} else {
-			log.Error("not found config id ", needConfigId, " status ", strconv.Itoa(int(defaultChoose)), " in app ")
+			log.Error("not found config id ", needConfigId, " status ", strconv.Itoa(int(defaultChoose)), " in app ", appkey)
 			continue
 		}
 	}

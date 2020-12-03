@@ -22,7 +22,7 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
-func (ch *ClientChanMap) AddClient(clientId ClientId, appid AppId, clientMsgChan chan interface{}) {
+func (ch *ClientChanMap) AddClient(clientId ClientId, appid Appkey, clientMsgChan chan interface{}) {
 	ch.Lock()
 	defer ch.Unlock()
 	v, ok := ch.m[appid]
@@ -35,10 +35,10 @@ func (ch *ClientChanMap) AddClient(clientId ClientId, appid AppId, clientMsgChan
 		close(msgChan)
 	}
 	v[clientId] = clientMsgChan
-	log.Info("Add Client: ", clientId, " Appid: ", appid)
+	log.Info("add client: ", clientId, " listen app : ", appid)
 }
 
-func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid AppId) {
+func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid Appkey) {
 	ch.Lock()
 	defer ch.Unlock()
 	v, ok := ch.m[appid]
@@ -49,13 +49,13 @@ func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid AppId) {
 	if ok == true {
 		close(msgChan)
 		delete(v, clientId)
-		log.Info("Remove Client: ", clientId, " Appid: ", appid)
+		log.Info("remove client: ", clientId, " listen app ", appid)
 		return
 	}
 	return
 }
 
-func (ch *ClientChanMap) GetClientsChan(appid AppId) []chan interface{} {
+func (ch *ClientChanMap) GetClientsChan(appid Appkey) []chan interface{} {
 	chs := []chan interface{}{}
 	ch.RLock()
 	v, ok := ch.m[appid]

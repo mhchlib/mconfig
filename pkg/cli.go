@@ -87,7 +87,7 @@ func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfi
 	configsData, _, _ := appConfigStore.GetAppConfigs(request.AppKey)
 	if configsData != "" {
 		response.Code = 500
-		response.Msg = "This app already exists"
+		response.Msg = "the app already exists"
 	}
 	err := appConfigStore.PutAppConfigs(request.AppKey, "{}")
 	if err != nil {
