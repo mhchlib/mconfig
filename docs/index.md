@@ -21,9 +21,9 @@
 
 ### Feature
 
-[x]  配置数据value支持复杂JSON，并且此JSON需要提前Schema定义 
-- [x]  灰度发布配置
-- [x]  基本功能达到
+- [x]   配置数据value支持复杂JSON，并且此JSON需要提前Schema定义 
+- [x]   灰度发布配置
+- [x]   基本功能达到
 
 ### config example
 
