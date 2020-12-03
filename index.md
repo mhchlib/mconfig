@@ -17,8 +17,6 @@
  缓存功能缓存大小为5(暂定), mconfig-admin 服务为管理界面 并管理着etcd中的配置内容，mconfig服务会监听每一个连接他的服务需要的appid配置的
  key变化,收到变化后,diff mconfig本地的配置 并把修改内容推送给连接的服务
 
-[TOC]
-
 
 
 ### Feature
