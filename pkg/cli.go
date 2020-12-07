@@ -10,13 +10,16 @@ import (
 	"time"
 )
 
+// MConfigCLI ...
 type MConfigCLI struct {
 }
 
+// NewMConfigCLI ...
 func NewMConfigCLI() *MConfigCLI {
 	return &MConfigCLI{}
 }
 
+// PutMconfigConfig ...
 func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconfigRequest) (*cli.PutMconfigResponse, error) {
 	configsData, _, err := appConfigStore.GetAppConfigs(request.AppKey)
 	response := &cli.PutMconfigResponse{}
@@ -78,10 +81,12 @@ func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconf
 	return response, nil
 }
 
+// DeleteMconfigConfig ...
 func (M *MConfigCLI) DeleteMconfigConfig(ctx context.Context, request *cli.DeleteMconfigConfigRequest) (*cli.DeleteMconfigConfigResponse, error) {
 	panic("implement me")
 }
 
+// InitMconfigApp ...
 func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfigAppRequest) (*cli.InitMconfigAppResponse, error) {
 	response := &cli.InitMconfigAppResponse{}
 	configsData, _, _ := appConfigStore.GetAppConfigs(request.AppKey)
@@ -98,10 +103,12 @@ func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfi
 	return response, nil
 }
 
+// UpdateMconfigApp ...
 func (M *MConfigCLI) UpdateMconfigApp(ctx context.Context, request *cli.UpdateMconfigAppRequest) (*cli.UpdateMconfigAppResponse, error) {
 	panic("implement me")
 }
 
+// DeleteMconfigApp ...
 func (M *MConfigCLI) DeleteMconfigApp(ctx context.Context, request *cli.DeleteMconfigAppRequest) (*cli.DeleteMconfigAppResponse, error) {
 	panic("implement me")
 }

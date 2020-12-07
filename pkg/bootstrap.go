@@ -7,6 +7,7 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
+// InitMconfig ...
 func InitMconfig(mconfig *MConfig) func() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	Cancel = cancelFunc
@@ -43,6 +44,7 @@ func notifyClients(id Appkey) {
 	log.Info("notify app config change info to ", len(clientsChans), " clients")
 }
 
+// GetConfigFromStore ...
 func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 	appConfigsStr, _, err := appConfigStore.GetAppConfigs(string(key))
 	if appConfigsStr == "" {
@@ -68,6 +70,7 @@ func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, 
 	return configsForClient, nil
 }
 
+// GetConfigFromCache ...
 func GetConfigFromCache(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 	cache, err := mconfigCache.getConfigCache(key)
 	if err != nil {
@@ -84,6 +87,7 @@ func GetConfigFromCache(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, 
 	return configsForClient, nil
 }
 
+// EndMconfig ...
 func EndMconfig() func() {
 	return func() {
 		Cancel()
