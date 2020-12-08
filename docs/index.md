@@ -18,14 +18,14 @@
 
 ### Progress
 
-	* The basic functions have been completed
-	*  A rich storage plug-in is being developed，such file、mysql ...
+* The basic functions have been completed
+*  A rich storage plug-in is being developed，such file、mysql ...
 
 ### Plan
 
-	* Support more storage
-	* Support more language
-	* Fix bugs
+* Support more storage
+* Support more language
+* Fix bugs
 
 ### Bugs
 
