@@ -1,7 +1,5 @@
 ## MConfig
 
-[TOC]
-
 ![mconfig](docs/img/mconfig.png)
 
 ### Motivation
