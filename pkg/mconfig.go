@@ -2,6 +2,7 @@ package pkg
 
 import ()
 
+// MConfig ...
 type MConfig struct {
 	Namspace        *string
 	RegistryAddress *string

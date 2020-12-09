@@ -5,6 +5,7 @@ import (
 	log "github.com/mhchlib/logger"
 )
 
+// AppConfigStore ...
 type AppConfigStore interface {
 	GetAppConfigs(key string) (AppConfigsJSONStr, int64, error)
 	PutAppConfigs(key string, value AppConfigsJSONStr) error
@@ -13,12 +14,14 @@ type AppConfigStore interface {
 	//...
 }
 
+// StorePlugin ...
 type StorePlugin struct {
 	Name string
 	Init func(address string) (AppConfigStore, error)
 	//...
 }
 
+// NewStorePlugin ...
 func NewStorePlugin(name string, init func(address string) (AppConfigStore, error)) *StorePlugin {
 	return &StorePlugin{Name: name, Init: init}
 }
@@ -27,6 +30,7 @@ var storePluginMap map[string]*StorePlugin
 
 var storePluginNames []string
 
+// RegisterStorePlugin ...
 func RegisterStorePlugin(name string, init func(address string) (AppConfigStore, error)) {
 	if storePluginMap == nil {
 		storePluginMap = make(map[string]*StorePlugin)
@@ -42,6 +46,7 @@ func RegisterStorePlugin(name string, init func(address string) (AppConfigStore,
 	storePluginNames = append(storePluginNames, name)
 }
 
+// InitStore ...
 func InitStore(store_type, store_address string) {
 	plugin, ok := storePluginMap[store_type]
 	if !ok {

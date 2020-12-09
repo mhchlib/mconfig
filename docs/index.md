@@ -1,7 +1,6 @@
 ## MConfig
 
-![mconfig](docs/img/mconfig.png)
-
+![mconfig](img/mconfig.png)
 
 ### Related
 

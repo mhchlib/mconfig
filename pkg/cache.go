@@ -4,6 +4,7 @@ import (
 	"sync"
 )
 
+// MconfigCache ...
 type MconfigCache struct {
 	cache map[Appkey]*AppConfigsMap
 	sync.RWMutex

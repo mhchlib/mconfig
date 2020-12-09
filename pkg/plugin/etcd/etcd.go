@@ -18,8 +18,10 @@ var (
 	watcher clientv3.Watcher
 )
 
+// PREFIX_CONFIG ...
 const PREFIX_CONFIG = "/mconfig/"
 
+// EtcdStore ...
 type EtcdStore struct {
 }
 
@@ -27,6 +29,7 @@ func init() {
 	pkg.RegisterStorePlugin("etcd", Init)
 }
 
+// Init ...
 func Init(addr string) (pkg.AppConfigStore, error) {
 	address := strings.Split(addr, ",")
 	cli, err := clientv3.New(clientv3.Config{
@@ -49,6 +52,7 @@ func Init(addr string) (pkg.AppConfigStore, error) {
 	return &EtcdStore{}, nil
 }
 
+// GetAppConfigs ...
 func (e EtcdStore) GetAppConfigs(key string) (pkg.AppConfigsJSONStr, int64, error) {
 	get, err := kv.Get(context.TODO(), Prefix(PREFIX_CONFIG, key))
 	if err != nil {
@@ -61,6 +65,7 @@ func (e EtcdStore) GetAppConfigs(key string) (pkg.AppConfigsJSONStr, int64, erro
 	}
 }
 
+// PutAppConfigs ...
 func (e EtcdStore) PutAppConfigs(key string, value pkg.AppConfigsJSONStr) error {
 	_, err := kv.Put(context.TODO(), PREFIX_CONFIG+key, string(value))
 	if err != nil {
@@ -69,6 +74,7 @@ func (e EtcdStore) PutAppConfigs(key string, value pkg.AppConfigsJSONStr) error 
 	return nil
 }
 
+// WatchAppConfigs ...
 func (e EtcdStore) WatchAppConfigs(key string, rev int64, ctx context.Context) (chan *pkg.ConfigEvent, error) {
 	var watchChan clientv3.WatchChan
 	if rev != 0 {
@@ -115,6 +121,7 @@ func (e EtcdStore) WatchAppConfigs(key string, rev int64, ctx context.Context) (
 	return configChan, nil
 }
 
+// WatchAppConfigsWithPrefix ...
 func (e EtcdStore) WatchAppConfigsWithPrefix(ctx context.Context) (chan *pkg.ConfigEvent, error) {
 	var watchChan clientv3.WatchChan
 	watchChan = watcher.Watch(ctx, Prefix(PREFIX_CONFIG, ""), clientv3.WithPrefix())
@@ -158,10 +165,12 @@ func (e EtcdStore) WatchAppConfigsWithPrefix(ctx context.Context) (chan *pkg.Con
 	return configChan, nil
 }
 
+// Prefix ...
 func Prefix(prefix string, v string) string {
 	return prefix + v
 }
 
+// RemovePrefix ...
 func RemovePrefix(prefix string, v string) string {
 	return strings.ReplaceAll(v, prefix, "")
 }

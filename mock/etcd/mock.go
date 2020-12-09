@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
+// PREFIX_CONFIG ...
 const PREFIX_CONFIG = "/mconfig/"
+
+// MOCK_DATA_PATH ...
 const MOCK_DATA_PATH = "/Users/huchenhao/Documents/goproject/github.com/mhchlib/mconfig/mock/data.json"
 
 func main() {

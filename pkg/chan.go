@@ -4,6 +4,7 @@ import (
 	"sync"
 )
 
+// ClientChanMap ...
 type ClientChanMap struct {
 	sync.RWMutex
 	m map[Appkey]map[ClientId]chan interface{}

@@ -7,13 +7,16 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
+// MConfigSDK ...
 type MConfigSDK struct {
 }
 
+// NewMConfigSDK ...
 func NewMConfigSDK() *MConfigSDK {
 	return &MConfigSDK{}
 }
 
+// GetVStream ...
 func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 	request := &sdk.GetVRequest{}
 	err := stream.RecvMsg(request)
