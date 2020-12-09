@@ -2,6 +2,11 @@
 
 ![mconfig](img/mconfig.png)
 
+### Related
+
+* [mconfig cli](https://github.com/mhchlib/mconfig-cli)
+* [mconfig go sdk](https://github.com/mhchlib/mconfig-go-sdk) 
+
 ### Motivation
 
 ​	I need a simple, easy-to-use and stable distributed configuration center, but I don't want it to affect the performance of my app too much.
@@ -14,7 +19,6 @@
 * Support Namespaces
 * Support Limited AB Publish
 * Storage Pluggable
-
 
 ### Progress
 
