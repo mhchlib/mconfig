@@ -81,7 +81,9 @@ func main() {
 	go func() {
 		err = server.Serve(listener)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			done <- syscall.SIGTERM
+			return
 		}
 	}()
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
