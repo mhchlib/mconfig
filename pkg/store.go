@@ -7,10 +7,9 @@ import (
 
 // AppConfigStore ...
 type AppConfigStore interface {
-	GetAppConfigs(key string) (*AppConfigs, int64, error)
-	PutAppConfigs(key string, value *AppConfigs) error
-	WatchAppConfigs(key string, rev int64, ctx context.Context) (chan *ConfigEvent, error)
-	WatchAppConfigsWithPrefix(ctx context.Context) (chan *ConfigEvent, error)
+	GetAppConfigs(key Appkey) (*AppConfigs, error)
+	PutAppConfigs(key Appkey, value *AppConfigs) error
+	WatchAppConfigs(ctx context.Context) (chan *ConfigEvent, error)
 	//...
 }
 
@@ -59,5 +58,5 @@ func InitStore(store_type, store_address string) {
 	appConfigStore = store
 	//测试连接
 
-	log.Info("store init success...")
+	log.Info("store init success... with  ", store_type, store_address)
 }

@@ -12,7 +12,7 @@ func InitMconfig(mconfig *MConfig) func() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	Cancel = cancelFunc
 	InitStore(*mconfig.StoreType, *mconfig.StoreAddress)
-	configChan, _ := appConfigStore.WatchAppConfigsWithPrefix(ctx)
+	configChan, _ := appConfigStore.WatchAppConfigs(ctx)
 	go handleEventMsg(configChan, ctx)
 	go dispatchMsgToClient(ctx)
 	return EndMconfig()
@@ -46,7 +46,7 @@ func notifyClients(id Appkey) {
 
 // GetConfigFromStore ...
 func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
-	appConfigs, _, err := appConfigStore.GetAppConfigs(string(key))
+	appConfigs, err := appConfigStore.GetAppConfigs(key)
 	//paser config str to ob
 	//log.Info(appConfigsStr)
 	//log.Info(appConfigs.AppConfigs, err)

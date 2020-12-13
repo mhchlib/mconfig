@@ -21,7 +21,7 @@ func NewMConfigCLI() *MConfigCLI {
 
 // PutMconfigConfig ...
 func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconfigRequest) (*cli.PutMconfigResponse, error) {
-	appConfigs, _, err := appConfigStore.GetAppConfigs(request.AppKey)
+	appConfigs, err := appConfigStore.GetAppConfigs(Appkey(request.AppKey))
 	response := &cli.PutMconfigResponse{}
 	if err != nil {
 		response.Code = 500
@@ -65,7 +65,7 @@ func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconf
 	config.UpdateTime = time.Now().Unix()
 	config.Schema = request.Schema
 	config.Config = request.Config
-	err = appConfigStore.PutAppConfigs(request.AppKey, appConfigs)
+	err = appConfigStore.PutAppConfigs(Appkey(request.AppKey), appConfigs)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,12 +82,12 @@ func (M *MConfigCLI) DeleteMconfigConfig(ctx context.Context, request *cli.Delet
 // InitMconfigApp ...
 func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfigAppRequest) (*cli.InitMconfigAppResponse, error) {
 	response := &cli.InitMconfigAppResponse{}
-	appConfigs, _, _ := appConfigStore.GetAppConfigs(request.AppKey)
+	appConfigs, _ := appConfigStore.GetAppConfigs(Appkey(request.AppKey))
 	if appConfigs != nil {
 		response.Code = 500
 		response.Msg = "the app already exists"
 	}
-	err := appConfigStore.PutAppConfigs(request.AppKey, &AppConfigs{})
+	err := appConfigStore.PutAppConfigs(Appkey(request.AppKey), &AppConfigs{})
 	if err != nil {
 		return response, err
 	}
