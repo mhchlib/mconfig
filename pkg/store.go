@@ -7,8 +7,8 @@ import (
 
 // AppConfigStore ...
 type AppConfigStore interface {
-	GetAppConfigs(key string) (AppConfigsJSONStr, int64, error)
-	PutAppConfigs(key string, value AppConfigsJSONStr) error
+	GetAppConfigs(key string) (*AppConfigs, int64, error)
+	PutAppConfigs(key string, value *AppConfigs) error
 	WatchAppConfigs(key string, rev int64, ctx context.Context) (chan *ConfigEvent, error)
 	WatchAppConfigsWithPrefix(ctx context.Context) (chan *ConfigEvent, error)
 	//...

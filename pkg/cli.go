@@ -21,20 +21,14 @@ func NewMConfigCLI() *MConfigCLI {
 
 // PutMconfigConfig ...
 func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconfigRequest) (*cli.PutMconfigResponse, error) {
-	configsData, _, err := appConfigStore.GetAppConfigs(request.AppKey)
+	appConfigs, _, err := appConfigStore.GetAppConfigs(request.AppKey)
 	response := &cli.PutMconfigResponse{}
 	if err != nil {
 		response.Code = 500
 		response.Msg = err.Error()
 		return response, nil
 	}
-	appConfigs, err := parseAppConfigsJSONStr(configsData)
-	if err != nil {
-		response.Code = 500
-		response.Msg = err.Error()
-		return response, nil
-	}
-	configs, ok := appConfigs.AppConfigs[request.ConfigKey]
+	configs, ok := (*appConfigs)[request.ConfigKey]
 	if !ok {
 		configs = &Configs{
 			Configs: ConfigsMap{
@@ -45,7 +39,7 @@ func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconf
 			UpdateTime: time.Now().Unix(),
 			ABFilters:  make(map[string]string),
 		}
-		appConfigs.AppConfigs[request.ConfigKey] = configs
+		(*appConfigs)[request.ConfigKey] = configs
 	}
 	if request.Desc != "" {
 		configs.Desc = request.Desc
@@ -71,8 +65,7 @@ func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconf
 	config.UpdateTime = time.Now().Unix()
 	config.Schema = request.Schema
 	config.Config = request.Config
-	configsNewData, _ := json.Marshal(appConfigs.AppConfigs)
-	err = appConfigStore.PutAppConfigs(request.AppKey, AppConfigsJSONStr(configsNewData))
+	err = appConfigStore.PutAppConfigs(request.AppKey, appConfigs)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,12 +82,12 @@ func (M *MConfigCLI) DeleteMconfigConfig(ctx context.Context, request *cli.Delet
 // InitMconfigApp ...
 func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfigAppRequest) (*cli.InitMconfigAppResponse, error) {
 	response := &cli.InitMconfigAppResponse{}
-	configsData, _, _ := appConfigStore.GetAppConfigs(request.AppKey)
-	if configsData != "" {
+	appConfigs, _, _ := appConfigStore.GetAppConfigs(request.AppKey)
+	if appConfigs != nil {
 		response.Code = 500
 		response.Msg = "the app already exists"
 	}
-	err := appConfigStore.PutAppConfigs(request.AppKey, "{}")
+	err := appConfigStore.PutAppConfigs(request.AppKey, &AppConfigs{})
 	if err != nil {
 		return response, err
 	}

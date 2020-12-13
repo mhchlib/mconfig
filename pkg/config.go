@@ -1,26 +1,12 @@
 package pkg
 
 import (
-	"encoding/json"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/common"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	sch "github.com/xeipuuv/gojsonschema"
 	"strconv"
 )
-
-func parseAppConfigsJSONStr(value AppConfigsJSONStr) (*AppConfigsMap, error) {
-	//parse AppConfigsJSONStr
-	var appConfigs = make(AppConfigs)
-	err := json.Unmarshal([]byte(value), &appConfigs)
-	if err != nil {
-		log.Error(Error_ParserAppConfigFail, err)
-		return nil, Error_ParserAppConfigFail
-	}
-	return &AppConfigsMap{
-		AppConfigs: appConfigs,
-	}, nil
-}
 
 //
 //func CheckConfigsSchema(configs []ConfigEntity) error {
@@ -57,7 +43,7 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 	for i := 0; i < configIdLen; i++ {
 		needConfigId := filters.ConfigIds[i]
 		appConfigs.mutex.RLock()
-		appConfig, ok := appConfigs.AppConfigs[needConfigId]
+		appConfig, ok := (*appConfigs.AppConfigs)[needConfigId]
 		appConfigs.mutex.RUnlock()
 		if !ok {
 			continue

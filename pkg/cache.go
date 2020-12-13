@@ -28,9 +28,12 @@ func (cache *MconfigCache) getConfigCache(key Appkey) (*AppConfigsMap, error) {
 	return nil, Error_AppConfigNotFound
 }
 
-func (cache *MconfigCache) putConfigCache(key Appkey, configs *AppConfigsMap) error {
+func (cache *MconfigCache) putConfigCache(key Appkey, configs *AppConfigs) error {
+	configsMap := &AppConfigsMap{
+		AppConfigs: configs,
+	}
 	cache.Lock()
 	defer cache.Unlock()
-	cache.cache[key] = configs
+	cache.cache[key] = configsMap
 	return nil
 }

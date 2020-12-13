@@ -8,9 +8,6 @@ import (
 // Appkey ...
 type Appkey string
 
-// AppConfigsJSONStr ...
-type AppConfigsJSONStr string
-
 // EventType ...
 type EventType int
 
@@ -28,9 +25,9 @@ var (
 
 // ConfigEvent ...
 type ConfigEvent struct {
-	Key       Appkey
-	Value     AppConfigsJSONStr
-	EventType EventType
+	Key        Appkey
+	AppConfigs *AppConfigs
+	EventType  EventType
 }
 
 // Config ...
@@ -52,8 +49,8 @@ type Configs struct {
 
 // AppConfigsMap ...
 type AppConfigsMap struct {
-	mutex sync.RWMutex
-	AppConfigs
+	mutex      sync.RWMutex
+	AppConfigs *AppConfigs
 }
 
 // ConfigsMap ...

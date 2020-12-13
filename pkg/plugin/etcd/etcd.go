@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
@@ -20,6 +21,8 @@ var (
 
 // PREFIX_CONFIG ...
 const PREFIX_CONFIG = "/mconfig/"
+
+type AppConfigsJSONStr string
 
 // EtcdStore ...
 type EtcdStore struct {
@@ -53,21 +56,29 @@ func Init(addr string) (pkg.AppConfigStore, error) {
 }
 
 // GetAppConfigs ...
-func (e EtcdStore) GetAppConfigs(key string) (pkg.AppConfigsJSONStr, int64, error) {
+func (e EtcdStore) GetAppConfigs(key string) (*pkg.AppConfigs, int64, error) {
 	get, err := kv.Get(context.TODO(), Prefix(PREFIX_CONFIG, key))
 	if err != nil {
 		log.Error(err)
 	}
 	if get.Count == 1 {
-		return pkg.AppConfigsJSONStr(string(get.Kvs[0].Value)), get.Header.Revision, nil
+		appConfigs, err := parseAppConfigsJSONStr(AppConfigsJSONStr(string(get.Kvs[0].Value)))
+		if err != nil {
+			return nil, 0, err
+		}
+		return appConfigs, get.Header.Revision, nil
 	} else {
-		return "", 0, errors.New("app id: " + key + " not found")
+		return nil, 0, errors.New("app id: " + key + " not found")
 	}
 }
 
 // PutAppConfigs ...
-func (e EtcdStore) PutAppConfigs(key string, value pkg.AppConfigsJSONStr) error {
-	_, err := kv.Put(context.TODO(), PREFIX_CONFIG+key, string(value))
+func (e EtcdStore) PutAppConfigs(key string, value *pkg.AppConfigs) error {
+	configJsonStr, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	_, err = kv.Put(context.TODO(), PREFIX_CONFIG+key, string(configJsonStr))
 	if err != nil {
 		return err
 	}
@@ -101,9 +112,13 @@ func (e EtcdStore) WatchAppConfigs(key string, rev int64, ctx context.Context) (
 					//log.Info("get event value : ", string(event.Kv.Value))
 					switch event.Type {
 					case mvccpb.PUT:
+						appConfigs, err := parseAppConfigsJSONStr((AppConfigsJSONStr)(event.Kv.Value))
+						if err != nil {
+							log.Error("app key: ", key, " mvccpb.PUT ", err)
+						}
 						configChan <- &pkg.ConfigEvent{
-							Key:   (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
-							Value: (pkg.AppConfigsJSONStr)(event.Kv.Value),
+							Key:        (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							AppConfigs: appConfigs,
 						}
 					case mvccpb.DELETE:
 						configChan <- &pkg.ConfigEvent{
@@ -144,10 +159,13 @@ func (e EtcdStore) WatchAppConfigsWithPrefix(ctx context.Context) (chan *pkg.Con
 					//log.Info("get event value : ", string(event.Kv.Value))
 					switch event.Type {
 					case mvccpb.PUT:
+						appConfigs, err := parseAppConfigsJSONStr((AppConfigsJSONStr)(event.Kv.Value))
+						if err != nil {
+							log.Error("app key: ", PREFIX_CONFIG, " mvccpb.PUT ", err)
+						}
 						configChan <- &pkg.ConfigEvent{
-							Key:       (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
-							Value:     (pkg.AppConfigsJSONStr)(event.Kv.Value),
-							EventType: pkg.Event_Update,
+							Key:        (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							AppConfigs: appConfigs,
 						}
 					case mvccpb.DELETE:
 						configChan <- &pkg.ConfigEvent{

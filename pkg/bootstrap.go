@@ -46,13 +46,9 @@ func notifyClients(id Appkey) {
 
 // GetConfigFromStore ...
 func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
-	appConfigsStr, _, err := appConfigStore.GetAppConfigs(string(key))
-	if appConfigsStr == "" {
-		return nil, Error_AppConfigNotFound
-	}
+	appConfigs, _, err := appConfigStore.GetAppConfigs(string(key))
 	//paser config str to ob
 	//log.Info(appConfigsStr)
-	appConfigs, err := parseAppConfigsJSONStr(appConfigsStr)
 	//log.Info(appConfigs.AppConfigs, err)
 	if err != nil {
 		return nil, err
@@ -63,7 +59,7 @@ func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, 
 			log.Error(err)
 		}
 	}()
-	configsForClient, err := filterConfigsForClient(appConfigs, filters, key)
+	configsForClient, err := filterConfigsForClient(&AppConfigsMap{AppConfigs: appConfigs}, filters, key)
 	if err != nil {
 		return nil, err
 	}
@@ -107,12 +103,8 @@ func handleEventMsg(configChan chan *ConfigEvent, ctx context.Context) {
 			}
 			log.Info("receive app ", v.Key, " config change event ")
 			//config 2 cache
-			appConfigs, err := parseAppConfigsJSONStr(v.Value)
-			if err != nil {
-				log.Error(err)
-				break
-			}
-			err = mconfigCache.putConfigCache(v.Key, appConfigs)
+			appConfigs := v.AppConfigs
+			err := mconfigCache.putConfigCache(v.Key, appConfigs)
 			if err != nil {
 				log.Error(err)
 				break
