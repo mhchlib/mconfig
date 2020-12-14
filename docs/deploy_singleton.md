@@ -65,7 +65,7 @@ such you want build an app named BookStore, you can...
 4 use mconfig sdk to get config data
 
 ```go
-    config := client.NewMconfig(
+	config := client.NewMconfig(
 		client.DirectLinkAddress("127.0.0.1:8080"),
 		client.AppKey("BookStore"),
 		client.ConfigKey("database"),
