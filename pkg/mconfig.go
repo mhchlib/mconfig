@@ -7,7 +7,7 @@ type MConfig struct {
 	Namspace        *string
 	RegistryAddress *string
 	RegistryType    *string
-	StoreAddress    *string
+	EnableRegistry  *bool
 	StoreType       *string
 	ServerIp        *string
 	ServerPort      *int

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/mhchlib/logger"
@@ -14,9 +15,10 @@ import (
 )
 
 var (
-	cli     clientv3.Client
-	kv      clientv3.KV
-	watcher clientv3.Watcher
+	cli           clientv3.Client
+	kv            clientv3.KV
+	watcher       clientv3.Watcher
+	etcdAddresses *string
 )
 
 // PREFIX_CONFIG ...
@@ -30,18 +32,23 @@ type EtcdStore struct {
 
 func init() {
 	pkg.RegisterStorePlugin("etcd", Init)
+	initFlag()
+}
+
+func initFlag() {
+	etcdAddresses = flag.String("store_etcd", "127.0.0.1:2389", "input your etcd address, multiple ip commas separate")
 }
 
 // Init ...
-func Init(addr string) (pkg.AppConfigStore, error) {
-	address := strings.Split(addr, ",")
+func Init() (pkg.AppConfigStore, error) {
+	address := strings.Split(*etcdAddresses, ",")
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   address,
 		DialTimeout: time.Second * 5,
 		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 	})
 	if err != nil {
-		log.Fatal("dial to store etcd err :", err, "addr: ", addr)
+		log.Fatal("dial to store etcd err :", err, "addr: ", *etcdAddresses)
 	}
 	kv = clientv3.NewKV(cli)
 	watcher = clientv3.NewWatcher(cli)

@@ -16,12 +16,12 @@ type AppConfigStore interface {
 // StorePlugin ...
 type StorePlugin struct {
 	Name string
-	Init func(address string) (AppConfigStore, error)
+	Init func() (AppConfigStore, error)
 	//...
 }
 
 // NewStorePlugin ...
-func NewStorePlugin(name string, init func(address string) (AppConfigStore, error)) *StorePlugin {
+func NewStorePlugin(name string, init func() (AppConfigStore, error)) *StorePlugin {
 	return &StorePlugin{Name: name, Init: init}
 }
 
@@ -30,7 +30,7 @@ var storePluginMap map[string]*StorePlugin
 var storePluginNames []string
 
 // RegisterStorePlugin ...
-func RegisterStorePlugin(name string, init func(address string) (AppConfigStore, error)) {
+func RegisterStorePlugin(name string, init func() (AppConfigStore, error)) {
 	if storePluginMap == nil {
 		storePluginMap = make(map[string]*StorePlugin)
 	}
@@ -46,17 +46,17 @@ func RegisterStorePlugin(name string, init func(address string) (AppConfigStore,
 }
 
 // InitStore ...
-func InitStore(store_type, store_address string) {
-	plugin, ok := storePluginMap[store_type]
+func InitStore(storeType string) {
+	plugin, ok := storePluginMap[storeType]
 	if !ok {
-		log.Fatal("store type: ", store_type, " can not be supported, you can choose: ", storePluginNames)
+		log.Fatal("store type: ", storeType, " can not be supported, you can choose: ", storePluginNames)
 	}
-	store, err := plugin.Init(store_address)
+	store, err := plugin.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
 	appConfigStore = store
 	//测试连接
 
-	log.Info("store init success... with  ", store_type, store_address)
+	log.Info("store init success... with  ", storeType)
 }

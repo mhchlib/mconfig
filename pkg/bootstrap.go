@@ -11,7 +11,7 @@ import (
 func InitMconfig(mconfig *MConfig) func() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	Cancel = cancelFunc
-	InitStore(*mconfig.StoreType, *mconfig.StoreAddress)
+	InitStore(*mconfig.StoreType)
 	configChan, _ := appConfigStore.WatchAppConfigs(ctx)
 	go handleEventMsg(configChan, ctx)
 	go dispatchMsgToClient(ctx)

@@ -3,6 +3,7 @@ package file
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"github.com/mhchlib/mconfig/pkg"
 	"github.com/micro/go-micro/v2/util/file"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -12,6 +13,8 @@ import (
 const DB_NAME = "mconfig"
 const SIZE_ChangeEventBus = 10
 
+var filePath *string
+
 type FileStore struct {
 	DB             *leveldb.DB
 	ChangeEventBus chan *pkg.ConfigEvent
@@ -19,20 +22,25 @@ type FileStore struct {
 
 func init() {
 	pkg.RegisterStorePlugin("file", Init)
+	initFlag()
 }
 
-func Init(address string) (pkg.AppConfigStore, error) {
-	exists, err := file.Exists(address)
+func initFlag() {
+	filePath = flag.String("store_file", "mconfig_file", "input your file path")
+}
+
+func Init() (pkg.AppConfigStore, error) {
+	exists, err := file.Exists(*filePath)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		err = os.Mkdir(address, os.ModePerm)
+		err = os.Mkdir(*filePath, os.ModePerm)
 		if err != nil {
 			return nil, err
 		}
 	}
-	db, err := leveldb.OpenFile(address+string(os.PathSeparator)+DB_NAME, nil)
+	db, err := leveldb.OpenFile(*filePath+string(os.PathSeparator)+DB_NAME, nil)
 	if err != nil {
 		return nil, err
 	}

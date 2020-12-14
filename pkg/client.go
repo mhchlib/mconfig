@@ -64,6 +64,7 @@ func (ch *ClientChanMap) RemoveClient(clientId ClientId, appid Appkey) {
 func (ch *ClientChanMap) GetClientsChan(appid Appkey) []chan interface{} {
 	chs := []chan interface{}{}
 	ch.RLock()
+	defer ch.RUnlock()
 	v, ok := ch.m[appid]
 	if ok == false {
 		return nil
@@ -71,6 +72,5 @@ func (ch *ClientChanMap) GetClientsChan(appid Appkey) []chan interface{} {
 	for _, ch := range v {
 		chs = append(chs, ch)
 	}
-	defer ch.RUnlock()
 	return chs
 }
