@@ -7,7 +7,8 @@
 * [mconfig cli](https://github.com/mhchlib/mconfig-cli)
 * [mconfig go sdk](https://github.com/mhchlib/mconfig-go-sdk) 
 
-* [test](/test.md)
+* [deploy_singleton](/deploy_singleton.md)
+* [deploy_microservice](/deploy_microservice.md)
 
 ### Motivation
 
