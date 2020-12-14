@@ -1,6 +1,6 @@
 package main
 
 import (
-	_ "github.com/mhchlib/mconfig/pkg/plugin/etcd"
-	_ "github.com/mhchlib/mconfig/pkg/plugin/file"
+	_ "github.com/mhchlib/mconfig/plugin/etcd"
+	_ "github.com/mhchlib/mconfig/plugin/file"
 )

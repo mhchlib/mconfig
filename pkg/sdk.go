@@ -84,6 +84,11 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 }
 
 func checkNeedNotifyClient(localConfiCacheMd5 string, cache []*sdk.Config) (bool, string) {
+	//avoid affect md5 val
+	for _, v := range cache {
+		v.CreateTime = 0
+		v.UpdateTime = 0
+	}
 	hash := md5.New()
 	bs, _ := json.Marshal(cache)
 	hash.Write(bs)
