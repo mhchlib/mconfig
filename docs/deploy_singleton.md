@@ -12,7 +12,7 @@
 
 1 start mconfig server
 
-```shell script
+```shell
 ./mconfig  --registry=false --store_type=file
 ```
 
@@ -20,20 +20,20 @@
 
 such you want build an app named BookStore, you can...
 
-```shell script
+```shell
 ./mconfig-cli init BookStore -t direct -r {{host}}:{{ip}} 
 ```
 
 3 publish config to mconfig
 
-```shell script
+```shell
 ./mconfig-cli publish  -c ./BookStore/config.json -s ./BookStore/schema.json  --app  BookStore  --config database -t direct -r  {{host}}:{{ip}} 
 ```
 
 4 use mconfig sdk to get config data
 
 ```go
-    config := client.NewMconfig(
+config := client.NewMconfig(
 		client.DirectLinkAddress("127.0.0.1:8080"),
 		client.AppKey("BookStore"),
 		client.ConfigKey("database"),
