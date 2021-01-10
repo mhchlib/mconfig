@@ -6,7 +6,40 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	sch "github.com/xeipuuv/gojsonschema"
 	"strconv"
+	"sync"
 )
+
+// Config ...
+type Config struct {
+	Schema     string `json:"schema"`
+	Config     string `json:"config"`
+	CreateTime int64  `json:"create_time"`
+	UpdateTime int64  `json:"update_time"`
+}
+
+// Configs ...
+type Configs struct {
+	Configs    ConfigsMap        `json:"configs"`
+	Desc       string            `json:"desc"`
+	CreateTime int64             `json:"create_time"`
+	UpdateTime int64             `json:"update_time"`
+	ABFilters  map[string]string `json:"ABFilters"`
+}
+
+// AppConfigsMap ...
+type AppConfigsMap struct {
+	mutex      sync.RWMutex
+	AppConfigs *AppConfigs
+}
+
+// ConfigsMap ...
+type ConfigsMap struct {
+	mutex sync.RWMutex
+	Entry map[string]*Config `json:"entry"`
+}
+
+// AppConfigs ...
+type AppConfigs map[string]*Configs
 
 //
 //func CheckConfigsSchema(configs []ConfigEntity) error {
@@ -26,9 +59,9 @@ import (
 //	return nil
 //}
 
-func CheckConfigSchema(config string, schema string) (bool, error) {
-	schemaLoader := sch.NewStringLoader(schema)
-	documentLoader := sch.NewStringLoader(config)
+func CheckConfigSchema(config *Config) (bool, error) {
+	schemaLoader := sch.NewStringLoader(config.Schema)
+	documentLoader := sch.NewStringLoader(config.Config)
 	result, err := sch.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		return false, err

@@ -1,6 +1,4 @@
-package pkg
-
-import ()
+package mconfig
 
 // MConfig ...
 type MConfig struct {
@@ -11,4 +9,8 @@ type MConfig struct {
 	StoreType       *string
 	ServerIp        *string
 	ServerPort      *int
+}
+
+func NewMConfig() *MConfig {
+	return &MConfig{}
 }

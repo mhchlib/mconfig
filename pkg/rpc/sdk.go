@@ -1,10 +1,11 @@
-package pkg
+package rpc
 
 import (
 	"crypto/md5"
 	"encoding/json"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
+	"github.com/mhchlib/mconfig/pkg"
 )
 
 // MConfigSDK ...
@@ -25,8 +26,8 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 		return err
 	}
 	localConfiCacheMd5 := ""
-	appKey := Appkey(request.AppKey)
-	configsCache, err := GetConfigFromCache(appKey, request.Filters)
+	appKey := pkg.Appkey(request.AppKey)
+	configsCache, err := pkg.GetConfigFromCache(appKey, request.Filters)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -34,7 +35,7 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 	if configsCache == nil {
 		//no cache
 		// pull pkg from store
-		configsCache, err = GetConfigFromStore(appKey, request.Filters)
+		configsCache, err = pkg.GetConfigFromStore(appKey, request.Filters)
 		if err != nil {
 			log.Error(appKey, request.Filters, err)
 			return err
@@ -44,10 +45,10 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 	if err != nil {
 		return err
 	}
-	client, err := NewClient()
-	clientChanMap.AddClient(client.Id, appKey, client.MsgChan)
+	client, err := pkg.NewClient()
+	pkg.ClientChans.AddClient(client.Id, appKey, client.MsgChan)
 	defer func() {
-		clientChanMap.RemoveClient(client.Id, appKey)
+		pkg.ClientChans.RemoveClient(client.Id, appKey)
 	}()
 	clietnStreamMsg := make(chan interface{})
 	go func() {
@@ -64,7 +65,7 @@ func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
 		select {
 		case <-client.MsgChan:
 			log.Info("client: ", client.Id, " get msg event, appId: ", appKey)
-			configsCache, err = GetConfigFromCache(appKey, request.Filters)
+			configsCache, err = pkg.GetConfigFromCache(appKey, request.Filters)
 			if err != nil {
 				log.Error(err)
 				return err

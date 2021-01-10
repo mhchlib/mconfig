@@ -11,6 +11,6 @@ func init() {
 	pkg.RegisterStorePlugin("mysql", Init)
 }
 
-func Init(address string) (pkg.AppConfigStore, error) {
+func Init() (pkg.AppConfigStore, error) {
 	return nil, nil
 }

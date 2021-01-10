@@ -55,7 +55,7 @@ func InitStore(storeType string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	appConfigStore = store
+	ConfigStore = store
 	//测试连接
 
 	log.Info("store init success... with  ", storeType)

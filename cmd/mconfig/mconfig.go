@@ -1,11 +1,13 @@
 package main
 
 import (
-	"flag"
 	log "github.com/mhchlib/logger"
+	mconfig2 "github.com/mhchlib/mconfig"
 	"github.com/mhchlib/mconfig-api/api/v1/cli"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
+	"github.com/mhchlib/mconfig/cmd/mconfig/internal"
 	"github.com/mhchlib/mconfig/pkg"
+	"github.com/mhchlib/mconfig/pkg/rpc"
 	"github.com/mhchlib/register"
 	"github.com/mhchlib/register/common"
 	"github.com/mhchlib/register/mregister"
@@ -18,33 +20,12 @@ import (
 	"syscall"
 )
 
-/***
- *        ███╗   ███╗ ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗
- *        ████╗ ████║██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
- *        ██╔████╔██║██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
- *        ██║╚██╔╝██║██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
- *        ██║ ╚═╝ ██║╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
- *        ╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
- *
- */
-
-var mconfig *pkg.MConfig
+var mconfig *mconfig2.MConfig
 
 func init() {
-	pkg.ShowBanner()
-	initFlag()
-}
-
-func initFlag() {
-	mconfig = &pkg.MConfig{}
-	mconfig.Namspace = flag.String("namespace", "com.github.mhchlib", "Input Your Namespace")
-	mconfig.EnableRegistry = flag.Bool("registry", true, "enable use registry")
-	mconfig.RegistryAddress = flag.String("registry_address", "127.0.0.1:2389", "Input Your Registry Address, multiple IP commas separate")
-	mconfig.RegistryType = flag.String("registry_type", "etcd", "Input Your Registry Type, Such etcd ,...(support more soon)")
-	mconfig.StoreType = flag.String("store_type", "etcd", "Input Your Store Type, Such etcd ,...(support more soon)")
-	mconfig.ServerIp = flag.String("server_ip", "", "Input Your Server Ip, default local ip")
-	mconfig.ServerPort = flag.Int("port", 8080, "Input Your Server Ip")
-	flag.Parse()
+	mconfig = mconfig2.NewMConfig()
+	internal.ShowBanner()
+	internal.InitFlag(mconfig)
 }
 
 func main() {
@@ -82,8 +63,8 @@ func main() {
 		_ = listener.Close()
 		server.Stop()
 	}()
-	sdk.RegisterMConfigServer(server, pkg.NewMConfigSDK())
-	cli.RegisterMConfigCliServer(server, pkg.NewMConfigCLI())
+	sdk.RegisterMConfigServer(server, rpc.NewMConfigSDK())
+	cli.RegisterMConfigCliServer(server, rpc.NewMConfigCLI())
 	go func() {
 		err = server.Serve(listener)
 		if err != nil {

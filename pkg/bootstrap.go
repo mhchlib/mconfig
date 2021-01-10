@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
 // InitMconfig ...
-func InitMconfig(mconfig *MConfig) func() {
+func InitMconfig(mconfig *mconfig.MConfig) func() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	Cancel = cancelFunc
 	InitStore(*mconfig.StoreType)
-	configChan, _ := appConfigStore.WatchAppConfigs(ctx)
+	configChan, _ := ConfigStore.WatchAppConfigs(ctx)
 	go handleEventMsg(configChan, ctx)
 	go dispatchMsgToClient(ctx)
 	return EndMconfig()
@@ -21,7 +22,7 @@ func InitMconfig(mconfig *MConfig) func() {
 func dispatchMsgToClient(ctx context.Context) {
 	for {
 		select {
-		case AppId, ok := <-configChangeChan:
+		case AppId, ok := <-ConfigChangeChan:
 			if !ok {
 				return
 			}
@@ -35,7 +36,7 @@ func dispatchMsgToClient(ctx context.Context) {
 }
 
 func notifyClients(id Appkey) {
-	clientsChans := clientChanMap.GetClientsChan(id)
+	clientsChans := ClientChans.GetClientsChan(id)
 	if clientsChans != nil {
 		for _, v := range clientsChans {
 			v <- &struct{}{}
@@ -46,10 +47,8 @@ func notifyClients(id Appkey) {
 
 // GetConfigFromStore ...
 func GetConfigFromStore(key Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
-	appConfigs, err := appConfigStore.GetAppConfigs(key)
+	appConfigs, err := ConfigStore.GetAppConfigs(key)
 	//paser config str to ob
-	//log.Info(appConfigsStr)
-	//log.Info(appConfigs.AppConfigs, err)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +109,7 @@ func handleEventMsg(configChan chan *ConfigEvent, ctx context.Context) {
 				break
 			}
 			//notify client
-			configChangeChan <- v.Key
+			ConfigChangeChan <- v.Key
 			log.Info("push app ", v.Key, " config change event to cache ")
 		case <-ctx.Done():
 			return
