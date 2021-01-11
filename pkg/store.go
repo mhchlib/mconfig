@@ -58,5 +58,5 @@ func InitStore(storeType string, storeAddress string) {
 	ConfigStore = store
 	//测试连接
 
-	log.Info("store init success... with  ", storeType)
+	log.Info("store init success... with ", storeType)
 }

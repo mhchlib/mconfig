@@ -11,6 +11,11 @@ push: docker
 dev:
 	go run cmd/mconfig/mconfig.go cmd/mconfig/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770
 
+dev2:
+	go run cmd/mconfig/mconfig.go cmd/mconfig/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=file://ttt
+
+
+
 example01:
 	go run example/continuous/main.go --registry=etcd --registry_address=etcd.u.hcyang.top:31770
 

@@ -5,6 +5,7 @@ import (
 	"flag"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg"
+	"strconv"
 	"strings"
 )
 
@@ -15,7 +16,11 @@ type MconfigFlag struct {
 	ExposeStr   *string
 }
 
-var ConfigSeparateSymbol = "://"
+var (
+	ConfigSeparateSymbol = "://"
+	DefaultExposePort    = 8080
+	DefaultExposeIp      = ""
+)
 
 func NewMconfigFlag() *MconfigFlag {
 	return &MconfigFlag{}
@@ -54,13 +59,37 @@ func parseFlagData(mconfigFlag *MconfigFlag, mconfig *pkg.MConfig) error {
 		mconfig.StoreType = storeSType
 		mconfig.StoreAddress = storeAddress
 	}
+	//expose
+	mconfig.ServerIp = DefaultExposeIp
+	mconfig.ServerPort = DefaultExposePort
+	if *mconfigFlag.ExposeStr != "" {
+		ip, port, err := parseExposeFlag(*mconfigFlag.ExposeStr)
+		if err != nil {
+			return err
+		}
+		mconfig.ServerIp = ip
+		mconfig.ServerPort = port
+	}
 	return nil
+}
+
+func parseExposeFlag(exposeStr string) (string, int, error) {
+	splits := strings.Split(exposeStr, ":")
+	if len(splits) != 2 {
+		return "", 0, errors.New(exposeStr + " is invalid Expose Address")
+	}
+	ip := splits[0]
+	port, err := strconv.Atoi(splits[1])
+	if err != nil {
+		return "", 0, errors.New(exposeStr + " is invalid Expose Address")
+	}
+	return ip, port, nil
 }
 
 func parseAddressFlag(str string) (string, string, error) {
 	splits := strings.Split(str, ConfigSeparateSymbol)
 	if len(splits) != 2 {
-		return "", "", errors.New(str + " is invalid")
+		return "", "", errors.New(str + " is invalid Address")
 	}
 	return splits[0], splits[1], nil
 }
@@ -70,6 +99,6 @@ func initFlagConfig() *MconfigFlag {
 	mconfigFlag.Namspace = flag.String("namespace", "com.github.mhchlib", "input your namespace")
 	mconfigFlag.RegistryStr = flag.String("registry", "", "input registry address like etcd://127.0.0.1:2389")
 	mconfigFlag.StoreStr = flag.String("store", "file://t_file/", "input store address like file://t_file/")
-	mconfigFlag.ExposeStr = flag.String("expose", "0.0.0.0:8080", "input server ip, default local ip")
+	mconfigFlag.ExposeStr = flag.String("expose", ":8080", "input server ip, default local ip")
 	return mconfigFlag
 }

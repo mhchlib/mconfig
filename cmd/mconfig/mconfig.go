@@ -46,14 +46,28 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		_ = reg.RegisterService("mconfig-cli")
-		_ = reg.RegisterService("mconfig-sdk")
+		err = reg.RegisterService("mconfig-cli")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = reg.RegisterService("mconfig-sdk")
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer func() {
-			_ = reg.UnRegisterService("mconfig-sdk")
-			_ = reg.UnRegisterService("mconfig-cli")
+			err = reg.UnRegisterService("mconfig-sdk")
+			if err != nil {
+				log.Error(err)
+			}
+			err = reg.UnRegisterService("mconfig-cli")
+			if err != nil {
+				log.Error(err)
+			}
 		}()
 	}
 	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(mconfig.ServerPort))
+	log.Info("mconfig listen :" + strconv.Itoa(mconfig.ServerPort) + " success")
+
 	if err != nil {
 		log.Fatal(err)
 	}
