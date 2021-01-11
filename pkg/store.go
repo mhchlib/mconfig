@@ -16,12 +16,12 @@ type AppConfigStore interface {
 // StorePlugin ...
 type StorePlugin struct {
 	Name string
-	Init func() (AppConfigStore, error)
+	Init func(address string) (AppConfigStore, error)
 	//...
 }
 
 // NewStorePlugin ...
-func NewStorePlugin(name string, init func() (AppConfigStore, error)) *StorePlugin {
+func NewStorePlugin(name string, init func(address string) (AppConfigStore, error)) *StorePlugin {
 	return &StorePlugin{Name: name, Init: init}
 }
 
@@ -30,7 +30,7 @@ var storePluginMap map[string]*StorePlugin
 var storePluginNames []string
 
 // RegisterStorePlugin ...
-func RegisterStorePlugin(name string, init func() (AppConfigStore, error)) {
+func RegisterStorePlugin(name string, init func(address string) (AppConfigStore, error)) {
 	if storePluginMap == nil {
 		storePluginMap = make(map[string]*StorePlugin)
 	}
@@ -46,12 +46,12 @@ func RegisterStorePlugin(name string, init func() (AppConfigStore, error)) {
 }
 
 // InitStore ...
-func InitStore(storeType string) {
+func InitStore(storeType string, storeAddress string) {
 	plugin, ok := storePluginMap[storeType]
 	if !ok {
 		log.Fatal("store type: ", storeType, " can not be supported, you can choose: ", storePluginNames)
 	}
-	store, err := plugin.Init()
+	store, err := plugin.Init(storeAddress)
 	if err != nil {
 		log.Fatal(err)
 	}

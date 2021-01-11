@@ -4,15 +4,14 @@ import (
 	"context"
 	"errors"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 )
 
 // InitMconfig ...
-func InitMconfig(mconfig *mconfig.MConfig) func() {
+func InitMconfig(mconfig *MConfig) func() {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	Cancel = cancelFunc
-	InitStore(*mconfig.StoreType)
+	InitStore(mconfig.StoreType, mconfig.StoreAddress)
 	configChan, _ := ConfigStore.WatchAppConfigs(ctx)
 	go handleEventMsg(configChan, ctx)
 	go dispatchMsgToClient(ctx)

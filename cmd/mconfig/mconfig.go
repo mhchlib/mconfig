@@ -2,7 +2,6 @@ package main
 
 import (
 	log "github.com/mhchlib/logger"
-	mconfig2 "github.com/mhchlib/mconfig"
 	"github.com/mhchlib/mconfig-api/api/v1/cli"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/mhchlib/mconfig/cmd/mconfig/internal"
@@ -20,29 +19,29 @@ import (
 	"syscall"
 )
 
-var mconfig *mconfig2.MConfig
+var mconfig *pkg.MConfig
 
 func init() {
-	mconfig = mconfig2.NewMConfig()
+	mconfig = pkg.NewMConfig()
 	internal.ShowBanner()
-	internal.InitFlag(mconfig)
+	internal.ParseFlag(mconfig)
 }
 
 func main() {
 	done := make(chan os.Signal, 1)
 	defer pkg.InitMconfig(mconfig)()
-	if *mconfig.EnableRegistry {
-		reg, err := register.InitRegister(*mconfig.RegistryType, func(options *mregister.Options) {
-			options.Address = strings.Split(*mconfig.RegistryAddress, ",")
-			options.NameSpace = *mconfig.Namspace
-			if *mconfig.ServerIp == "" {
+	if mconfig.EnableRegistry {
+		reg, err := register.InitRegister(mconfig.RegistryType, func(options *mregister.Options) {
+			options.Address = strings.Split(mconfig.RegistryAddress, ",")
+			options.NameSpace = mconfig.Namspace
+			if mconfig.ServerIp == "" {
 				ip, err := common.GetClientIp()
 				if err != nil {
 					log.Fatal("get client ip error")
 				}
-				*mconfig.ServerIp = ip
+				mconfig.ServerIp = ip
 			}
-			options.ServerInstance = *mconfig.ServerIp + ":" + strconv.Itoa(*mconfig.ServerPort)
+			options.ServerInstance = mconfig.ServerIp + ":" + strconv.Itoa(mconfig.ServerPort)
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -54,7 +53,7 @@ func main() {
 			_ = reg.UnRegisterService("mconfig-cli")
 		}()
 	}
-	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(*mconfig.ServerPort))
+	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(mconfig.ServerPort))
 	if err != nil {
 		log.Fatal(err)
 	}
