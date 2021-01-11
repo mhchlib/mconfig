@@ -12,13 +12,13 @@ type ClientChanMap struct {
 
 var (
 	//用于收到store配置改变事件后通知更新客户端
-	configChangeChan chan Appkey
-	clientChanMap    *ClientChanMap
+	ConfigChangeChan chan Appkey
+	ClientChans      *ClientChanMap
 )
 
 func init() {
-	configChangeChan = make(chan Appkey, 10)
-	clientChanMap = &ClientChanMap{
+	ConfigChangeChan = make(chan Appkey, 10)
+	ClientChans = &ClientChanMap{
 		m: make(map[Appkey]map[ClientId]chan interface{}),
 	}
 }

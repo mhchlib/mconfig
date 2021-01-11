@@ -1,26 +1,45 @@
 package pkg
 
 import (
-	"encoding/json"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/common"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	sch "github.com/xeipuuv/gojsonschema"
 	"strconv"
+	"sync"
 )
 
-func parseAppConfigsJSONStr(value AppConfigsJSONStr) (*AppConfigsMap, error) {
-	//parse AppConfigsJSONStr
-	var appConfigs = make(AppConfigs)
-	err := json.Unmarshal([]byte(value), &appConfigs)
-	if err != nil {
-		log.Error(Error_ParserAppConfigFail, err)
-		return nil, Error_ParserAppConfigFail
-	}
-	return &AppConfigsMap{
-		AppConfigs: appConfigs,
-	}, nil
+// Config ...
+type Config struct {
+	Schema     string `json:"schema"`
+	Config     string `json:"config"`
+	CreateTime int64  `json:"create_time"`
+	UpdateTime int64  `json:"update_time"`
 }
+
+// Configs ...
+type Configs struct {
+	Configs    ConfigsMap        `json:"configs"`
+	Desc       string            `json:"desc"`
+	CreateTime int64             `json:"create_time"`
+	UpdateTime int64             `json:"update_time"`
+	ABFilters  map[string]string `json:"ABFilters"`
+}
+
+// AppConfigsMap ...
+type AppConfigsMap struct {
+	mutex      sync.RWMutex
+	AppConfigs *AppConfigs
+}
+
+// ConfigsMap ...
+type ConfigsMap struct {
+	mutex sync.RWMutex
+	Entry map[string]*Config `json:"entry"`
+}
+
+// AppConfigs ...
+type AppConfigs map[string]*Configs
 
 //
 //func CheckConfigsSchema(configs []ConfigEntity) error {
@@ -40,9 +59,9 @@ func parseAppConfigsJSONStr(value AppConfigsJSONStr) (*AppConfigsMap, error) {
 //	return nil
 //}
 
-func CheckConfigSchema(config string, schema string) (bool, error) {
-	schemaLoader := sch.NewStringLoader(schema)
-	documentLoader := sch.NewStringLoader(config)
+func CheckConfigSchema(config *Config) (bool, error) {
+	schemaLoader := sch.NewStringLoader(config.Schema)
+	documentLoader := sch.NewStringLoader(config.Config)
 	result, err := sch.Validate(schemaLoader, documentLoader)
 	if err != nil {
 		return false, err
@@ -57,7 +76,7 @@ func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilter
 	for i := 0; i < configIdLen; i++ {
 		needConfigId := filters.ConfigIds[i]
 		appConfigs.mutex.RLock()
-		appConfig, ok := appConfigs.AppConfigs[needConfigId]
+		appConfig, ok := (*appConfigs.AppConfigs)[needConfigId]
 		appConfigs.mutex.RUnlock()
 		if !ok {
 			continue

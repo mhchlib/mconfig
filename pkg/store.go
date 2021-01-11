@@ -7,10 +7,9 @@ import (
 
 // AppConfigStore ...
 type AppConfigStore interface {
-	GetAppConfigs(key string) (AppConfigsJSONStr, int64, error)
-	PutAppConfigs(key string, value AppConfigsJSONStr) error
-	WatchAppConfigs(key string, rev int64, ctx context.Context) (chan *ConfigEvent, error)
-	WatchAppConfigsWithPrefix(ctx context.Context) (chan *ConfigEvent, error)
+	GetAppConfigs(key Appkey) (*AppConfigs, error)
+	PutAppConfigs(key Appkey, value *AppConfigs) error
+	WatchAppConfigs(ctx context.Context) (chan *ConfigEvent, error)
 	//...
 }
 
@@ -47,17 +46,17 @@ func RegisterStorePlugin(name string, init func(address string) (AppConfigStore,
 }
 
 // InitStore ...
-func InitStore(store_type, store_address string) {
-	plugin, ok := storePluginMap[store_type]
+func InitStore(storeType string, storeAddress string) {
+	plugin, ok := storePluginMap[storeType]
 	if !ok {
-		log.Fatal("store type: ", store_type, " can not be supported, you can choose: ", storePluginNames)
+		log.Fatal("store type: ", storeType, " can not be supported, you can choose: ", storePluginNames)
 	}
-	store, err := plugin.Init(store_address)
+	store, err := plugin.Init(storeAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
-	appConfigStore = store
+	ConfigStore = store
 	//测试连接
 
-	log.Info("store init success...")
+	log.Info("store init success... with ", storeType)
 }

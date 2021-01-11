@@ -10,48 +10,21 @@ import (
 
 func TestEtcdStore_GetAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	config, rev, err := e.GetAppConfigs("1000")
-	log.Println(config, rev, err)
+	config, err := e.GetAppConfigs(pkg.Appkey("1000"))
+	log.Println(config, err)
 }
 
 func TestEtcdStore_PutAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	err := e.PutAppConfigs("1000", "{'aaa':'ccc'}")
+	err := e.PutAppConfigs("1000", &pkg.AppConfigs{})
 	log.Println(err)
-}
-
-func TestEtcdStore_WatchAppConfigs(t *testing.T) {
-	e := &EtcdStore{}
-	_, rev, err := e.GetAppConfigs("1000")
-	log.Println("get mconfig rev: ", rev)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	configChan, err := e.WatchAppConfigs("1000", rev, ctx)
-	go func(configChan chan *pkg.ConfigEvent) {
-		for {
-			select {
-			case v, ok := <-configChan:
-				if !ok {
-					return
-				}
-				log.Println(v)
-			}
-
-		}
-	}(configChan)
-	time.Sleep(time.Second * 10)
-	cancelFunc()
-	time.Sleep(time.Second * 3)
-	log.Println("over...")
 }
 
 func TestEtcdStore_WatchAppConfigsWithPrefix(t *testing.T) {
 	e := &EtcdStore{}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	configChan, _ := e.WatchAppConfigsWithPrefix(ctx)
+	configChan, _ := e.WatchAppConfigs(ctx)
 	go func(configChan chan *pkg.ConfigEvent) {
 		for {
 			select {
