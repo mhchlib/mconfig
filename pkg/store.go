@@ -25,29 +25,29 @@ func NewStorePlugin(name string, init func(address string) (AppConfigStore, erro
 	return &StorePlugin{Name: name, Init: init}
 }
 
-var storePluginMap map[string]*StorePlugin
+var StorePluginMap map[string]*StorePlugin
 
 var storePluginNames []string
 
 // RegisterStorePlugin ...
 func RegisterStorePlugin(name string, init func(address string) (AppConfigStore, error)) {
-	if storePluginMap == nil {
-		storePluginMap = make(map[string]*StorePlugin)
+	if StorePluginMap == nil {
+		StorePluginMap = make(map[string]*StorePlugin)
 	}
 	if storePluginNames == nil {
 		storePluginNames = []string{}
 	}
 
-	if _, ok := storePluginMap[name]; ok {
-		log.Fatal("Repeated  register same name store plugin ...")
+	if _, ok := StorePluginMap[name]; ok {
+		log.Fatal("repeated register same name store plugin ...")
 	}
-	storePluginMap[name] = NewStorePlugin(name, init)
+	StorePluginMap[name] = NewStorePlugin(name, init)
 	storePluginNames = append(storePluginNames, name)
 }
 
 // InitStore ...
 func InitStore(storeType string, storeAddress string) {
-	plugin, ok := storePluginMap[storeType]
+	plugin, ok := StorePluginMap[storeType]
 	if !ok {
 		log.Fatal("store type: ", storeType, " can not be supported, you can choose: ", storePluginNames)
 	}
@@ -57,6 +57,5 @@ func InitStore(storeType string, storeAddress string) {
 	}
 	ConfigStore = store
 	//测试连接
-
-	log.Info("store init success... with ", storeType)
+	log.Info("store init success with", storeType, storeAddress)
 }
