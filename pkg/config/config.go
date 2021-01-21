@@ -1,9 +1,15 @@
-package pkg
+package config
 
 import (
+	"context"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/common"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
+	"github.com/mhchlib/mconfig/pkg"
+	"github.com/mhchlib/mconfig/pkg/cache"
+	"github.com/mhchlib/mconfig/pkg/config/bus"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/store"
 	sch "github.com/xeipuuv/gojsonschema"
 	"strconv"
 	"sync"
@@ -41,23 +47,72 @@ type ConfigsMap struct {
 // AppConfigs ...
 type AppConfigs map[string]*Configs
 
-//
-//func CheckConfigsSchema(configs []ConfigEntity) error {
-//	for _, config := range configs {
-//		status := config.Status
-//		if status > common.ConfigStatus_Unpublished {
-//			ok, err := CheckConfigSchema(config.Config, config.Schema)
-//			if err != nil {
-//				return err
-//			}
-//			if ok == false {
-//				log.Info("CheckConfigsSchema failer...  ", config)
-//				return errors.New("CheckConfigsSchema failer ")
-//			}
-//		}
-//	}
-//	return nil
-//}
+func StratMconfigConfigManagement(ctx context.Context) {
+	dispatchMsgToClient(ctx)
+}
+
+func dispatchMsgToClient(ctx context.Context) {
+	for {
+		select {
+		case item, ok := <-bus.GetConfigChangeBus():
+			if !ok {
+				return
+			}
+			log.Info("app: ", item.AppKey, "is changed, notify event to clients")
+			notifyClients(item.AppKey)
+		case <-ctx.Done():
+			log.Info("the function dispatch msg to client is done")
+			return
+		}
+	}
+}
+
+func notifyClients(id mconfig.Appkey) {
+	clientsChans := pkg.ClientChans.GetClientsChan(id)
+	if clientsChans != nil {
+		for _, v := range clientsChans {
+			v <- &struct{}{}
+		}
+	}
+	log.Info("notify app config change info to ", len(clientsChans), " clients")
+}
+
+// GetConfigFromStore ...
+func GetConfigFromStore(key mconfig.Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+	appConfigs, err := store.CurrentMConfigStore.GetAppConfigs(key)
+	//paser config str to ob
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		err = cache.mconfigCache.putConfigCache(key, appConfigs)
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+	configsForClient, err := filterConfigsForClient(&AppConfigsMap{AppConfigs: appConfigs}, filters, key)
+	if err != nil {
+		return nil, err
+	}
+	return configsForClient, nil
+}
+
+// GetConfigFromCache ...
+func GetConfigFromCache(key mconfig.Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+	cache, err := cache.mconfigCache.getConfigCache(key)
+	if err != nil {
+		if errors.Is(err, mconfig.Error_AppConfigNotFound) {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+	configsForClient, err := filterConfigsForClient(cache, filters, key)
+	if err != nil {
+		return nil, err
+	}
+	return configsForClient, nil
+}
 
 func CheckConfigSchema(config *Config) (bool, error) {
 	schemaLoader := sch.NewStringLoader(config.Schema)
@@ -69,7 +124,7 @@ func CheckConfigSchema(config *Config) (bool, error) {
 	return result.Valid(), nil
 }
 
-func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters, appkey Appkey) ([]*sdk.Config, error) {
+func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters, appkey mconfig.Appkey) ([]*sdk.Config, error) {
 	configIdLen := len(filters.ConfigIds)
 	configsForClient := make([]*sdk.Config, 0)
 	defaultChoose := common.ConfigStatus_Published

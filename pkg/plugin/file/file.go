@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/mhchlib/mconfig/pkg"
+	"github.com/mhchlib/mconfig/pkg/config"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/store"
 	"github.com/micro/go-micro/v2/util/file"
 	"github.com/syndtr/goleveldb/leveldb"
 	"os"
@@ -18,7 +21,7 @@ type FileStore struct {
 }
 
 func init() {
-	pkg.RegisterStorePlugin("file", Init)
+	store.RegisterStorePlugin("file", Init)
 }
 
 func Init(filePath string) (pkg.AppConfigStore, error) {
@@ -43,7 +46,7 @@ func Init(filePath string) (pkg.AppConfigStore, error) {
 	return fileStore, nil
 }
 
-func (f FileStore) GetAppConfigs(key pkg.Appkey) (*pkg.AppConfigs, error) {
+func (f FileStore) GetAppConfigs(key mconfig.Appkey) (*config.AppConfigs, error) {
 	db := f.DB
 	value, err := db.Get([]byte(key), nil)
 	if err != nil {
@@ -57,7 +60,7 @@ func (f FileStore) GetAppConfigs(key pkg.Appkey) (*pkg.AppConfigs, error) {
 	return appConfigs, nil
 }
 
-func (f FileStore) PutAppConfigs(key pkg.Appkey, value *pkg.AppConfigs) error {
+func (f FileStore) PutAppConfigs(key mconfig.Appkey, value *config.AppConfigs) error {
 	configJsonByte, err := json.Marshal(value)
 	if err != nil {
 		return err

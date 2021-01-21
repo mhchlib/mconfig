@@ -3,6 +3,8 @@ package etcd
 import (
 	"context"
 	"github.com/mhchlib/mconfig/pkg"
+	"github.com/mhchlib/mconfig/pkg/config"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"log"
 	"testing"
 	"time"
@@ -10,13 +12,13 @@ import (
 
 func TestEtcdStore_GetAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	config, err := e.GetAppConfigs(pkg.Appkey("1000"))
+	config, err := e.GetAppConfigs(mconfig.Appkey("1000"))
 	log.Println(config, err)
 }
 
 func TestEtcdStore_PutAppConfigs(t *testing.T) {
 	e := &EtcdStore{}
-	err := e.PutAppConfigs("1000", &pkg.AppConfigs{})
+	err := e.PutAppConfigs("1000", &config.AppConfigs{})
 	log.Println(err)
 }
 

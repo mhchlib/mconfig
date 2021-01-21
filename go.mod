@@ -4,8 +4,9 @@ go 1.14
 
 require (
 	github.com/coreos/etcd v3.3.25+incompatible
+	github.com/deckarep/golang-set v1.7.1
 	github.com/go-acme/lego/v3 v3.4.0
-	github.com/go-kit/kit v0.10.0 // indirect
+	github.com/golang/protobuf v1.4.0
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc

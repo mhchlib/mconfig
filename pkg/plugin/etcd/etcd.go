@@ -8,6 +8,9 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg"
+	"github.com/mhchlib/mconfig/pkg/config"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/store"
 	"google.golang.org/grpc"
 	"strings"
 	"time"
@@ -29,7 +32,7 @@ type EtcdStore struct {
 }
 
 func init() {
-	pkg.RegisterStorePlugin("etcd", Init)
+	store.RegisterStorePlugin("etcd", Init)
 }
 
 // Init ...
@@ -56,7 +59,7 @@ func Init(addressStr string) (pkg.AppConfigStore, error) {
 }
 
 // GetAppConfigs ...
-func (e EtcdStore) GetAppConfigs(key pkg.Appkey) (*pkg.AppConfigs, error) {
+func (e EtcdStore) GetAppConfigs(key mconfig.Appkey) (*config.AppConfigs, error) {
 	get, err := kv.Get(context.TODO(), Prefix(PREFIX_CONFIG, string(key)))
 	if err != nil {
 		log.Error(err)
@@ -73,7 +76,7 @@ func (e EtcdStore) GetAppConfigs(key pkg.Appkey) (*pkg.AppConfigs, error) {
 }
 
 // PutAppConfigs ...
-func (e EtcdStore) PutAppConfigs(key pkg.Appkey, value *pkg.AppConfigs) error {
+func (e EtcdStore) PutAppConfigs(key mconfig.Appkey, value *config.AppConfigs) error {
 	configJsonStr, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -113,13 +116,13 @@ func (e EtcdStore) WatchAppConfigs(ctx context.Context) (chan *pkg.ConfigEvent, 
 							log.Error("app key: ", PREFIX_CONFIG, " mvccpb.PUT ", err)
 						}
 						configChan <- &pkg.ConfigEvent{
-							Key:        (pkg.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
+							Key:        (mconfig.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
 							AppConfigs: appConfigs,
 							EventType:  pkg.Event_Update,
 						}
 					case mvccpb.DELETE:
 						configChan <- &pkg.ConfigEvent{
-							Key:       (pkg.Appkey)(event.Kv.Key),
+							Key:       (mconfig.Appkey)(event.Kv.Key),
 							EventType: pkg.Event_Delete,
 						}
 					}
