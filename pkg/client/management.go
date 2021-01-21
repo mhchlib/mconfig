@@ -6,75 +6,56 @@ import (
 	"sync"
 )
 
-type RelationDetail struct {
-	appKey     mconfig.Appkey
-	configKeys []mconfig.ConfigKey
-}
-
-type RelationMap struct {
-	sync.RWMutex
-	m map[ClientId]*RelationDetail
+type ClientConfigKey struct {
+	appKey    mconfig.Appkey
+	configKey mconfig.ConfigKey
+	configEnv mconfig.ConfigEnv
 }
 
 type ClientConfigRelationManagement struct {
 	sync.RWMutex
-	m map[mconfig.Appkey]*ClientConfigRelations
-}
-
-type ClientConfigRelations struct {
-	sync.RWMutex
-	m map[mconfig.ConfigKey]*ClientSet
-}
-
-var (
-	dict RelationMap
-)
-
-func NewClientConfigRelations() *ClientConfigRelations {
-	return &ClientConfigRelations{
-		m: make(map[mconfig.ConfigKey]*ClientSet),
-	}
+	m map[ClientConfigKey]*ClientSet
 }
 
 func NewClientConfigRelationManagement() *ClientConfigRelationManagement {
 	management := &ClientConfigRelationManagement{}
-	management.m = make(map[mconfig.Appkey]*ClientConfigRelations)
+	management.m = make(map[ClientConfigKey]*ClientSet)
 	return management
 }
 
-func (management *ClientConfigRelationManagement) addClientConfigRelation(client Client, appKey mconfig.Appkey, configKeys []mconfig.ConfigKey) error {
-	management.RLock()
-	clientConfigRelations, ok := management.m[appKey]
-	management.RUnlock()
-	if ok == false {
-		clientConfigRelations = NewClientConfigRelations()
-		management.Lock()
-		management.m[appKey] = clientConfigRelations
-		management.Unlock()
+func (management *ClientConfigRelationManagement) addClientConfigRelation(client Client) error {
+	appKey := client.appKey
+	configKeys := client.configKeys
+	env := client.configEnv
+	if env == "" {
+		env = mconfig.DefaultConfigEnv
 	}
 	for _, configKey := range configKeys {
-		clientConfigRelations.RLock()
-		clientSet, ok := clientConfigRelations.m[configKey]
-		clientConfigRelations.RUnlock()
-		if ok == false {
-			clientSet = newClientSet()
-			clientConfigRelations.Lock()
-			clientConfigRelations.m[configKey] = clientSet
-			clientConfigRelations.Unlock()
+		clientConfigKey := buildClientConfigKey(appKey, configKey, env)
+		management.RLock()
+		set, ok := management.m[clientConfigKey]
+		management.RUnlock()
+		if !ok {
+			set = newClientSet()
+			management.Lock()
+			management.m[clientConfigKey] = set
+			management.Unlock()
 		}
-		clientSet.add(client)
+		err := set.add(client)
+		if err != nil {
+			return err
+		}
+		log.Info("add client config relation with client id: ", client.Id, " with app: ", appKey, " config key: ", configKey, " env: ", env)
 	}
-	dict.Lock()
-	if dict.m == nil {
-		dict.m = make(map[ClientId]*RelationDetail)
-	}
-	dict.m[client.Id] = &RelationDetail{
-		appKey:     appKey,
-		configKeys: configKeys,
-	}
-	dict.Unlock()
-	log.Info("add client config relation with client id: ", client.Id, " with app: ", appKey, " config keys: ", configKeys)
 	return nil
+}
+
+func buildClientConfigKey(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) ClientConfigKey {
+	return ClientConfigKey{
+		appKey:    appKey,
+		configKey: configKey,
+		configEnv: env,
+	}
 }
 
 func newClientSet() *ClientSet {
@@ -85,47 +66,39 @@ func newClientSet() *ClientSet {
 }
 
 func (management *ClientConfigRelationManagement) removeClientConfigRelation(client Client) error {
-	dict.RLock()
-	detail, ok := dict.m[client.Id]
-	dict.RUnlock()
-	if !ok {
-		return nil
+	appKey := client.appKey
+	configKeys := client.configKeys
+	env := client.configEnv
+	if env == "" {
+		env = mconfig.DefaultConfigEnv
 	}
-	appKey := detail.appKey
-	configKeys := detail.configKeys
-	management.RLock()
-	clientConfigRelations, ok := management.m[appKey]
-	management.RUnlock()
-	if ok == false {
-		return nil
-	}
-	clientConfigRelations.RLock()
 	for _, configKey := range configKeys {
-		clientSet, ok := clientConfigRelations.m[configKey]
+		clientConfigKey := buildClientConfigKey(appKey, configKey, env)
+		management.RLock()
+		set, ok := management.m[clientConfigKey]
+		management.RUnlock()
 		if !ok {
-			continue
+			return nil
 		}
-		clientSet.remove(client)
+		err := set.remove(client)
+		if err != nil {
+			return err
+		}
+		log.Info("remove client config relation with client id: ", client.Id, " with app: ", appKey, " config key: ", configKey, " env: ", env)
 	}
-	clientConfigRelations.RUnlock()
-	dict.Lock()
-	delete(dict.m, client.Id)
-	dict.Unlock()
 	return nil
 }
 
-func (management *ClientConfigRelationManagement) getClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey) *ClientSet {
-	management.RLock()
-	clientConfigRelations, ok := management.m[appKey]
-	management.RUnlock()
-	if ok == false {
-		return nil
+func (management *ClientConfigRelationManagement) getClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
+	if env == "" {
+		env = mconfig.DefaultConfigEnv
 	}
-	clientConfigRelations.RLock()
-	clientSet, ok := clientConfigRelations.m[configKey]
-	clientConfigRelations.RUnlock()
+	clientConfigKey := buildClientConfigKey(appKey, configKey, env)
+	management.RLock()
+	defer management.RUnlock()
+	set, ok := management.m[clientConfigKey]
 	if !ok {
 		return nil
 	}
-	return clientSet
+	return set
 }

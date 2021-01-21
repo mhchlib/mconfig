@@ -18,12 +18,15 @@ func InitClientManagement() {
 }
 
 type Client struct {
+	sync.RWMutex
 	Id                          ClientId
 	metadata                    *MetaData
 	msgBus                      ClientMsgBus
+	appKey                      mconfig.Appkey
+	configKeys                  []mconfig.ConfigKey
+	configEnv                   mconfig.ConfigEnv
 	isbuildClientConfigRelation bool
 	willBeRemoved               bool
-	sync.Locker
 }
 
 type MetaData struct {
@@ -42,8 +45,8 @@ func NewClient(metadata *MetaData) (*Client, error) {
 	}, nil
 }
 
-func GetOnlineClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey) *ClientSet {
-	return management.getClientSet(appKey, configKey)
+func GetOnlineClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
+	return management.getClientSet(appKey, configKey, env)
 }
 
 func getClientId() (ClientId, error) {
@@ -51,11 +54,14 @@ func getClientId() (ClientId, error) {
 	return ClientId(id), nil
 }
 
-func (client *Client) BuildClientConfigRelation(appKey mconfig.Appkey, configKeys []mconfig.ConfigKey) error {
+func (client *Client) BuildClientConfigRelation(appKey mconfig.Appkey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+	client.appKey = appKey
+	client.configKeys = configKeys
+	client.configEnv = env
 	if management == nil {
 		return errors.New("client config relation management does not init...")
 	}
-	err := management.addClientConfigRelation(*client, appKey, configKeys)
+	err := management.addClientConfigRelation(*client)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,7 @@ func TestBuildClientConfigRelation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(100))
+	err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(100), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func TestRemoveClient01(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(100))
+	err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(100), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestRemoveClient02(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.BuildClientConfigRelation(appKey, configKeys)
+	err = client.BuildClientConfigRelation(appKey, configKeys, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestRemoveClient02(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	set := GetOnlineClientSet(appKey, configKeys[3])
+	set := GetOnlineClientSet(appKey, configKeys[3], "")
 	if set.contains(*client) {
 		t.Fatal()
 	}
@@ -72,11 +72,11 @@ func TestGetClientSet01(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.BuildClientConfigRelation(appKey, configKeys)
+	err = client.BuildClientConfigRelation(appKey, configKeys, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	set := GetOnlineClientSet(appKey, configKeys[3])
+	set := GetOnlineClientSet(appKey, configKeys[3], "")
 	if set != nil {
 		if !set.contains(*client) {
 			t.Fatal("lose client data")
@@ -98,13 +98,13 @@ func TestGetClientSet02(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = client.BuildClientConfigRelation(appKey, configKeys)
+		err = client.BuildClientConfigRelation(appKey, configKeys, "")
 		if err != nil {
 			t.Fatal(err)
 		}
 		clients = append(clients, *client)
 	}
-	set := GetOnlineClientSet(appKey, configKeys[3])
+	set := GetOnlineClientSet(appKey, configKeys[3], "")
 	for _, client := range clients {
 		if !set.contains(client) {
 			t.Fatal("lose client with id: ", client.Id)
@@ -125,7 +125,7 @@ func TestGetClientSet03(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(10))
+			err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(10), "")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -137,11 +137,11 @@ func TestGetClientSet03(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = client.BuildClientConfigRelation(appKey, configKeys)
+	err = client.BuildClientConfigRelation(appKey, configKeys, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	set := GetOnlineClientSet(appKey, configKeys[2])
+	set := GetOnlineClientSet(appKey, configKeys[3], "")
 	if !set.contains(*client) {
 		t.Fatal()
 	}

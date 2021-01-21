@@ -15,6 +15,8 @@ type ConfigVal string
 
 type ConfigEnv string
 
+const DefaultConfigEnv = "default"
+
 type AppMetaData struct {
 	key         Appkey
 	description string
