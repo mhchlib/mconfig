@@ -98,7 +98,7 @@ func initFlagConfig() *MconfigFlag {
 	mconfigFlag := NewMconfigFlag()
 	mconfigFlag.Namspace = flag.String("namespace", "com.github.mhchlib", "input your namespace")
 	mconfigFlag.RegistryStr = flag.String("registry", "", "input registry address like etcd://127.0.0.1:2389")
-	mconfigFlag.StoreStr = flag.String("store", "file://t_file/", "input store address like file://t_file/")
+	mconfigFlag.StoreStr = flag.String("store", "file://file_mconfig/", "input store address like file://t_file/")
 	mconfigFlag.ExposeStr = flag.String("expose", ":8080", "input server ip, default local ip")
 	return mconfigFlag
 }

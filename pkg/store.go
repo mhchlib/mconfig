@@ -10,7 +10,6 @@ type AppConfigStore interface {
 	GetAppConfigs(key Appkey) (*AppConfigs, error)
 	PutAppConfigs(key Appkey, value *AppConfigs) error
 	WatchAppConfigs(ctx context.Context) (chan *ConfigEvent, error)
-	//...
 }
 
 // StorePlugin ...
