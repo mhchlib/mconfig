@@ -34,6 +34,9 @@ type MetaData struct {
 }
 
 func NewClient(metadata *MetaData) (*Client, error) {
+	if management == nil {
+		return nil, errors.New("client config relation management does not init...")
+	}
 	id, err := getClientId()
 	if err != nil {
 		return nil, err
@@ -58,9 +61,7 @@ func (client *Client) BuildClientConfigRelation(appKey mconfig.Appkey, configKey
 	client.appKey = appKey
 	client.configKeys = configKeys
 	client.configEnv = env
-	if management == nil {
-		return errors.New("client config relation management does not init...")
-	}
+
 	err := management.addClientConfigRelation(*client)
 	if err != nil {
 		return err

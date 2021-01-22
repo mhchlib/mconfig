@@ -2,44 +2,38 @@ package client
 
 import (
 	"github.com/mhchlib/mconfig/test"
+	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 )
 
-func TestAddClient(t *testing.T) {
+func TestAddClient01(t *testing.T) {
+	_, err := NewClient(&MetaData{})
+	assert.NotNil(t, err)
+}
+
+func TestAddClient02(t *testing.T) {
 	InitClientManagement()
 	_, err := NewClient(&MetaData{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 }
 
 func TestBuildClientConfigRelation(t *testing.T) {
 	InitClientManagement()
 	client, err := NewClient(&MetaData{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(100), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 }
 
 func TestRemoveClient01(t *testing.T) {
 	InitClientManagement()
 	client, err := NewClient(&MetaData{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(100), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.RemoveClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 }
 
 func TestRemoveClient02(t *testing.T) {
@@ -47,21 +41,13 @@ func TestRemoveClient02(t *testing.T) {
 	appKey := test.MockAppkey()
 	configKeys := test.MockConfigkeys(100)
 	client, err := NewClient(&MetaData{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.BuildClientConfigRelation(appKey, configKeys, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.RemoveClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	set := GetOnlineClientSet(appKey, configKeys[3], "")
-	if set.contains(*client) {
-		t.Fatal()
-	}
+	assert.False(t, set.contains(client))
 }
 
 func TestGetClientSet01(t *testing.T) {
@@ -69,46 +55,30 @@ func TestGetClientSet01(t *testing.T) {
 	appKey := test.MockAppkey()
 	configKeys := test.MockConfigkeys(100)
 	client, err := NewClient(&MetaData{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.BuildClientConfigRelation(appKey, configKeys, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	set := GetOnlineClientSet(appKey, configKeys[3], "")
-	if set != nil {
-		if !set.contains(*client) {
-			t.Fatal("lose client data")
-		}
-	} else {
-		t.Fatal("no client set")
-	}
+	assert.True(t, set.contains(client))
 }
 
 func TestGetClientSet02(t *testing.T) {
 	count := 100
 	InitClientManagement()
-	clients := make([]Client, 0)
+	clients := make([]*Client, 0)
 	appKey := test.MockAppkey()
 	configKeys := test.MockConfigkeys(100)
 
 	for i := 0; i < count; i++ {
 		client, err := NewClient(&MetaData{})
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.Nil(t, err)
 		err = client.BuildClientConfigRelation(appKey, configKeys, "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		clients = append(clients, *client)
+		assert.Nil(t, err)
+		clients = append(clients, client)
 	}
 	set := GetOnlineClientSet(appKey, configKeys[3], "")
 	for _, client := range clients {
-		if !set.contains(client) {
-			t.Fatal("lose client with id: ", client.Id)
-		}
+		assert.True(t, set.contains(client))
 	}
 }
 
@@ -122,27 +92,17 @@ func TestGetClientSet03(t *testing.T) {
 	for i := 0; i < count; i++ {
 		go func(group *sync.WaitGroup) {
 			client, err := NewClient(&MetaData{})
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.Nil(t, err)
 			err = client.BuildClientConfigRelation(test.MockAppkey(), test.MockConfigkeys(10), "")
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.Nil(t, err)
 			group.Done()
 		}(&swg)
 	}
 	swg.Wait()
 	client, err := NewClient(&MetaData{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	err = client.BuildClientConfigRelation(appKey, configKeys, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.Nil(t, err)
 	set := GetOnlineClientSet(appKey, configKeys[3], "")
-	if !set.contains(*client) {
-		t.Fatal()
-	}
+	assert.True(t, set.contains(client))
 }

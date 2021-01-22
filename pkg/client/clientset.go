@@ -21,7 +21,7 @@ func (set *ClientSet) remove(client Client) error {
 	return nil
 }
 
-func (set *ClientSet) contains(client Client) bool {
+func (set *ClientSet) contains(client *Client) bool {
 	set.RLock()
 	_, ok := set.m[client.Id]
 	set.RUnlock()
