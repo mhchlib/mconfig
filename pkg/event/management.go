@@ -5,22 +5,22 @@ import (
 	"sync"
 )
 
-type EventType int
+type EventType string
 
-var Event_Change EventType = 0
-var Event_ADD EventType = 1
-var Event_Update EventType = 2
-var Event_Delete EventType = 3
+var Event_Change EventType = "event_change"
+var Event_Add EventType = "event_add"
+var Event_Update EventType = "event_update"
+var Event_Delete EventType = "event_delete"
 
 type EventKey string
 
-type MetaData map[string]interface{}
+type EventInvoke func(metadata Metadata)
 
-type ChangeVal interface{}
+type Metadata map[string]interface{}
 
 type EventManagement struct {
 	sync.RWMutex
-	record map[EventDesc]func(metaData MetaData, changVal interface{})
+	record map[EventDesc]EventInvoke
 }
 
 type EventDesc struct {
@@ -28,15 +28,14 @@ type EventDesc struct {
 	EventKey  EventKey
 }
 
-type ChangeEvent struct {
+type Event struct {
 	EventDesc EventDesc
-	Metadata  MetaData
-	val       ChangeVal
+	Metadata  Metadata
 }
 
 const LENGTH_MAX_EVENT = 20
 
-func (management *EventManagement) registerEvent(eventKey EventKey, eventType EventType, handle func(metaData MetaData, changVal interface{})) error {
+func (management *EventManagement) registerEvent(eventKey EventKey, eventType EventType, handle EventInvoke) error {
 	management.Lock()
 	defer management.Unlock()
 	eventDesc := &EventDesc{
@@ -44,13 +43,13 @@ func (management *EventManagement) registerEvent(eventKey EventKey, eventType Ev
 		EventKey:  eventKey,
 	}
 	if management.record == nil {
-		management.record = make(map[EventDesc]func(metaData MetaData, changVal interface{}))
+		management.record = make(map[EventDesc]EventInvoke)
 	}
 	management.record[*eventDesc] = handle
 	return nil
 }
 
-func (management *EventManagement) getEventInvoke(desc EventDesc) (func(metaData MetaData, changVal interface{}), error) {
+func (management *EventManagement) getEventInvoke(desc EventDesc) (EventInvoke, error) {
 	management.RLock()
 	defer management.RUnlock()
 	if management.record == nil {
@@ -63,14 +62,14 @@ func (management *EventManagement) getEventInvoke(desc EventDesc) (func(metaData
 	return invoke, nil
 }
 
-func (management *EventManagement) handleEvent(event ChangeEvent) error {
+func (management *EventManagement) handleEvent(event *Event) error {
 	eventDesc := event.EventDesc
 	invoke, err := management.getEventInvoke(eventDesc)
 	if err != nil {
 		return err
 	}
 	go func() {
-		invoke(event.Metadata, event.val)
+		invoke(event.Metadata)
 	}()
 	return nil
 }

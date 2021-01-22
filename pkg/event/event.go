@@ -1,7 +1,6 @@
 package event
 
 import (
-	"context"
 	log "github.com/mhchlib/logger"
 )
 
@@ -12,27 +11,33 @@ func init() {
 	management = &EventManagement{}
 }
 
-func StartEventBus(ctx context.Context) {
+func InitEventBus() {
 	log.Info("start event bus")
-	eventLoop := newEventCustomer(LENGTH_MAX_EVENT, management)
-	err := eventLoop.handleEvent(ctx)
-	if err != nil {
-		log.Error(err)
-	}
-	log.Info("event bus is closed")
+	eventLoop = newEventCustomer(LENGTH_MAX_EVENT, management)
+	go func() {
+		err := eventLoop.handleEvent()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
 }
 
-func AddEvent(event ChangeEvent) error {
+func CloseEventBus() {
+	eventLoop.close()
+	log.Info("close event bus")
+}
+
+func AddEvent(event *Event) error {
 	return eventLoop.addEvent(event)
 }
 
-func RegisterEventBus(eventDataType EventKey, eventType EventType, handle func(metadata MetaData, changVal interface{})) error {
-	return management.registerEvent(eventDataType, eventType, handle)
+func RegisterEventBus(eventKey EventKey, eventType EventType, handle EventInvoke) error {
+	return management.registerEvent(eventKey, eventType, handle)
 }
 
-func RegisterMultiEventBus(eventDataType EventKey, eventTypes []EventType, handle func(metadata MetaData, changVal interface{})) error {
+func RegisterMultiEventBus(eventKey EventKey, eventTypes []EventType, handle EventInvoke) error {
 	for _, eventType := range eventTypes {
-		err := RegisterEventBus(eventDataType, eventType, handle)
+		err := RegisterEventBus(eventKey, eventType, handle)
 		if err != nil {
 			return err
 		}
