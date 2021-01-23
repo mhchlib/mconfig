@@ -23,6 +23,10 @@ func NewClientConfigRelationManagement() *ClientConfigRelationManagement {
 	return management
 }
 
+func GetOnlineClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
+	return management.getClientSet(appKey, configKey, env)
+}
+
 func (management *ClientConfigRelationManagement) addClientConfigRelation(client Client) error {
 	appKey := client.appKey
 	configKeys := client.configKeys

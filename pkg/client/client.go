@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
-	"sync"
 	"sync/atomic"
 )
 
@@ -18,22 +17,21 @@ func InitClientManagement() {
 }
 
 type Client struct {
-	sync.RWMutex
 	Id                          ClientId
 	metadata                    *MetaData
-	msgBus                      ClientMsgBus
+	msgBus                      *ClientMsgBus
 	appKey                      mconfig.Appkey
 	configKeys                  []mconfig.ConfigKey
 	configEnv                   mconfig.ConfigEnv
 	isbuildClientConfigRelation bool
-	willBeRemoved               bool
+	close                       chan interface{}
 }
 
 type MetaData struct {
 	// loading
 }
 
-func NewClient(metadata *MetaData) (*Client, error) {
+func NewClient(metadata *MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Client, error) {
 	if management == nil {
 		return nil, errors.New("client config relation management does not init...")
 	}
@@ -44,12 +42,8 @@ func NewClient(metadata *MetaData) (*Client, error) {
 	return &Client{
 		Id:       id,
 		metadata: metadata,
-		msgBus:   newClientMsgBus(),
+		msgBus:   newClientMsgBus(send, recv),
 	}, nil
-}
-
-func GetOnlineClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
-	return management.getClientSet(appKey, configKey, env)
 }
 
 func getClientId() (ClientId, error) {
@@ -77,20 +71,16 @@ func (client *Client) RemoveClient() error {
 			return err
 		}
 	}
-	client.Lock()
-	close(client.msgBus)
-	client.willBeRemoved = true
-	client.Unlock()
+	client.msgBus.Close()
 	client = nil
 	return nil
 }
 
-func (client *Client) AddMsgBus(data interface{}) error {
-	client.Lock()
-	defer client.Unlock()
-	if client.willBeRemoved {
-		return nil
-	}
-	client.msgBus <- data
-	return nil
+func (client *Client) SendMsg(data interface{}) error {
+	err := client.msgBus.sendMsg(data)
+	return err
+}
+
+func (client *Client) Hold() {
+	<-client.close
 }

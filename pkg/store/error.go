@@ -1,4 +1,4 @@
-package etcd
+package store
 
 import "errors"
 
@@ -11,4 +11,6 @@ var (
 	Error_AppConfigByFilterNotFound = errors.New("AppConfigByFilterNotFound")
 	// Error_ParserAppConfigFail ...
 	Error_ParserAppConfigFail = errors.New("ParserAppConfigFail")
+
+	Error_WatchFail = errors.New(" watch error")
 )

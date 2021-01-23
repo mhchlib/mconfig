@@ -16,7 +16,7 @@ type EventKey string
 
 type EventInvoke func(metadata Metadata)
 
-type Metadata map[string]interface{}
+type Metadata interface{}
 
 type EventManagement struct {
 	sync.RWMutex

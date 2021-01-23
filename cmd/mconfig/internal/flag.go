@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"strconv"
 	"strings"
 )
@@ -26,7 +26,7 @@ func NewMconfigFlag() *MconfigFlag {
 	return &MconfigFlag{}
 }
 
-func ParseFlag(mconfig *pkg.MConfig) {
+func ParseFlag(mconfig *mconfig.MConfig) {
 	mconfigFlag := initFlagConfig()
 	flag.Parse()
 	err := parseFlagData(mconfigFlag, mconfig)
@@ -35,7 +35,7 @@ func ParseFlag(mconfig *pkg.MConfig) {
 	}
 }
 
-func parseFlagData(mconfigFlag *MconfigFlag, mconfig *pkg.MConfig) error {
+func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfig) error {
 	//namespace
 	mconfig.Namspace = *mconfigFlag.Namspace
 	//registry

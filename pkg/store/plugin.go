@@ -1,19 +1,18 @@
-package pkg
+package store
 
 import (
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/store"
 )
 
 // StorePlugin ...
 type StorePlugin struct {
 	Name string
-	Init func(address string) (store.MConfigStore, error)
+	Init func(address string) (MConfigStore, error)
 	//...
 }
 
 // NewStorePlugin ...
-func NewStorePlugin(name string, init func(address string) (store.MConfigStore, error)) *StorePlugin {
+func NewStorePlugin(name string, init func(address string) (MConfigStore, error)) *StorePlugin {
 	return &StorePlugin{Name: name, Init: init}
 }
 
@@ -22,7 +21,7 @@ var StorePluginMap map[string]*StorePlugin
 var storePluginNames []string
 
 // RegisterStorePlugin ...
-func RegisterStorePlugin(name string, init func(address string) (store.MConfigStore, error)) {
+func RegisterStorePlugin(name string, init func(address string) (MConfigStore, error)) {
 	if StorePluginMap == nil {
 		StorePluginMap = make(map[string]*StorePlugin)
 	}

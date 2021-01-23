@@ -1,43 +1,20 @@
 package config
 
 import (
-	"github.com/go-acme/lego/v3/log"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/stretchr/testify/assert"
+	"math/rand"
+	"strconv"
 	"testing"
 )
 
-func TestCheckConfigSchema(t *testing.T) {
-	examples := [][]string{
-		{`{"db":{"url":"127.0.0.1:3306","database":"bookstore","time_out": 20}}`, `{
-    "type": "object",
-    "properties": {
-        "db": {
-            "type": "object",
-            "properties": {
-               "url": {
-                  "type": "string"
-               },
-               "database": {
-                  "type": "string"
-               } ,
-				"time_out": {
-                  "type": "integer"
-                } 
-            }
-        }
-    }
-}`},
-		{`{"age":1111}`, `{"type":"object","properties":{"age":{"type":"integer"}}}`},
-		{`{"age":1111,"name":"1111"}`, `{"type":"object","properties":{"age":{"type":"integer"}}}`},
-		{``, ``},
+func TestParseConfigEventMetadata(t *testing.T) {
+	m := ConfigEventMetadata{
+		AppKey:    "appKey",
+		ConfigKey: "configKey",
+		Env:       "dev",
+		Val:       mconfig.ConfigVal("66666" + strconv.Itoa(rand.Intn(1000))),
 	}
-	for i := 0; i < len(examples); i++ {
-		ok, err := CheckConfigSchema(&Config{
-			Config: examples[i][0],
-			Schema: examples[i][1],
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(ok)
-	}
+	_, err := parseConfigEventMetadata(m)
+	assert.Nil(t, err)
 }

@@ -1,10 +1,7 @@
 package store
 
 import (
-	"context"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg"
-	"github.com/mhchlib/mconfig/pkg/event"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 )
 
@@ -12,7 +9,7 @@ import (
 type MConfigStore interface {
 	GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
 	PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error
-	WatchConfigVal(ctx context.Context, customer event.MConfigEventCustomer) error
+	WatchConfigVal(customer *Consumer) error
 
 	NewAppMetaData(meta mconfig.AppMetaData) error
 	NewConfigMetaData(meta mconfig.ConfigMetaData) error
@@ -22,22 +19,30 @@ type MConfigStore interface {
 	DeleteApp(appKey mconfig.Appkey) error
 	DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error
 	ListAppMetaData(limit int, offset int, filter string) error
+
+	Close() error
 }
 
 //CurrentMConfigStore
-var CurrentMConfigStore MConfigStore
+var currentMConfigStore MConfigStore
 
 // InitStore ...
 func InitStore(storeType string, storeAddress string) {
-	plugin, ok := pkg.StorePluginMap[storeType]
+	plugin, ok := StorePluginMap[storeType]
 	if !ok {
-		log.Fatal("store type: ", storeType, " can not be supported, you can choose: ", pkg.storePluginNames)
+		log.Fatal("store type:", storeType, "does not be supported, you can choose:", storePluginNames)
 	}
 	store, err := plugin.Init(storeAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
-	CurrentMConfigStore = store
+	currentMConfigStore = store
 	//测试连接
 	log.Info("store init success with", storeType, storeAddress)
+	go func() {
+		err = currentMConfigStore.WatchConfigVal(newConsumer())
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 }

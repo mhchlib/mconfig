@@ -1,7 +1,6 @@
 package event
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -52,8 +51,8 @@ func TestAll(t *testing.T) {
 }
 
 func f(data Metadata) {
-	fmt.Println(data["key"])
-	i := data["chan"]
+	d := data.(map[string]interface{})
+	i := d["chan"]
 	c := i.(chan interface{})
 	c <- struct{}{}
 }

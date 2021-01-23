@@ -8,7 +8,7 @@ type Appkey string
 
 type ConfigKey string
 
-type ConfigVal string
+type ConfigVal interface{}
 
 type FilterVal string
 

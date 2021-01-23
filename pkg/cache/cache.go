@@ -1,30 +1,47 @@
 package cache
 
 import (
-	"github.com/mhchlib/mconfig/pkg/config"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"errors"
+	"sync"
 )
 
-var mconfigCache *MconfigCache
+var cache *Cache
 
-func init() {
-	mconfigCache = &MconfigCache{
-		cache: make(map[mconfig.Appkey]*config.AppConfigsMap),
+type CacheKey interface{}
+type CacheValue interface{}
+
+type Cache struct {
+	cache map[CacheKey]CacheValue
+	sync.RWMutex
+}
+
+func InitCacheManagement() {
+	cache = &Cache{
+		cache: make(map[CacheKey]CacheValue),
 	}
 }
 
-func PutConfigToCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, val mconfig.ConfigVal) error {
-	return nil
+func PutConfigToCache(key CacheKey, val CacheValue) error {
+	return cache.putConfigCache(key, val)
 }
 
-func GetConfigFromCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
-	return nil
+func GetConfigFromCache(key CacheKey) (interface{}, error) {
+	return cache.getConfigCache(key)
 }
 
-func PutFilterToCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, val mconfig.FilterVal) error {
-	return nil
+func (cache *Cache) getConfigCache(key CacheKey) (CacheValue, error) {
+	cache.RLock()
+	value, ok := cache.cache[key]
+	cache.RUnlock()
+	if ok {
+		return value, nil
+	}
+	return nil, errors.New("not found")
 }
 
-func GetFilterFromCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error {
+func (cache *Cache) putConfigCache(key CacheKey, val CacheValue) error {
+	cache.Lock()
+	defer cache.Unlock()
+	cache.cache[key] = val
 	return nil
 }

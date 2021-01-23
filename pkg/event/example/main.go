@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg/event"
 )
 
@@ -33,8 +34,9 @@ func main() {
 }
 
 func f(data event.Metadata) {
-	fmt.Println(data["key"])
-	i := data["chan"]
+	d := data.(map[string]interface{})
+	log.Info(d["key"])
+	i := d["chan"]
 	c := i.(chan interface{})
 	c <- struct{}{}
 }

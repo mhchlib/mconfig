@@ -1,4 +1,4 @@
-package pkg
+package mconfig
 
 // MConfig ...
 type MConfig struct {
