@@ -9,13 +9,13 @@ import (
 type MConfigStore interface {
 	GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
 	PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error
-	WatchConfigVal(customer *Consumer) error
+	WatchDynamicVal(customer *Consumer) error
 
-	NewAppMetaData(meta mconfig.AppMetaData) error
-	NewConfigMetaData(meta mconfig.ConfigMetaData) error
-	GetAppConfigs(appKey mconfig.Appkey) ([]mconfig.ConfigMetaData, error)
-	UpdateAppMetaData(meta mconfig.AppMetaData) error
-	UpdateConfigMetaData(meta mconfig.ConfigMetaData) error
+	NewAppMetaData(meta *mconfig.AppMetaData) error
+	NewConfigMetaData(meta *mconfig.ConfigMetaData) error
+	GetAppConfigs(appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error)
+	UpdateAppMetaData(meta *mconfig.AppMetaData) error
+	UpdateConfigMetaData(meta *mconfig.ConfigMetaData) error
 	DeleteApp(appKey mconfig.Appkey) error
 	DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error
 	ListAppMetaData(limit int, offset int, filter string) error
@@ -37,12 +37,11 @@ func InitStore(storeType string, storeAddress string) {
 		log.Fatal(err)
 	}
 	currentMConfigStore = store
-	//测试连接
 	log.Info("store init success with", storeType, storeAddress)
 	go func() {
-		err = currentMConfigStore.WatchConfigVal(newConsumer())
+		err = currentMConfigStore.WatchDynamicVal(newConsumer())
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 	}()
 }

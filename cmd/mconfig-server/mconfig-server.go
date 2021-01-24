@@ -2,11 +2,12 @@ package main
 
 import (
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/v1/cli"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
-	"github.com/mhchlib/mconfig/cmd/mconfig/internal"
+	"github.com/mhchlib/mconfig/cmd/mconfig-server/internal"
 	"github.com/mhchlib/mconfig/pkg"
+	mconfig "github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/rpc"
+	_ "github.com/mhchlib/mconfig/pkg/store/plugin/etcd"
 	"github.com/mhchlib/register"
 	"github.com/mhchlib/register/common"
 	"github.com/mhchlib/register/mregister"
@@ -19,54 +20,54 @@ import (
 	"syscall"
 )
 
-var mconfig *pkg.MConfig
+var m *mconfig.MConfig
 
 func init() {
-	mconfig = pkg.NewMConfig()
+	m = mconfig.NewMConfig()
 	internal.ShowBanner()
-	internal.ParseFlag(mconfig)
+	internal.ParseFlag(m)
 }
 
 func main() {
 	done := make(chan os.Signal, 1)
-	defer pkg.InitMconfig(mconfig)()
-	if mconfig.EnableRegistry {
-		reg, err := register.InitRegister(mconfig.RegistryType, func(options *mregister.Options) {
-			options.Address = strings.Split(mconfig.RegistryAddress, ",")
-			options.NameSpace = mconfig.Namspace
-			if mconfig.ServerIp == "" {
+	defer pkg.InitMconfig(m)()
+	if m.EnableRegistry {
+		reg, err := register.InitRegister(m.RegistryType, func(options *mregister.Options) {
+			options.Address = strings.Split(m.RegistryAddress, ",")
+			options.NameSpace = m.Namspace
+			if m.ServerIp == "" {
 				ip, err := common.GetClientIp()
 				if err != nil {
 					log.Fatal("get client ip error")
 				}
-				mconfig.ServerIp = ip
+				m.ServerIp = ip
 			}
-			options.ServerInstance = mconfig.ServerIp + ":" + strconv.Itoa(mconfig.ServerPort)
+			options.ServerInstance = m.ServerIp + ":" + strconv.Itoa(m.ServerPort)
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = reg.RegisterService("mconfig-cli")
+		err = reg.RegisterService("mconfig-server-cli")
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = reg.RegisterService("mconfig-sdk")
+		err = reg.RegisterService("mconfig-server-sdk")
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err = reg.UnRegisterService("mconfig-sdk")
+			err = reg.UnRegisterService("mconfig-server-sdk")
 			if err != nil {
 				log.Error(err)
 			}
-			err = reg.UnRegisterService("mconfig-cli")
+			err = reg.UnRegisterService("mconfig-server-cli")
 			if err != nil {
 				log.Error(err)
 			}
 		}()
 	}
-	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(mconfig.ServerPort))
-	log.Info("mconfig listen :" + strconv.Itoa(mconfig.ServerPort) + " success")
+	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(m.ServerPort))
+	log.Info("mconfig-server listen :" + strconv.Itoa(m.ServerPort) + " success")
 
 	if err != nil {
 		log.Fatal(err)
@@ -77,7 +78,7 @@ func main() {
 		server.Stop()
 	}()
 	sdk.RegisterMConfigServer(server, rpc.NewMConfigSDK())
-	cli.RegisterMConfigCliServer(server, rpc.NewMConfigCLI())
+	//cli.RegisterMConfigCliServer(server, rpc.NewMConfigCLI())
 	go func() {
 		err = server.Serve(listener)
 		if err != nil {

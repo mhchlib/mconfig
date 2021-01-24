@@ -33,7 +33,7 @@ type Event struct {
 	Metadata  Metadata
 }
 
-const LENGTH_MAX_EVENT = 20
+const LENGTH_MAX_EVENT = 100
 
 func (management *EventManagement) registerEvent(eventKey EventKey, eventType EventType, handle EventInvoke) error {
 	management.Lock()

@@ -37,7 +37,7 @@ func InitConfigCenter() {
 //type AppConfigs map[string]*Configs
 
 // GetConfigFromStore ...
-//func GetConfigFromStore(key mconfig.Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+//func GetConfigFromStore(key mconfig-server.Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 //	appConfigs, err := store.CurrentMConfigStore.GetAppConfigs(key)
 //	//paser config str to ob
 //	if err != nil {
@@ -57,10 +57,10 @@ func InitConfigCenter() {
 //}
 
 //// GetConfigFromCache ...
-//func GetConfigFromCache(key mconfig.Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
+//func GetConfigFromCache(key mconfig-server.Appkey, filters *sdk.ConfigFilters) ([]*sdk.Config, error) {
 //	cache, err := cache.mconfigCache.getConfigCache(key)
 //	if err != nil {
-//		if errors.Is(err, mconfig.Error_AppConfigNotFound) {
+//		if errors.Is(err, mconfig-server.Error_AppConfigNotFound) {
 //			return nil, nil
 //		} else {
 //			return nil, err
@@ -83,7 +83,7 @@ func InitConfigCenter() {
 //	return result.Valid(), nil
 //}
 //
-//func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters, appkey mconfig.Appkey) ([]*sdk.Config, error) {
+//func filterConfigsForClient(appConfigs *AppConfigsMap, filters *sdk.ConfigFilters, appkey mconfig-server.Appkey) ([]*sdk.Config, error) {
 //	configIdLen := len(filters.ConfigIds)
 //	configsForClient := make([]*sdk.Config, 0)
 //	defaultChoose := common.ConfigStatus_Published

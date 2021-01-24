@@ -35,7 +35,6 @@
 ### Bugs
 
 
-
 ### About Me
 
 A person who loves to write code.

@@ -12,7 +12,7 @@ package rpc
 //
 //// PutMconfigConfig ...
 //func (M *MConfigCLI) PutMconfigConfig(ctx context.Context, request *cli.PutMconfigRequest) (*cli.PutMconfigResponse, error) {
-//	appConfigs, err := pkg.ConfigStore.GetAppConfigs(mconfig.Appkey(request.AppKey))
+//	appConfigs, err := pkg.ConfigStore.GetAppConfigs(mconfig-server.Appkey(request.AppKey))
 //	response := &cli.PutMconfigResponse{}
 //	if err != nil {
 //		response.Code = 500
@@ -56,7 +56,7 @@ package rpc
 //	config.UpdateTime = time.Now().Unix()
 //	config.Schema = request.Schema
 //	config.Config = request.Config
-//	err = pkg.ConfigStore.PutAppConfigs(mconfig.Appkey(request.AppKey), appConfigs)
+//	err = pkg.ConfigStore.PutAppConfigs(mconfig-server.Appkey(request.AppKey), appConfigs)
 //	if err != nil {
 //		log.Fatal(err)
 //	}
@@ -73,12 +73,12 @@ package rpc
 //// InitMconfigApp ...
 //func (M *MConfigCLI) InitMconfigApp(ctx context.Context, request *cli.InitMconfigAppRequest) (*cli.InitMconfigAppResponse, error) {
 //	response := &cli.InitMconfigAppResponse{}
-//	appConfigs, _ := pkg.ConfigStore.GetAppConfigs(mconfig.Appkey(request.AppKey))
+//	appConfigs, _ := pkg.ConfigStore.GetAppConfigs(mconfig-server.Appkey(request.AppKey))
 //	if appConfigs != nil {
 //		response.Code = 500
 //		response.Msg = "the app already exists"
 //	}
-//	err := pkg.ConfigStore.PutAppConfigs(mconfig.Appkey(request.AppKey), &config.AppConfigs{})
+//	err := pkg.ConfigStore.PutAppConfigs(mconfig-server.Appkey(request.AppKey), &config.AppConfigs{})
 //	if err != nil {
 //		return response, err
 //	}

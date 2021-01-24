@@ -9,11 +9,6 @@ import (
 	"github.com/mhchlib/mconfig/pkg/event"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/store"
-	"google.golang.org/grpc"
-	"math/rand"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var (
@@ -22,178 +17,165 @@ var (
 	watcher clientv3.Watcher
 )
 
-// PREFIX_CONFIG ...
-const PREFIX_CONFIG = "/mconfig/"
+type KeyNamespce string
+type KeyMode string
+type KeyClass string
 
-// EtcdStore ...
+const (
+	PLUGIN_NAME                  = "etcd"
+	PREFIX_NAMESPACE KeyNamespce = "/com.github.hchlib.mconfig"
+	SEPARATOR                    = "/"
+	MODE_WATCH       KeyMode     = "watch"
+	MODE_DEFAULT     KeyMode     = "default"
+
+	CLASS_CONFIG  KeyClass = "config"
+	CLASS_FILTER  KeyClass = "filter"
+	CLASS_VERSION KeyClass = "version"
+	CLASS_META    KeyClass = "metadata"
+)
+
+var prefix_mode_watch = string(PREFIX_NAMESPACE) + SEPARATOR + string(MODE_WATCH)
+var prefix_mode_default = string(PREFIX_NAMESPACE) + SEPARATOR + string(MODE_DEFAULT)
+
+type KeyEntity struct {
+	namespace KeyNamespce
+	mode      KeyMode
+	class     KeyClass
+	appKey    mconfig.Appkey
+	configKey mconfig.ConfigKey
+	env       mconfig.ConfigEnv
+}
+
 type EtcdStore struct {
 	cancelFunc context.CancelFunc
 }
 
-func (e *EtcdStore) WatchConfigVal(consumers *store.Consumer) error {
+func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 	var watchChan clientv3.WatchChan
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	e.cancelFunc = cancelFunc
-	watchChan = watcher.Watch(ctx, Prefix(PREFIX_CONFIG, ""), clientv3.WithPrefix())
+	watchChan = watcher.Watch(ctx, Prefix(prefix_mode_watch, ""), clientv3.WithPrefix())
 	for {
 		select {
 		case v, ok := <-watchChan:
 			if ok == false {
-				log.Error("watcher err ...")
-				return store.Error_WatchFail
+				return store.Error_FAIL_WATCH
 			}
 			if v.Canceled {
 				log.Error("watcher err ..." + v.Err().Error())
-				return store.Error_WatchFail
+				return store.Error_FAIL_WATCH
 			}
 			events := v.Events
 			for _, e := range events {
-				//log.Info("get event value : ", string(event.Kv.Value))
 				switch e.Type {
 				case mvccpb.PUT:
-					err := consumers.AddEvent(&event.Event{
+					key, err := parseEventKey(string(e.Kv.Key))
+					if err != nil {
+						log.Error(err)
+						continue
+					}
+					var metadate interface{}
+					var eventKey event.EventKey
+					switch key.class {
+					case CLASS_CONFIG:
+						metadate = config.ConfigEventMetadata{
+							AppKey:    key.appKey,
+							ConfigKey: key.configKey,
+							Env:       key.env,
+							Val:       mconfig.ConfigVal(e.Kv.Value),
+						}
+						eventKey = config.EVENT_KEY
+					case CLASS_FILTER:
+					//metadate := config.ConfigEventMetadata{
+					//	AppKey:    key.appKey,
+					//	ConfigKey: key.configKey,
+					//	Env:       key.env,
+					//	Val:       mconfig.ConfigVal(e.Kv.Value),
+					//}
+					//eventKey := config.EVENT_KEY
+					default:
+						log.Error("key class <" + key.class + ">is not declare")
+						continue
+					}
+					err = consumers.AddEvent(&event.Event{
 						EventDesc: event.EventDesc{
 							EventType: event.Event_Update,
+							EventKey:  eventKey,
+						},
+						Metadata: metadate,
+					})
+					if err != nil {
+						log.Error(err)
+					}
+					log.Debug("etcd update key:", string(e.Kv.Key), "value:", string(e.Kv.Value))
+				case mvccpb.DELETE:
+					key, err := parseEventKey(string(e.Kv.Key))
+					if err != nil {
+						log.Error(err)
+						break
+					}
+					err = consumers.AddEvent(&event.Event{
+						EventDesc: event.EventDesc{
+							EventType: event.Event_Delete,
 							EventKey:  config.EVENT_KEY,
 						},
 						Metadata: config.ConfigEventMetadata{
-							AppKey:    "appKey",
-							ConfigKey: "configKey",
-							Env:       "dev",
-							Val:       mconfig.ConfigVal("66666" + strconv.Itoa(rand.Intn(1000))),
+							AppKey:    key.appKey,
+							ConfigKey: key.configKey,
+							Env:       key.env,
 						},
 					})
 					if err != nil {
 						log.Error(err)
 					}
-					log.Info("etcd add event to consumers")
-
-					//appConfigs, err := parseAppConfigsJSONStr((AppConfigsJSONStr)(event.Kv.Value))
-					//if err != nil {
-					//	log.Error("app key: ", PREFIX_CONFIG, " mvccpb.PUT ", err)
-					//}
-					//configChan <- &pkg.ConfigEvent{
-					//	Key:        (mconfig.Appkey)(RemovePrefix(PREFIX_CONFIG, string(event.Kv.Key))),
-					//	AppConfigs: appConfigs,
-					//	EventType:  pkg.Event_Update,
-					//}
-				case mvccpb.DELETE:
-
 				}
 			}
 		}
 	}
+}
+
+func (e *EtcdStore) GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+	panic("implement me")
+}
+
+func (e *EtcdStore) PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error {
+
 	return nil
 }
 
-func (e EtcdStore) GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+func (e *EtcdStore) NewAppMetaData(meta *mconfig.AppMetaData) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error {
+func (e *EtcdStore) NewConfigMetaData(meta *mconfig.ConfigMetaData) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) NewAppMetaData(meta mconfig.AppMetaData) error {
+func (e *EtcdStore) GetAppConfigs(appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error) {
 	panic("implement me")
 }
 
-func (e EtcdStore) NewConfigMetaData(meta mconfig.ConfigMetaData) error {
+func (e *EtcdStore) UpdateAppMetaData(meta *mconfig.AppMetaData) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) GetAppConfigs(appKey mconfig.Appkey) ([]mconfig.ConfigMetaData, error) {
+func (e *EtcdStore) UpdateConfigMetaData(meta *mconfig.ConfigMetaData) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) UpdateAppMetaData(meta mconfig.AppMetaData) error {
+func (e *EtcdStore) DeleteApp(appKey mconfig.Appkey) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) UpdateConfigMetaData(meta mconfig.ConfigMetaData) error {
+func (e *EtcdStore) DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) DeleteApp(appKey mconfig.Appkey) error {
+func (e *EtcdStore) ListAppMetaData(limit int, offset int, filter string) error {
 	panic("implement me")
 }
 
-func (e EtcdStore) DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error {
-	panic("implement me")
-}
-
-func (e EtcdStore) ListAppMetaData(limit int, offset int, filter string) error {
-	panic("implement me")
-}
-
-func (e EtcdStore) Close() error {
-	panic("implement me")
-}
-
-func init() {
-	store.RegisterStorePlugin("etcd", Init)
-}
-
-// Init ...
-func Init(addressStr string) (store.MConfigStore, error) {
-	address := strings.Split(addressStr, ",")
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   address,
-		DialTimeout: time.Second * 5,
-		DialOptions: []grpc.DialOption{grpc.WithBlock()},
-	})
-	if err != nil {
-		log.Fatal("dial to store etcd err :", err, "addr: ", addressStr)
-	}
-	kv = clientv3.NewKV(cli)
-	watcher = clientv3.NewWatcher(cli)
-	var list *clientv3.MemberListResponse
-	timeoutCtx, _ := context.WithTimeout(context.Background(), time.Second*5)
-	list, err = cli.MemberList(timeoutCtx)
-	if err != nil {
-		log.Fatal("etcd member list error :", err)
-	}
-	log.Info("etcd member list : ", list.Members)
-	return &EtcdStore{}, nil
-}
-
-//// GetAppConfigs ...
-//func (e EtcdStore) GetAppConfigs(key mconfig.Appkey) (*config.AppConfigs, error) {
-//	get, err := kv.Get(context.TODO(), Prefix(PREFIX_CONFIG, string(key)))
-//	if err != nil {
-//		log.Error(err)
-//	}
-//	if get.Count == 1 {
-//		appConfigs, err := parseAppConfigsJSONStr(AppConfigsJSONStr(string(get.Kvs[0].Value)))
-//		if err != nil {
-//			return nil, err
-//		}
-//		return appConfigs, nil
-//	} else {
-//		return nil, errors.New(string("app id: " + key + " not found"))
-//	}
-//}
-//
-//// PutAppConfigs ...
-//func (e EtcdStore) PutAppConfigs(key mconfig.Appkey, value *config.AppConfigs) error {
-//	configJsonStr, err := json.Marshal(value)
-//	if err != nil {
-//		return err
-//	}
-//	_, err = kv.Put(context.TODO(), string(PREFIX_CONFIG+key), string(configJsonStr))
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
-//
-
-// Prefix ...
-func Prefix(prefix string, v string) string {
-	return prefix + v
-}
-
-// RemovePrefix ...
-func RemovePrefix(prefix string, v string) string {
-	return strings.ReplaceAll(v, prefix, "")
+func (e *EtcdStore) Close() error {
+	e.cancelFunc()
+	return nil
 }
