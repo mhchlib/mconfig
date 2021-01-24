@@ -25,7 +25,7 @@ func PutConfigToCache(key CacheKey, val CacheValue) error {
 	return cache.putConfigCache(key, val)
 }
 
-func GetConfigFromCache(key CacheKey) (interface{}, error) {
+func GetConfigFromCache(key CacheKey) (CacheKey, error) {
 	return cache.getConfigCache(key)
 }
 

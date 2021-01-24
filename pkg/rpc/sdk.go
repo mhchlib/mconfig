@@ -1,138 +1,97 @@
 package rpc
 
 import (
+	"errors"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/mhchlib/mconfig/pkg/client"
+	"github.com/mhchlib/mconfig/pkg/config"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 )
 
-// MConfigSDK ...
 type MConfigSDK struct {
 }
 
-// NewMConfigSDK ...
 func NewMConfigSDK() *MConfigSDK {
 	return &MConfigSDK{}
 }
 
-// GetVStream ...
-func (m *MConfigSDK) GetVStream(stream sdk.MConfig_GetVStreamServer) error {
-	request := &sdk.GetVRequest{}
+func (m *MConfigSDK) WatchConfigStream(stream sdk.MConfig_WatchConfigStreamServer) error {
+	request := &sdk.WatchConfigStreamRequest{}
 	err := stream.RecvMsg(request)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
-	appKey := "appKey"
-	configKey := "configKey"
+	appKey := request.AppKey
+	configKeys := request.ConfigKeys
+	metadata := request.Metadata
+	//TODO calculate
 	env := "dev"
-
-	c, err := client.NewClient(&client.MetaData{}, send(stream), recv(stream))
+	//get data from cache or store
+	configEntitys, err := config.GetConfig(mconfig.Appkey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
+	configs := make([]*sdk.ConfigVal, 0)
+	for _, entity := range configEntitys {
+		configs = append(configs, &sdk.ConfigVal{
+			ConfigKey: string(entity.Key),
+			Val:       string(entity.Val),
+		})
+	}
+	err = stream.Send(&sdk.WatchConfigStreamResponse{
+		Configs: configs,
+	})
 	if err != nil {
 		return err
 	}
-	err = c.BuildClientConfigRelation(mconfig.Appkey(appKey), []mconfig.ConfigKey{mconfig.ConfigKey(configKey)}, mconfig.ConfigEnv(env))
+	c, err := client.NewClient(metadata, send(stream), recv(stream))
+	if err != nil {
+		return err
+	}
+	err = config.WatchConfig(c, mconfig.Appkey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
 	if err != nil {
 		return err
 	}
 	c.Hold()
 	return nil
-
-	//localConfiCacheMd5 := ""
-	//configsCache, err := config.GetConfigFromCache(appKey, request.Filters)
-	//if err != nil {
-	//	log.Error(err)
-	//	return err
-	//}
-	//if configsCache == nil {
-	//	//no cache
-	//	// pull pkg from store
-	//	configsCache, err = config.GetConfigFromStore(appKey, request.Filters)
-	//	if err != nil {
-	//		log.Error(appKey, request.Filters, err)
-	//		return err
-	//	}
-	//}
-	//err = sendConfig(stream, configsCache)
-	//if err != nil {
-	//	return err
-	//}
-	//client, err := client2.NewClient()
-	//pkg.ClientChans.AddClient(client.Id, appKey, client.MsgChan)
-	//defer func() {
-	//	pkg.ClientChans.RemoveClient(client.Id, appKey)
-	//}()
-	//clietnStreamMsg := make(chan interface{})
-	//go func() {
-	//	msg := &struct{}{}
-	//	err := stream.RecvMsg(&msg)
-	//	log.Error(err)
-	//	if err != nil {
-	//		log.Error("client id：", client.Id, err)
-	//	}
-	//	clietnStreamMsg <- msg
-	//}()
-	//
-	//for {
-	//	select {
-	//	case <-client.MsgChan:
-	//		log.Info("client: ", client.Id, " get msg event, appId: ", appKey)
-	//		configsCache, err = config.GetConfigFromCache(appKey, request.Filters)
-	//		if err != nil {
-	//			log.Error(err)
-	//			return err
-	//		}
-	//		if ok, md5 := checkNeedNotifyClient(localConfiCacheMd5, configsCache); ok {
-	//			err := sendConfig(stream, configsCache)
-	//			if err != nil {
-	//				log.Error(err)
-	//				return err
-	//			}
-	//			localConfiCacheMd5 = md5
-	//		}
-	//	case <-clietnStreamMsg:
-	//		return nil
-	//	}
 }
 
-func recv(stream sdk.MConfig_GetVStreamServer) client.ClientRecvFunc {
-	return func() interface{} {
+func recv(stream sdk.MConfig_WatchConfigStreamServer) client.ClientRecvFunc {
+	return func(c *client.Client) error {
+		go func() {
+			for {
+				data := &sdk.WatchConfigStreamRequest{}
+				err := stream.RecvMsg(data)
+				if err != nil {
+					err := c.RemoveClient()
+					if err != nil {
+						log.Error("remove clent fail")
+					}
+					return
+				}
+			}
+		}()
 		return nil
 	}
 }
 
-func send(stream sdk.MConfig_GetVStreamServer) client.ClientSendFunc {
+func send(stream sdk.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
+	tmp := 1
 	return func(data interface{}) error {
-		response := sdk.GetVResponse{
-			Configs: nil,
+		tmp = tmp + 1
+		log.Info(tmp)
+
+		entity, ok := data.(*mconfig.ConfigEntity)
+		if !ok {
+			return errors.New("translate fail")
 		}
-		return stream.Send(&response)
+		val := &sdk.ConfigVal{
+			ConfigKey: string(entity.Key),
+			Val:       string(entity.Val),
+		}
+		response := &sdk.WatchConfigStreamResponse{
+			Configs: []*sdk.ConfigVal{val},
+		}
+		log.Debug(response)
+		return stream.Send(response)
 	}
 }
-
-//func checkNeedNotifyClient(localConfiCacheMd5 string, cache []*sdk.Config) (bool, string) {
-//	//avoid affect md5 val
-//	for _, v := range cache {
-//		v.CreateTime = 0
-//		v.UpdateTime = 0
-//	}
-//	hash := md5.New()
-//	bs, _ := json.Marshal(cache)
-//	hash.Write(bs)
-//	sum := hash.Sum(nil)
-//	if localConfiCacheMd5 == string(sum) {
-//		return false, ""
-//	}
-//	return true, string(sum)
-//}
-//
-//func sendConfig(stream sdk.MConfig_GetVStreamServer, configs []*sdk.Config) error {
-//	err := stream.Send(&sdk.GetVResponse{
-//		Configs: configs,
-//	})
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}

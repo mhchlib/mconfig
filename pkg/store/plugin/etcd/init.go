@@ -16,7 +16,8 @@ func init() {
 
 func Init(addressStr string) (store.MConfigStore, error) {
 	address := strings.Split(addressStr, ",")
-	cli, err := clientv3.New(clientv3.Config{
+	var err error
+	cli, err = clientv3.New(clientv3.Config{
 		Endpoints:   address,
 		DialTimeout: time.Second * 5,
 		DialOptions: []grpc.DialOption{grpc.WithBlock()},

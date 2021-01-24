@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/mhchlib/logger"
@@ -12,7 +13,7 @@ import (
 )
 
 var (
-	cli     clientv3.Client
+	cli     *clientv3.Client
 	kv      clientv3.KV
 	watcher clientv3.Watcher
 )
@@ -22,11 +23,10 @@ type KeyMode string
 type KeyClass string
 
 const (
-	PLUGIN_NAME                  = "etcd"
-	PREFIX_NAMESPACE KeyNamespce = "/com.github.hchlib.mconfig"
-	SEPARATOR                    = "/"
-	MODE_WATCH       KeyMode     = "watch"
-	MODE_DEFAULT     KeyMode     = "default"
+	PLUGIN_NAME          = "etcd"
+	SEPARATOR            = "/"
+	MODE_WATCH   KeyMode = "watch"
+	MODE_DEFAULT KeyMode = "default"
 
 	CLASS_CONFIG  KeyClass = "config"
 	CLASS_FILTER  KeyClass = "filter"
@@ -34,8 +34,10 @@ const (
 	CLASS_META    KeyClass = "metadata"
 )
 
-var prefix_mode_watch = string(PREFIX_NAMESPACE) + SEPARATOR + string(MODE_WATCH)
-var prefix_mode_default = string(PREFIX_NAMESPACE) + SEPARATOR + string(MODE_DEFAULT)
+var namespce KeyNamespce = "com.github.hchlib.mconfig"
+
+var prefix_mode_watch = SEPARATOR + string(namespce) + SEPARATOR + string(MODE_WATCH)
+var prefix_mode_default = SEPARATOR + string(namespce) + SEPARATOR + string(MODE_DEFAULT)
 
 type KeyEntity struct {
 	namespace KeyNamespce
@@ -135,7 +137,26 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 }
 
 func (e *EtcdStore) GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
-	panic("implement me")
+	entity := &KeyEntity{
+		namespace: namespce,
+		mode:      MODE_WATCH,
+		class:     CLASS_CONFIG,
+		appKey:    appKey,
+		configKey: configKey,
+		env:       env,
+	}
+	key, err := getEventKey(entity)
+	if err != nil {
+		return "", err
+	}
+	response, err := cli.Get(context.Background(), key)
+	if err != nil {
+		return "", err
+	}
+	if response.Count != 1 {
+		return "", errors.New("not found")
+	}
+	return mconfig.ConfigVal(response.Kvs[0].Value), nil
 }
 
 func (e *EtcdStore) PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error {
@@ -151,7 +172,7 @@ func (e *EtcdStore) NewConfigMetaData(meta *mconfig.ConfigMetaData) error {
 	panic("implement me")
 }
 
-func (e *EtcdStore) GetAppConfigs(appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error) {
+func (e *EtcdStore) ListAppConfigsMeta(limit int, offset int, filter string, appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error) {
 	panic("implement me")
 }
 

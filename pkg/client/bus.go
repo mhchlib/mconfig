@@ -5,7 +5,7 @@ import (
 )
 
 type ClientSendFunc func(interface{}) error
-type ClientRecvFunc func() interface{}
+type ClientRecvFunc func(c *Client) error
 
 type ClientMsgBus struct {
 	sync.RWMutex

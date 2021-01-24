@@ -29,6 +29,33 @@ func parseEventKey(key string) (*KeyEntity, error) {
 	}
 }
 
+func getEventKey(entity *KeyEntity) (string, error) {
+	key := SEPARATOR
+	if entity.namespace == "" {
+		return "", errors.New("namespce can not be null")
+	}
+	key = key + string(entity.namespace) + SEPARATOR
+	if entity.mode == "" {
+		return "", errors.New("mode can not be null")
+	}
+	key = key + string(entity.mode) + SEPARATOR
+	if entity.class == "" {
+		return "", errors.New("class can not be null")
+	}
+	key = key + string(entity.class) + SEPARATOR
+	if entity.appKey == "" {
+		return "", errors.New("appkey can not be null")
+	}
+	key = key + string(entity.appKey) + SEPARATOR
+	if entity.configKey != "" {
+		key = key + string(entity.configKey) + SEPARATOR
+	}
+	if entity.env != "" {
+		key = key + string(entity.env) + SEPARATOR
+	}
+	return key[0 : len(key)-len(SEPARATOR)], nil
+}
+
 func Prefix(prefix string, v string) string {
 	return prefix + v
 }

@@ -13,18 +13,19 @@ type MConfigStore interface {
 
 	NewAppMetaData(meta *mconfig.AppMetaData) error
 	NewConfigMetaData(meta *mconfig.ConfigMetaData) error
-	GetAppConfigs(appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error)
 	UpdateAppMetaData(meta *mconfig.AppMetaData) error
 	UpdateConfigMetaData(meta *mconfig.ConfigMetaData) error
 	DeleteApp(appKey mconfig.Appkey) error
 	DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error
+
 	ListAppMetaData(limit int, offset int, filter string) error
+	ListAppConfigsMeta(limit int, offset int, filter string, appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error)
 
 	Close() error
 }
 
 //CurrentMConfigStore
-var currentMConfigStore MConfigStore
+var CurrentMConfigStore MConfigStore
 
 // InitStore ...
 func InitStore(storeType string, storeAddress string) {
@@ -36,10 +37,10 @@ func InitStore(storeType string, storeAddress string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	currentMConfigStore = store
+	CurrentMConfigStore = store
 	log.Info("store init success with", storeType, storeAddress)
 	go func() {
-		err = currentMConfigStore.WatchDynamicVal(newConsumer())
+		err = CurrentMConfigStore.WatchDynamicVal(newConsumer())
 		if err != nil {
 			log.Error(err)
 		}

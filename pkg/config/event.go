@@ -52,7 +52,12 @@ func configChange(metadata event.Metadata) {
 		return
 	}
 	for _, c := range clients {
-		err := c.SendMsg(val)
+		err := c.SendMsg(
+			&mconfig.ConfigEntity{
+				Key: eventMetadata.ConfigKey,
+				Val: val,
+			},
+		)
 		if err != nil {
 			log.Error(err)
 			return
