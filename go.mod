@@ -8,10 +8,12 @@ require (
 	github.com/go-acme/lego/v3 v3.4.0
 	github.com/golang/protobuf v1.4.0
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/gorilla/handlers v1.4.2
 	github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/register v0.0.0-20201023050446-420de20374cc
 	github.com/micro/go-micro/v2 v2.9.1
+	github.com/mkevac/debugcharts v0.0.0-20191222103121-ae1c48aa8615
 	github.com/stretchr/testify v1.4.0
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/xeipuuv/gojsonschema v1.1.0
