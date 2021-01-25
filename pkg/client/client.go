@@ -42,6 +42,7 @@ func NewClient(metadata MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Cl
 		Id:       id,
 		metadata: metadata,
 		msgBus:   newClientMsgBus(send, recv),
+		close:    make(chan interface{}),
 	}
 	err = c.msgBus.RecvFunc(c)
 	if err != nil {
@@ -78,6 +79,7 @@ func (client *Client) RemoveClient() error {
 		}
 	}
 	client.msgBus.Close()
+	client.close <- struct{}{}
 	client = nil
 	log.Info("remove client", clientId, "success")
 	return nil
