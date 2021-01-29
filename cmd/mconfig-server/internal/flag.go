@@ -113,7 +113,6 @@ func initFlagConfig() *MconfigFlag {
 	mconfigFlag.RegistryStr = flag.String("registry", "", "input registry address like etcd://127.0.0.1:2389")
 	mconfigFlag.StoreStr = flag.String("store", "file://file_mconfig/", "input store address like file://t_file/")
 	mconfigFlag.ExposeStr = flag.String("expose", ":8080", "input server ip, default local ip")
-
 	mconfigFlag.EnableDebug = flag.Bool("debug", false, "enable debug mode")
 	return mconfigFlag
 }
