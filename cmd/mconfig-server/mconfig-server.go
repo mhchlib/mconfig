@@ -1,21 +1,18 @@
 package main
 
 import (
-	"github.com/gorilla/handlers"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/sdk"
 	"github.com/mhchlib/mconfig/cmd/mconfig-server/internal"
 	"github.com/mhchlib/mconfig/pkg"
-	mconfig "github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/rpc"
-	_ "github.com/mhchlib/mconfig/pkg/store/plugin/etcd"
 	"github.com/mhchlib/register"
 	"github.com/mhchlib/register/common"
 	"github.com/mhchlib/register/mregister"
-	//_ "github.com/mkevac/debugcharts"
+	_ "github.com/mkevac/debugcharts"
 	"google.golang.org/grpc"
 	"net"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -33,16 +30,6 @@ func init() {
 }
 
 func main() {
-	//debug
-	//-------------
-	go func() {
-		log.Info(http.ListenAndServe("localhost:6060", nil))
-	}()
-	go func() {
-		log.Fatal(http.ListenAndServe(":8080", handlers.CompressHandler(http.DefaultServeMux)))
-	}()
-	log.Info("you can now open http://localhost:8080/debug/charts/ in your browser")
-	//------------------
 	done := make(chan os.Signal, 1)
 	defer pkg.InitMconfig(m)()
 	if m.EnableRegistry {

@@ -9,7 +9,7 @@ push: docker
 	docker push dockerhcy/mconfig:v0.2
 
 dev:
-	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770
+	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770 --expose :8081
 
 dev2:
 	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=file://ttt
