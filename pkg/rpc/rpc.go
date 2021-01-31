@@ -1,23 +1,26 @@
 package rpc
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/v1/sdk"
+	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/pkg/client"
 	"github.com/mhchlib/mconfig/pkg/config"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/store"
 )
 
-type MConfigSDK struct {
+type MConfigServer struct {
 }
 
-func NewMConfigSDK() *MConfigSDK {
-	return &MConfigSDK{}
+func NewMConfigServer() *MConfigServer {
+	return &MConfigServer{}
 }
 
-func (m *MConfigSDK) WatchConfigStream(stream sdk.MConfig_WatchConfigStreamServer) error {
-	request := &sdk.WatchConfigStreamRequest{}
+func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStreamServer) error {
+	request := &server.WatchConfigStreamRequest{}
 	err := stream.RecvMsg(request)
 	if err != nil {
 		log.Error(err)
@@ -30,14 +33,14 @@ func (m *MConfigSDK) WatchConfigStream(stream sdk.MConfig_WatchConfigStreamServe
 	env := "dev"
 	//get data from cache or store
 	configEntitys, err := config.GetConfig(mconfig.Appkey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
-	configs := make([]*sdk.ConfigVal, 0)
+	configs := make([]*server.ConfigVal, 0)
 	for _, entity := range configEntitys {
-		configs = append(configs, &sdk.ConfigVal{
+		configs = append(configs, &server.ConfigVal{
 			ConfigKey: string(entity.Key),
 			Val:       string(entity.Val),
 		})
 	}
-	err = stream.Send(&sdk.WatchConfigStreamResponse{
+	err = stream.Send(&server.WatchConfigStreamResponse{
 		Configs: configs,
 	})
 	if err != nil {
@@ -55,11 +58,11 @@ func (m *MConfigSDK) WatchConfigStream(stream sdk.MConfig_WatchConfigStreamServe
 	return nil
 }
 
-func recv(stream sdk.MConfig_WatchConfigStreamServer) client.ClientRecvFunc {
+func recv(stream server.MConfig_WatchConfigStreamServer) client.ClientRecvFunc {
 	return func(c *client.Client) error {
 		go func() {
 			for {
-				data := &sdk.WatchConfigStreamRequest{}
+				data := &server.WatchConfigStreamRequest{}
 				err := stream.RecvMsg(data)
 				if err != nil {
 					err := c.RemoveClient()
@@ -74,7 +77,7 @@ func recv(stream sdk.MConfig_WatchConfigStreamServer) client.ClientRecvFunc {
 	}
 }
 
-func send(stream sdk.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
+func send(stream server.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
 	tmp := 1
 	return func(data interface{}) error {
 		tmp = tmp + 1
@@ -84,14 +87,28 @@ func send(stream sdk.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
 		if !ok {
 			return errors.New("translate fail")
 		}
-		val := &sdk.ConfigVal{
+		val := &server.ConfigVal{
 			ConfigKey: string(entity.Key),
 			Val:       string(entity.Val),
 		}
-		response := &sdk.WatchConfigStreamResponse{
-			Configs: []*sdk.ConfigVal{val},
+		response := &server.WatchConfigStreamResponse{
+			Configs: []*server.ConfigVal{val},
 		}
 		log.Debug(response)
 		return stream.Send(response)
 	}
+}
+
+func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.GetNodeStoreDataRequest) (*server.GetNodeStoreDataResponse, error) {
+	data, err := store.GetCurrentMConfigStore().GetSyncData()
+	if err != nil {
+		return nil, err
+	}
+	syncData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	return &server.GetNodeStoreDataResponse{
+		Data: syncData,
+	}, nil
 }

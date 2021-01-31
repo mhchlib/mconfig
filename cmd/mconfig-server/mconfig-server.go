@@ -2,14 +2,16 @@ package main
 
 import (
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig-api/api/v1/sdk"
+	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/cmd/mconfig-server/internal"
 	"github.com/mhchlib/mconfig/pkg"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/rpc"
+	"github.com/mhchlib/mconfig/pkg/store"
+	_ "github.com/mhchlib/mconfig/pkg/store/plugin/etcd"
 	"github.com/mhchlib/register"
 	"github.com/mhchlib/register/common"
-	"github.com/mhchlib/register/mregister"
+	"github.com/mhchlib/register/reg"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -27,11 +29,13 @@ func init() {
 	internal.ParseFlag(m)
 }
 
+const SERVICE_NAME = "mconfig-server"
+
 func main() {
 	done := make(chan os.Signal, 1)
 	defer pkg.InitMconfig(m)()
 	if m.EnableRegistry {
-		reg, err := register.InitRegister(m.RegistryType, func(options *mregister.Options) {
+		regClient, err := register.InitRegister(m.RegistryType, func(options *reg.Options) {
 			options.Address = strings.Split(m.RegistryAddress, ",")
 			options.NameSpace = m.Namspace
 			if m.ServerIp == "" {
@@ -42,24 +46,26 @@ func main() {
 				m.ServerIp = ip
 			}
 			options.ServerInstance = m.ServerIp + ":" + strconv.Itoa(m.ServerPort)
+			options.Metadata = map[string]interface{}{
+				"mode": store.GetStorePlugin().Mode,
+			}
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = reg.RegisterService("mconfig-server-cli")
-		if err != nil {
-			log.Fatal(err)
+		demandSync := store.CheckSyncData()
+		if demandSync {
+			err := store.SyncOtherMconfigData(regClient, SERVICE_NAME)
+			if err != nil {
+				log.Fatal("sync store data fail:", err)
+			}
 		}
-		err = reg.RegisterService("mconfig-server-sdk")
+		err = regClient.RegisterService(SERVICE_NAME, nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer func() {
-			err = reg.UnRegisterService("mconfig-server-sdk")
-			if err != nil {
-				log.Error(err)
-			}
-			err = reg.UnRegisterService("mconfig-server-cli")
+			err = regClient.UnRegisterService(SERVICE_NAME)
 			if err != nil {
 				log.Error(err)
 			}
@@ -71,15 +77,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := grpc.NewServer()
+	s := grpc.NewServer()
 	defer func() {
 		_ = listener.Close()
-		server.Stop()
+		s.Stop()
 	}()
-	sdk.RegisterMConfigServer(server, rpc.NewMConfigSDK())
-	//cli.RegisterMConfigCliServer(server, rpc.NewMConfigCLI())
+	server.RegisterMConfigServer(s, rpc.NewMConfigServer())
 	go func() {
-		err = server.Serve(listener)
+		err = s.Serve(listener)
 		if err != nil {
 			log.Error(err)
 			done <- syscall.SIGTERM

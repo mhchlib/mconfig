@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
@@ -50,6 +51,52 @@ type KeyEntity struct {
 
 type EtcdStore struct {
 	cancelFunc context.CancelFunc
+}
+
+func (e *EtcdStore) PutFilterVal(appKey mconfig.Appkey, env mconfig.ConfigEnv, content mconfig.FilterVal) error {
+	panic("implement me")
+}
+
+func (e *EtcdStore) DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+	panic("implement me")
+}
+
+func (e *EtcdStore) DeleteApp(appKey mconfig.Appkey) error {
+	panic("implement me")
+}
+
+func (e *EtcdStore) DeleteEnv(appKey mconfig.Appkey, env mconfig.ConfigEnv) error {
+	panic("implement me")
+}
+
+func (e *EtcdStore) GetSyncData() ([]*mconfig.AppData, error) {
+	syncData := make([]*mconfig.AppData, 0)
+	syncData = append(syncData, &mconfig.AppData{
+		AppKey: "1111",
+		Data: map[mconfig.ConfigEnv]*mconfig.EnvData{
+			"dev": {
+				Filter: map[string]string{"xxxx": "yyyy"},
+				Configs: []*mconfig.ConfigEntity{
+					{
+						Key: "111",
+						Val: "2222",
+					},
+					{
+						Key: "3333",
+						Val: "4444",
+					},
+				},
+			},
+			"uat": nil,
+		},
+	})
+	return syncData, nil
+}
+
+func (e *EtcdStore) PutSyncData(data []*mconfig.AppData) error {
+	d, _ := json.Marshal(data)
+	log.Info(string(d))
+	return nil
 }
 
 func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
@@ -162,38 +209,6 @@ func (e *EtcdStore) GetConfigVal(appKey mconfig.Appkey, configKey mconfig.Config
 func (e *EtcdStore) PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error {
 
 	return nil
-}
-
-func (e *EtcdStore) NewAppMetaData(meta *mconfig.AppMetaData) error {
-	panic("implement me")
-}
-
-func (e *EtcdStore) NewConfigMetaData(meta *mconfig.ConfigMetaData) error {
-	panic("implement me")
-}
-
-func (e *EtcdStore) ListAppConfigsMeta(limit int, offset int, filter string, appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error) {
-	panic("implement me")
-}
-
-func (e *EtcdStore) UpdateAppMetaData(meta *mconfig.AppMetaData) error {
-	panic("implement me")
-}
-
-func (e *EtcdStore) UpdateConfigMetaData(meta *mconfig.ConfigMetaData) error {
-	panic("implement me")
-}
-
-func (e *EtcdStore) DeleteApp(appKey mconfig.Appkey) error {
-	panic("implement me")
-}
-
-func (e *EtcdStore) DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error {
-	panic("implement me")
-}
-
-func (e *EtcdStore) ListAppMetaData(limit int, offset int, filter string) error {
-	panic("implement me")
 }
 
 func (e *EtcdStore) Close() error {

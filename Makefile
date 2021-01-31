@@ -12,7 +12,7 @@ dev:
 	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go cmd/mconfig-server/debug.go  --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770 --expose :8081 --debug
 
 dev2:
-	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=file://ttt
+	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770 --expose :8081 --debug
 
 clear:
 	rm mconfig

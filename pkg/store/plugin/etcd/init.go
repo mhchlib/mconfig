@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	store.RegisterStorePlugin(PLUGIN_NAME, Init)
+	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_SHARE, Init)
 }
 
 func Init(addressStr string) (store.MConfigStore, error) {

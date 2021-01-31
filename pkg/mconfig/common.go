@@ -1,9 +1,5 @@
 package mconfig
 
-import (
-	"github.com/golang/protobuf/ptypes/timestamp"
-)
-
 type Appkey string
 
 type ConfigKey string
@@ -15,30 +11,11 @@ type ConfigEntity struct {
 	Val ConfigVal
 }
 
-type FilterVal string
+type FilterVal map[string]string
 
 type ConfigEnv string
 
 const DefaultConfigEnv = "default"
-
-type AppMetaData struct {
-	key         Appkey
-	name        string
-	description string
-	tags        []string
-	createTime  timestamp.Timestamp
-	updateTime  timestamp.Timestamp
-}
-
-type ConfigMetaData struct {
-	appKey      Appkey
-	configKey   ConfigKey
-	val         ConfigVal
-	name        string
-	description string
-	createTime  timestamp.Timestamp
-	updateTime  timestamp.Timestamp
-}
 
 func ConfigKeys(keys []string) []ConfigKey {
 	configkeys := make([]ConfigKey, 0)
@@ -46,4 +23,14 @@ func ConfigKeys(keys []string) []ConfigKey {
 		configkeys = append(configkeys, ConfigKey(key))
 	}
 	return configkeys
+}
+
+type AppData struct {
+	AppKey Appkey
+	Data   map[ConfigEnv]*EnvData
+}
+
+type EnvData struct {
+	Filter  FilterVal
+	Configs []*ConfigEntity
 }

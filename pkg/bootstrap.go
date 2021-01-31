@@ -14,7 +14,7 @@ func InitMconfig(mconfig *mconfig.MConfig) func() {
 	cache.InitCacheManagement()
 	config.InitConfigCenter()
 	client.InitClientManagement()
-	go store.InitStore(mconfig.StoreType, mconfig.StoreAddress)
+	store.InitStore(mconfig.StoreType, mconfig.StoreAddress)
 	go event.InitEventBus()
 	return EndMconfig()
 }

@@ -1,35 +1,46 @@
 package store
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/register/reg"
+	"google.golang.org/grpc"
+	"time"
 )
 
 // MConfigStore ...
 type MConfigStore interface {
 	GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
-	PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error
 	WatchDynamicVal(customer *Consumer) error
 
-	NewAppMetaData(meta *mconfig.AppMetaData) error
-	NewConfigMetaData(meta *mconfig.ConfigMetaData) error
-	UpdateAppMetaData(meta *mconfig.AppMetaData) error
-	UpdateConfigMetaData(meta *mconfig.ConfigMetaData) error
-	DeleteApp(appKey mconfig.Appkey) error
-	DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error
+	PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error
+	PutFilterVal(appKey mconfig.Appkey, env mconfig.ConfigEnv, content mconfig.FilterVal) error
 
-	ListAppMetaData(limit int, offset int, filter string) error
-	ListAppConfigsMeta(limit int, offset int, filter string, appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error)
+	DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
+	DeleteApp(appKey mconfig.Appkey) error
+	DeleteEnv(appKey mconfig.Appkey, env mconfig.ConfigEnv) error
+
+	GetSyncData() ([]*mconfig.AppData, error)
+	PutSyncData(data []*mconfig.AppData) error
+	//DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error
+	//
+	//ListAppMetaData(limit int, offset int, filter string) error
+	//ListAppConfigsMeta(limit int, offset int, filter string, appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error)
 
 	Close() error
 }
 
 //CurrentMConfigStore
-var CurrentMConfigStore MConfigStore
+var currentMConfigStore MConfigStore
+var currentStorePlugin *StorePlugin
 
 // InitStore ...
 func InitStore(storeType string, storeAddress string) {
-	plugin, ok := StorePluginMap[storeType]
+	plugin, ok := storePluginMap[storeType]
 	if !ok {
 		log.Fatal("store type:", storeType, "does not be supported, you can choose:", storePluginNames)
 	}
@@ -37,12 +48,69 @@ func InitStore(storeType string, storeAddress string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	CurrentMConfigStore = store
+	currentMConfigStore = store
 	log.Info("store init success with", storeType, storeAddress)
 	go func() {
-		err = CurrentMConfigStore.WatchDynamicVal(newConsumer())
+		err = currentMConfigStore.WatchDynamicVal(newConsumer())
 		if err != nil {
 			log.Error(err)
 		}
 	}()
+	currentStorePlugin = plugin
+}
+
+func GetStorePlugin() *StorePlugin {
+	return currentStorePlugin
+}
+
+func GetCurrentMConfigStore() MConfigStore {
+	return currentMConfigStore
+}
+
+func CheckSyncData() bool {
+	if currentStorePlugin.Mode == MODE_LOCAL {
+		return true
+	}
+	return false
+}
+
+func SyncOtherMconfigData(regClient reg.Register, serviceName string) error {
+	allServices, err := regClient.ListAllServices(serviceName)
+	if err != nil {
+		return err
+	}
+	for _, service := range allServices {
+		metadata := service.Metadata
+		mode := StoreMode(metadata["mode"].(string))
+		if MODE_SHARE == mode {
+			withTimeout, _ := context.WithTimeout(context.Background(), time.Second*5)
+			dial, err := grpc.DialContext(withTimeout, service.Address, grpc.WithInsecure(), grpc.WithBlock())
+			if err != nil {
+				log.Info(err, " addr: ", service)
+				continue
+			}
+			mconfigService := server.NewMConfigClient(dial)
+			withTimeout, _ = context.WithTimeout(context.Background(), time.Second*20)
+			syncResponse, err := mconfigService.GetNodeStoreData(withTimeout, &server.GetNodeStoreDataRequest{})
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			//sync data to store
+			syncData := make([]*mconfig.AppData, 0)
+			err = json.Unmarshal(syncResponse.Data, &syncData)
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			log.Info("sync node data:", string(syncResponse.Data))
+			err = currentMConfigStore.PutSyncData(syncData)
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			return nil
+		}
+	}
+	return errors.New("not found sync node")
 }
