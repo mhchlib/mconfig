@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/pkg/client"
@@ -30,9 +31,9 @@ func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStrea
 	configKeys := request.ConfigKeys
 	metadata := request.Metadata
 	//TODO calculate
-	env := "dev"
+	env := "env_tP2KlOexRqD"
 	//get data from cache or store
-	configEntitys, err := config.GetConfig(mconfig.Appkey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
+	configEntitys, err := config.GetConfig(mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
 	configs := make([]*server.ConfigVal, 0)
 	for _, entity := range configEntitys {
 		configs = append(configs, &server.ConfigVal{
@@ -50,7 +51,7 @@ func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStrea
 	if err != nil {
 		return err
 	}
-	err = config.WatchConfig(c, mconfig.Appkey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
+	err = config.WatchConfig(c, mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
 	if err != nil {
 		return err
 	}
@@ -111,4 +112,54 @@ func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.Ge
 	return &server.GetNodeStoreDataResponse{
 		Data: syncData,
 	}, nil
+}
+
+func (m *MConfigServer) UpdateConfig(ctx context.Context, request *server.UpdateConfigRequest) (*server.UpdateConfiResponse, error) {
+	mConfigStore := store.GetCurrentMConfigStore()
+	err := mConfigStore.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
+	if err != nil {
+		return nil, err
+	}
+	if request.Config != "" {
+		err = mConfigStore.PutConfigVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.ConfigKey(request.Config), mconfig.ConfigVal(request.Val))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &server.UpdateConfiResponse{}, nil
+}
+
+func (m *MConfigServer) GetNodeDetail(ctx context.Context, e *empty.Empty) (*server.GetNodeDetailResponse, error) {
+	storeData, err := store.GetCurrentMConfigStore().GetSyncData()
+	if err != nil {
+		return nil, err
+	}
+	d, err := json.Marshal(&mconfig.NodeDetail{
+		Apps:        &storeData,
+		ClientCount: client.GetOnLineClientCount(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &server.GetNodeDetailResponse{
+		Data: d,
+	}, nil
+}
+
+func (m *MConfigServer) DeletConfig(ctx context.Context, request *server.DeletConfigRequest) (*empty.Empty, error) {
+	currentMConfigStore := store.GetCurrentMConfigStore()
+	err := currentMConfigStore.DeleteConfig(mconfig.AppKey(request.App), mconfig.ConfigKey(request.Config), mconfig.ConfigEnv(request.Env))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+func (m *MConfigServer) DeletFilter(ctx context.Context, request *server.DeletFilterRequest) (*empty.Empty, error) {
+	currentMConfigStore := store.GetCurrentMConfigStore()
+	err := currentMConfigStore.DeleteFilter(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+	return nil, nil
 }

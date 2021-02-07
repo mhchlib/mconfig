@@ -9,19 +9,21 @@ import (
 
 var n int32 = 1000
 
+var count int32 = 0
+
 type ClientId int32
 
-var management *ClientConfigRelationManagement
+var relationManagement *ClientConfigRelationManagement
 
 func InitClientManagement() {
-	management = NewClientConfigRelationManagement()
+	relationManagement = NewClientConfigRelationManagement()
 }
 
 type Client struct {
 	Id                          ClientId
 	metadata                    MetaData
 	msgBus                      *ClientMsgBus
-	appKey                      mconfig.Appkey
+	appKey                      mconfig.AppKey
 	configKeys                  []mconfig.ConfigKey
 	configEnv                   mconfig.ConfigEnv
 	isbuildClientConfigRelation bool
@@ -31,7 +33,7 @@ type Client struct {
 type MetaData map[string]string
 
 func NewClient(metadata MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Client, error) {
-	if management == nil {
+	if relationManagement == nil {
 		return nil, errors.New("client config relation management does not init...")
 	}
 	id, err := getClientId()
@@ -48,8 +50,21 @@ func NewClient(metadata MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Cl
 	if err != nil {
 		return nil, err
 	}
-	log.Info("remove client", c.Id, "success")
+	increaseClientCount()
+	log.Info("add client", c.Id, "success")
 	return c, nil
+}
+
+func increaseClientCount() {
+	atomic.AddInt32(&count, 1)
+}
+
+func reduceClientCount() {
+	atomic.AddInt32(&count, -1)
+}
+
+func GetOnLineClientCount() int32 {
+	return count
 }
 
 func getClientId() (ClientId, error) {
@@ -57,12 +72,12 @@ func getClientId() (ClientId, error) {
 	return ClientId(id), nil
 }
 
-func (client *Client) BuildClientConfigRelation(appKey mconfig.Appkey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+func (client *Client) BuildClientConfigRelation(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	client.appKey = appKey
 	client.configKeys = configKeys
 	client.configEnv = env
 
-	err := management.addClientConfigRelation(*client)
+	err := relationManagement.addClientConfigRelation(*client)
 	if err != nil {
 		return err
 	}
@@ -73,7 +88,7 @@ func (client *Client) BuildClientConfigRelation(appKey mconfig.Appkey, configKey
 func (client *Client) RemoveClient() error {
 	clientId := client.Id
 	if client.isbuildClientConfigRelation {
-		err := management.removeClientConfigRelation(*client)
+		err := relationManagement.removeClientConfigRelation(*client)
 		if err != nil {
 			return err
 		}
@@ -81,6 +96,7 @@ func (client *Client) RemoveClient() error {
 	client.msgBus.Close()
 	client.close <- struct{}{}
 	client = nil
+	reduceClientCount()
 	log.Info("remove client", clientId, "success")
 	return nil
 }

@@ -1,17 +1,17 @@
 package mconfig
 
-type Appkey string
+type AppKey string
 
 type ConfigKey string
 
 type ConfigVal string
 
 type ConfigEntity struct {
-	Key ConfigKey
-	Val ConfigVal
+	Key ConfigKey `json:"key"`
+	Val ConfigVal `json:"val"`
 }
 
-type FilterVal map[string]string
+type FilterVal string
 
 type ConfigEnv string
 
@@ -25,12 +25,14 @@ func ConfigKeys(keys []string) []ConfigKey {
 	return configkeys
 }
 
-type AppData struct {
-	AppKey Appkey
-	Data   map[ConfigEnv]*EnvData
-}
+type AppData map[AppKey]map[ConfigEnv]*EnvData
 
 type EnvData struct {
-	Filter  FilterVal
-	Configs []*ConfigEntity
+	Filter  FilterVal               `json:"filter"`
+	Configs map[ConfigKey]ConfigVal `json:"configs"`
+}
+
+type NodeDetail struct {
+	Apps        *AppData `json:"apps"`
+	ClientCount int32    `json:"client_count"`
 }

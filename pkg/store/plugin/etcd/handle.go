@@ -6,39 +6,46 @@ import (
 	"strings"
 )
 
-func parseEventKey(key string) (*KeyEntity, error) {
+func parseStoreKey(key string) (*KeyEntity, error) {
 	//key such
-	//{{namespace prefix ( custom such com.github.hchlib. )}} + {{ mode (find/watch)}} + {{content type (config/version/filter/meta)}}
+	//{{namespace prefix ( custom such com.github.hchlib. )}} + {{content type (config/version/filter/meta)}}
+	var realKey string
 	if SEPARATOR == string(key[0]) {
-		key = key[1:len(key)]
+		realKey = key[1:len(key)]
 	}
-	splits := strings.Split(key, SEPARATOR)
-	count := len(splits)
-	switch count {
-	case 6:
-		return &KeyEntity{
-			namespace: KeyNamespce(splits[0]),
-			mode:      KeyMode(splits[1]),
-			class:     KeyClass(splits[2]),
-			appKey:    mconfig.Appkey(splits[3]),
-			configKey: mconfig.ConfigKey(splits[4]),
-			env:       mconfig.ConfigEnv(splits[5]),
-		}, nil
-	default:
-		return nil, errors.New("parse event key <" + key + "> fail")
+	if strings.HasPrefix(key, prefix_config) {
+		splits := strings.Split(realKey, SEPARATOR)
+		if len(splits) == 5 {
+			return &KeyEntity{
+				namespace: KeyNamespce(splits[0]),
+				class:     CLASS_CONFIG,
+				appKey:    mconfig.AppKey(splits[2]),
+				env:       mconfig.ConfigEnv(splits[3]),
+				configKey: mconfig.ConfigKey(splits[4]),
+			}, nil
+		}
+
 	}
+	if strings.HasPrefix(key, prefix_filter) {
+		splits := strings.Split(realKey, SEPARATOR)
+		if len(splits) == 4 {
+			return &KeyEntity{
+				namespace: KeyNamespce(splits[0]),
+				class:     CLASS_FILTER,
+				appKey:    mconfig.AppKey(splits[2]),
+				env:       mconfig.ConfigEnv(splits[3]),
+			}, nil
+		}
+	}
+	return nil, errors.New("parse event key <" + key + "> fail")
 }
 
-func getEventKey(entity *KeyEntity) (string, error) {
+func getStoreKey(entity *KeyEntity) (string, error) {
 	key := SEPARATOR
 	if entity.namespace == "" {
 		return "", errors.New("namespce can not be null")
 	}
 	key = key + string(entity.namespace) + SEPARATOR
-	if entity.mode == "" {
-		return "", errors.New("mode can not be null")
-	}
-	key = key + string(entity.mode) + SEPARATOR
 	if entity.class == "" {
 		return "", errors.New("class can not be null")
 	}
@@ -47,11 +54,13 @@ func getEventKey(entity *KeyEntity) (string, error) {
 		return "", errors.New("appkey can not be null")
 	}
 	key = key + string(entity.appKey) + SEPARATOR
+	if entity.env == "" {
+		return "", errors.New("envkey can not be null")
+	}
+	key = key + string(entity.env) + SEPARATOR
+
 	if entity.configKey != "" {
 		key = key + string(entity.configKey) + SEPARATOR
-	}
-	if entity.env != "" {
-		key = key + string(entity.env) + SEPARATOR
 	}
 	return key[0 : len(key)-len(SEPARATOR)], nil
 }

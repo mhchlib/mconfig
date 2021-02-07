@@ -14,23 +14,17 @@ import (
 
 // MConfigStore ...
 type MConfigStore interface {
-	GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
+	GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
 	WatchDynamicVal(customer *Consumer) error
 
-	PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error
-	PutFilterVal(appKey mconfig.Appkey, env mconfig.ConfigEnv, content mconfig.FilterVal) error
+	PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.ConfigVal) error
+	PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.FilterVal) error
 
-	DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
-	DeleteApp(appKey mconfig.Appkey) error
-	DeleteEnv(appKey mconfig.Appkey, env mconfig.ConfigEnv) error
+	DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
+	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
 
-	GetSyncData() ([]*mconfig.AppData, error)
-	PutSyncData(data []*mconfig.AppData) error
-	//DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey) error
-	//
-	//ListAppMetaData(limit int, offset int, filter string) error
-	//ListAppConfigsMeta(limit int, offset int, filter string, appKey mconfig.Appkey) ([]*mconfig.ConfigMetaData, error)
-
+	GetSyncData() (mconfig.AppData, error)
+	PutSyncData(data *mconfig.AppData) error
 	Close() error
 }
 
@@ -97,7 +91,7 @@ func SyncOtherMconfigData(regClient reg.Register, serviceName string) error {
 				return err
 			}
 			//sync data to store
-			syncData := make([]*mconfig.AppData, 0)
+			syncData := &mconfig.AppData{}
 			err = json.Unmarshal(syncResponse.Data, &syncData)
 			if err != nil {
 				log.Error(err)

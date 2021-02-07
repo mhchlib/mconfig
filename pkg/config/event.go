@@ -12,7 +12,7 @@ import (
 const EVENT_KEY event.EventKey = "config"
 
 type ConfigEventMetadata struct {
-	AppKey    mconfig.Appkey
+	AppKey    mconfig.AppKey
 	ConfigKey mconfig.ConfigKey
 	Env       mconfig.ConfigEnv
 	Val       mconfig.ConfigVal

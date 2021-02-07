@@ -9,12 +9,12 @@ import (
 )
 
 type ConfigCacheKey struct {
-	appKey    mconfig.Appkey
+	appKey    mconfig.AppKey
 	configKey mconfig.ConfigKey
 	env       mconfig.ConfigEnv
 }
 
-func PutConfigToCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, val mconfig.ConfigVal) error {
+func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, val mconfig.ConfigVal) error {
 	key := &ConfigCacheKey{
 		appKey:    appKey,
 		configKey: configKey,
@@ -23,7 +23,7 @@ func PutConfigToCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mc
 	return cache.PutConfigToCache(*key, val)
 }
 
-func GetConfigFromCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+func GetConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
 	key := &ConfigCacheKey{
 		appKey:    appKey,
 		configKey: configKey,
@@ -36,7 +36,7 @@ func GetConfigFromCache(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env 
 	return mconfig.ConfigVal(fmt.Sprintf("%v", c)), nil
 }
 
-func GetConfig(appKey mconfig.Appkey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) ([]*mconfig.ConfigEntity, error) {
+func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) ([]*mconfig.ConfigEntity, error) {
 	configs := make([]*mconfig.ConfigEntity, 0)
 	for _, configKey := range configKeys {
 		val, err := GetConfigFromCache(appKey, configKey, env)
@@ -54,7 +54,7 @@ func GetConfig(appKey mconfig.Appkey, configKeys []mconfig.ConfigKey, env mconfi
 	return configs, nil
 }
 
-func WatchConfig(c *client.Client, appKey mconfig.Appkey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+func WatchConfig(c *client.Client, appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	err := c.BuildClientConfigRelation(appKey, configKeys, env)
 	if err != nil {
 		return err

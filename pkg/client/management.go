@@ -7,7 +7,7 @@ import (
 )
 
 type ClientConfigKey struct {
-	appKey    mconfig.Appkey
+	appKey    mconfig.AppKey
 	configKey mconfig.ConfigKey
 	configEnv mconfig.ConfigEnv
 }
@@ -23,8 +23,8 @@ func NewClientConfigRelationManagement() *ClientConfigRelationManagement {
 	return management
 }
 
-func GetOnlineClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
-	return management.getClientSet(appKey, configKey, env)
+func GetOnlineClientSet(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
+	return relationManagement.getClientSet(appKey, configKey, env)
 }
 
 func (management *ClientConfigRelationManagement) addClientConfigRelation(client Client) error {
@@ -54,7 +54,7 @@ func (management *ClientConfigRelationManagement) addClientConfigRelation(client
 	return nil
 }
 
-func buildClientConfigKey(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) ClientConfigKey {
+func buildClientConfigKey(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) ClientConfigKey {
 	return ClientConfigKey{
 		appKey:    appKey,
 		configKey: configKey,
@@ -93,7 +93,7 @@ func (management *ClientConfigRelationManagement) removeClientConfigRelation(cli
 	return nil
 }
 
-func (management *ClientConfigRelationManagement) getClientSet(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
+func (management *ClientConfigRelationManagement) getClientSet(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) *ClientSet {
 	if env == "" {
 		env = mconfig.DefaultConfigEnv
 	}

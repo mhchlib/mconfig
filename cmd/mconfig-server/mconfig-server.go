@@ -35,7 +35,13 @@ func main() {
 	done := make(chan os.Signal, 1)
 	defer pkg.InitMconfig(m)()
 	if m.EnableRegistry {
-		regClient, err := register.InitRegister(m.RegistryType, func(options *reg.Options) {
+
+		var registerType reg.RegistryType
+		if m.RegistryType == "etcd" {
+			registerType = reg.RegistryType_Etcd
+		}
+		regClient, err := register.InitRegister(func(options *reg.Options) {
+			options.RegisterType = registerType
 			options.Address = strings.Split(m.RegistryAddress, ",")
 			options.NameSpace = m.Namspace
 			if m.ServerIp == "" {

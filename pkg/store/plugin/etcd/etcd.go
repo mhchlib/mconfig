@@ -24,27 +24,23 @@ type KeyMode string
 type KeyClass string
 
 const (
-	PLUGIN_NAME          = "etcd"
-	SEPARATOR            = "/"
-	MODE_WATCH   KeyMode = "watch"
-	MODE_DEFAULT KeyMode = "default"
-
-	CLASS_CONFIG  KeyClass = "config"
-	CLASS_FILTER  KeyClass = "filter"
-	CLASS_VERSION KeyClass = "version"
-	CLASS_META    KeyClass = "metadata"
+	PLUGIN_NAME           = "etcd"
+	SEPARATOR             = "/"
+	CLASS_CONFIG KeyClass = "config"
+	CLASS_FILTER KeyClass = "filter"
 )
 
 var namespce KeyNamespce = "com.github.hchlib.mconfig"
 
-var prefix_mode_watch = SEPARATOR + string(namespce) + SEPARATOR + string(MODE_WATCH)
-var prefix_mode_default = SEPARATOR + string(namespce) + SEPARATOR + string(MODE_DEFAULT)
+var prefix_common = SEPARATOR + string(namespce)
+
+var prefix_config = prefix_common + SEPARATOR + string(CLASS_CONFIG)
+var prefix_filter = SEPARATOR + string(namespce) + SEPARATOR + string(CLASS_FILTER)
 
 type KeyEntity struct {
 	namespace KeyNamespce
-	mode      KeyMode
 	class     KeyClass
-	appKey    mconfig.Appkey
+	appKey    mconfig.AppKey
 	configKey mconfig.ConfigKey
 	env       mconfig.ConfigEnv
 }
@@ -53,47 +49,114 @@ type EtcdStore struct {
 	cancelFunc context.CancelFunc
 }
 
-func (e *EtcdStore) PutFilterVal(appKey mconfig.Appkey, env mconfig.ConfigEnv, content mconfig.FilterVal) error {
-	panic("implement me")
+func (e *EtcdStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, val mconfig.ConfigVal) error {
+	entity := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_CONFIG,
+		appKey:    appKey,
+		configKey: configKey,
+		env:       env,
+	}
+	key, err := getStoreKey(entity)
+	if err != nil {
+		return err
+	}
+	_, err = kv.Put(context.Background(), key, string(val))
+	return err
 }
 
-func (e *EtcdStore) DeleteConfig(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
-	panic("implement me")
+func (e *EtcdStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, val mconfig.FilterVal) error {
+	entity := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_FILTER,
+		appKey:    appKey,
+		env:       env,
+	}
+	key, err := getStoreKey(entity)
+	if err != nil {
+		return err
+	}
+	_, err = kv.Put(context.Background(), key, string(val))
+	return err
 }
 
-func (e *EtcdStore) DeleteApp(appKey mconfig.Appkey) error {
-	panic("implement me")
+func (e *EtcdStore) DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+	k := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_CONFIG,
+		appKey:    appKey,
+		configKey: configKey,
+		env:       env,
+	}
+	storeKey, err := getStoreKey(k)
+	if err != nil {
+		return err
+	}
+	log.Error(storeKey)
+	_, err = kv.Delete(context.Background(), storeKey)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (e *EtcdStore) DeleteEnv(appKey mconfig.Appkey, env mconfig.ConfigEnv) error {
-	panic("implement me")
+func (e *EtcdStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
+	k := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_FILTER,
+		appKey:    appKey,
+		env:       env,
+	}
+	storeKey, err := getStoreKey(k)
+	if err != nil {
+		return err
+	}
+	_, err = kv.Delete(context.Background(), storeKey)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (e *EtcdStore) GetSyncData() ([]*mconfig.AppData, error) {
-	syncData := make([]*mconfig.AppData, 0)
-	syncData = append(syncData, &mconfig.AppData{
-		AppKey: "1111",
-		Data: map[mconfig.ConfigEnv]*mconfig.EnvData{
-			"dev": {
-				Filter: map[string]string{"xxxx": "yyyy"},
-				Configs: []*mconfig.ConfigEntity{
-					{
-						Key: "111",
-						Val: "2222",
-					},
-					{
-						Key: "3333",
-						Val: "4444",
-					},
-				},
-			},
-			"uat": nil,
-		},
-	})
+func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
+	syncData := make(map[mconfig.AppKey]map[mconfig.ConfigEnv]*mconfig.EnvData)
+	response, err := kv.Get(context.Background(), prefix_common, clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range response.Kvs {
+		key := v.Key
+		storeKey, err := parseStoreKey(string(key))
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		appData, ok := syncData[storeKey.appKey]
+		if !ok {
+			appData = make(map[mconfig.ConfigEnv]*mconfig.EnvData)
+			syncData[storeKey.appKey] = appData
+		}
+		envData, ok := appData[storeKey.env]
+		if !ok {
+			envData = &mconfig.EnvData{}
+			appData[storeKey.env] = envData
+		}
+		if storeKey.class == CLASS_CONFIG {
+			configs := envData.Configs
+			if configs == nil {
+				configs = make(map[mconfig.ConfigKey]mconfig.ConfigVal)
+				envData.Configs = configs
+			}
+			configs[storeKey.configKey] = mconfig.ConfigVal(v.Value)
+		}
+		if storeKey.class == CLASS_FILTER {
+			envData.Filter = mconfig.FilterVal(v.Value)
+		}
+	}
 	return syncData, nil
 }
 
-func (e *EtcdStore) PutSyncData(data []*mconfig.AppData) error {
+func (e *EtcdStore) PutSyncData(data *mconfig.AppData) error {
 	d, _ := json.Marshal(data)
 	log.Info(string(d))
 	return nil
@@ -103,7 +166,7 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 	var watchChan clientv3.WatchChan
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	e.cancelFunc = cancelFunc
-	watchChan = watcher.Watch(ctx, Prefix(prefix_mode_watch, ""), clientv3.WithPrefix())
+	watchChan = watcher.Watch(ctx, Prefix(prefix_common, ""), clientv3.WithPrefix())
 	for {
 		select {
 		case v, ok := <-watchChan:
@@ -118,7 +181,7 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 			for _, e := range events {
 				switch e.Type {
 				case mvccpb.PUT:
-					key, err := parseEventKey(string(e.Kv.Key))
+					key, err := parseStoreKey(string(e.Kv.Key))
 					if err != nil {
 						log.Error(err)
 						continue
@@ -158,7 +221,7 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 					}
 					log.Debug("etcd update key:", string(e.Kv.Key), "value:", string(e.Kv.Value))
 				case mvccpb.DELETE:
-					key, err := parseEventKey(string(e.Kv.Key))
+					key, err := parseStoreKey(string(e.Kv.Key))
 					if err != nil {
 						log.Error(err)
 						break
@@ -183,16 +246,15 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 	}
 }
 
-func (e *EtcdStore) GetConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
-		mode:      MODE_WATCH,
 		class:     CLASS_CONFIG,
 		appKey:    appKey,
 		configKey: configKey,
 		env:       env,
 	}
-	key, err := getEventKey(entity)
+	key, err := getStoreKey(entity)
 	if err != nil {
 		return "", err
 	}
@@ -204,11 +266,6 @@ func (e *EtcdStore) GetConfigVal(appKey mconfig.Appkey, configKey mconfig.Config
 		return "", errors.New("not found")
 	}
 	return mconfig.ConfigVal(response.Kvs[0].Value), nil
-}
-
-func (e *EtcdStore) PutConfigVal(appKey mconfig.Appkey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, content mconfig.ConfigVal) error {
-
-	return nil
 }
 
 func (e *EtcdStore) Close() error {
