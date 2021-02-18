@@ -3,6 +3,7 @@ module github.com/mhchlib/mconfig
 go 1.14
 
 require (
+	github.com/ChenHaoHu/ExpressionParser v0.0.0-20200730123550-c11f86762d52
 	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/golang/protobuf v1.4.0
 	github.com/google/uuid v1.1.2 // indirect

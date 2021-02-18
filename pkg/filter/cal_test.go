@@ -70,7 +70,30 @@ func TestCalMepFilter(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "test-01",
+			args: args{
+				code: "$name == Mary && ( $age > 20 && $age < 100 ) ||$number == 1234567890 && $item @ [aa,bb,cc]",
+				metatdata: map[string]string{
+					"name":   "Mary",
+					"age":    "20",
+					"number": "1234567890",
+					"item":   "aa",
+				}},
+			want: true,
+		},
+		{
+			name: "test-01",
+			args: args{
+				code: "$name == Mary && ( $age > 20 && $age < 100 ) ||$number == 1234567890 && $item @ [aa,bb,cc]",
+				metatdata: map[string]string{
+					"name":   "Mary",
+					"age":    "20",
+					"number": "12345",
+					"item":   "cc",
+				}},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
