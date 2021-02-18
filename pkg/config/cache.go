@@ -14,13 +14,19 @@ type ConfigCacheKey struct {
 	env       mconfig.ConfigEnv
 }
 
+var configCache *cache.Cache
+
+func initCache() {
+	configCache = cache.NewCache()
+}
+
 func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, val mconfig.ConfigVal) error {
 	key := &ConfigCacheKey{
 		appKey:    appKey,
 		configKey: configKey,
 		env:       env,
 	}
-	return cache.PutConfigToCache(*key, val)
+	return configCache.PutCache(*key, val)
 }
 
 func GetConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
@@ -29,7 +35,7 @@ func GetConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env 
 		configKey: configKey,
 		env:       env,
 	}
-	c, err := cache.GetConfigFromCache(*key)
+	c, err := configCache.GetCache(*key)
 	if err != nil {
 		return "", err
 	}

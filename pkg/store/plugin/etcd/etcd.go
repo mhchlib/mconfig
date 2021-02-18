@@ -92,7 +92,6 @@ func (e *EtcdStore) DeleteConfig(appKey mconfig.AppKey, configKey mconfig.Config
 	if err != nil {
 		return err
 	}
-	log.Error(storeKey)
 	_, err = kv.Delete(context.Background(), storeKey)
 	if err != nil {
 		return err
@@ -120,11 +119,11 @@ func (e *EtcdStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) e
 
 func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
 	syncData := make(map[mconfig.AppKey]map[mconfig.ConfigEnv]*mconfig.EnvData)
-	response, err := kv.Get(context.Background(), prefix_common, clientv3.WithPrefix())
+	Response, err := kv.Get(context.Background(), prefix_common, clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
-	for _, v := range response.Kvs {
+	for _, v := range Response.Kvs {
 		key := v.Key
 		storeKey, err := parseStoreKey(string(key))
 		if err != nil {
@@ -258,14 +257,14 @@ func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.Config
 	if err != nil {
 		return "", err
 	}
-	response, err := cli.Get(context.Background(), key)
+	Response, err := cli.Get(context.Background(), key)
 	if err != nil {
 		return "", err
 	}
-	if response.Count != 1 {
+	if Response.Count != 1 {
 		return "", errors.New("not found")
 	}
-	return mconfig.ConfigVal(response.Kvs[0].Value), nil
+	return mconfig.ConfigVal(Response.Kvs[0].Value), nil
 }
 
 func (e *EtcdStore) Close() error {

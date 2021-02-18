@@ -20,9 +20,9 @@ func TestEtcdStore_GetSyncData(t *testing.T) {
 		log.Fatal(err)
 	}
 	kv = clientv3.NewKV(cli)
-	response, err := kv.Get(context.Background(), "/com", clientv3.WithPrefix())
+	Response, err := kv.Get(context.Background(), "/com", clientv3.WithPrefix())
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Info(response.Kvs)
+	log.Info(Response.Kvs)
 }

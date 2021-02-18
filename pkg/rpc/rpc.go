@@ -9,6 +9,7 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/pkg/client"
 	"github.com/mhchlib/mconfig/pkg/config"
+	"github.com/mhchlib/mconfig/pkg/env"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/store"
 )
@@ -30,10 +31,14 @@ func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStrea
 	appKey := request.AppKey
 	configKeys := request.ConfigKeys
 	metadata := request.Metadata
-	//TODO calculate
-	env := "env_tP2KlOexRqD"
+	//get config env
+	//env := "env_tPssBH6pAH0"
+	configEnv, err := env.GetEffectEnvKey(mconfig.AppKey(appKey), metadata)
+	if err != nil {
+		return err
+	}
 	//get data from cache or store
-	configEntitys, err := config.GetConfig(mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
+	configEntitys, err := config.GetConfig(mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(configEnv))
 	configs := make([]*server.ConfigVal, 0)
 	for _, entity := range configEntitys {
 		configs = append(configs, &server.ConfigVal{
@@ -51,7 +56,7 @@ func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStrea
 	if err != nil {
 		return err
 	}
-	err = config.WatchConfig(c, mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(env))
+	err = config.WatchConfig(c, mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), configEnv)
 	if err != nil {
 		return err
 	}
@@ -92,11 +97,11 @@ func send(stream server.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
 			ConfigKey: string(entity.Key),
 			Val:       string(entity.Val),
 		}
-		response := &server.WatchConfigStreamResponse{
+		Response := &server.WatchConfigStreamResponse{
 			Configs: []*server.ConfigVal{val},
 		}
-		log.Debug(response)
-		return stream.Send(response)
+		log.Debug(Response)
+		return stream.Send(Response)
 	}
 }
 

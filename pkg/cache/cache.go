@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-var cache *Cache
-
 type CacheKey interface{}
 type CacheValue interface{}
 
@@ -15,21 +13,13 @@ type Cache struct {
 	sync.RWMutex
 }
 
-func InitCacheManagement() {
-	cache = &Cache{
+func NewCache() *Cache {
+	return &Cache{
 		cache: make(map[CacheKey]CacheValue),
 	}
 }
 
-func PutConfigToCache(key CacheKey, val CacheValue) error {
-	return cache.putConfigCache(key, val)
-}
-
-func GetConfigFromCache(key CacheKey) (CacheKey, error) {
-	return cache.getConfigCache(key)
-}
-
-func (cache *Cache) getConfigCache(key CacheKey) (CacheValue, error) {
+func (cache *Cache) GetCache(key CacheKey) (CacheValue, error) {
 	cache.RLock()
 	value, ok := cache.cache[key]
 	cache.RUnlock()
@@ -39,9 +29,19 @@ func (cache *Cache) getConfigCache(key CacheKey) (CacheValue, error) {
 	return nil, errors.New("not found")
 }
 
-func (cache *Cache) putConfigCache(key CacheKey, val CacheValue) error {
+func (cache *Cache) PutCache(key CacheKey, val CacheValue) error {
 	cache.Lock()
 	defer cache.Unlock()
 	cache.cache[key] = val
 	return nil
+}
+
+func (cache *Cache) GetCacheMap() map[CacheKey]CacheValue {
+	cloneVal := make(map[CacheKey]CacheValue)
+	cache.Lock()
+	for key, value := range cache.cache {
+		cloneVal[key] = value
+	}
+	cache.Unlock()
+	return cloneVal
 }
