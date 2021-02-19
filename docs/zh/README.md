@@ -1,8 +1,10 @@
-## MConfig
-
-![mconfig](../img/mconfig.png)
+# mconfig
 
 中文｜[English](../../README.md)
+
+> 轻量级分布式配置中心
+
+![mconfig](../img/mconfig.png)
 
 ### 相关的
 
