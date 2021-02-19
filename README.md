@@ -1,30 +1,43 @@
-## MConfig
+# mconfig
+
+[中文](docs/zh/README.md)｜English
+
+> a lightweight distributed configuration center
 
 ![mconfig](docs/img/mconfig.png)
 
-
 ### Related
 
-* [mconfig go sdk](https://github.com/mhchlib/mconfig-go-sdk) 
+| Name                                                         | Intro                   |
+| ------------------------------------------------------------ | ----------------------- |
+| [mconfig-admin](https://github.com/mhchlib/mconfig-admin)    | mconfig admin back end  |
+| [mconfig-api](https://github.com/mhchlib/mconfig-api)        | mconfig server rpc api  |
+| [mconfig-go-sdk](https://github.com/mhchlib/mconfig-go-sdk)  | mconfig go sdk          |
+| [mconfig-admin-front](https://github.com/mhchlib/mconfig-admin-front) | mconfig admin front end |
+
+
 
 ### Motivation
 
-​	I need a simple, easy-to-use and stable distributed configuration center, but I don't want it to affect the performance of my app too much.
+​	I need a lightweight, easy-to-use and stable distributed configuration center, but I don't want it to affect the performance of my app too much.
 ​	Although there are many open source configuration centers out there, few have been written in Golang, so I wanted to give it a try.
 
 ### Feature
 
 * Writing By Golang
-* lightweight
+* Lightweight
 * Support Namespaces
 * Support Limited Gray Publish
 * Storage Pluggable
+* Stable
 
-### Start
+### Example
 
-#### Deploy
-#### Run
-#### Operations
+| Intro | Doc                    |
+| ----- | ---------------------- |
+| Start | [start](docs/start.md) |
+
+
 
 ### About Me
 
