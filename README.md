@@ -5,7 +5,6 @@
 
 ### Related
 
-* [mconfig cli](https://github.com/mhchlib/mconfig-cli)
 * [mconfig go sdk](https://github.com/mhchlib/mconfig-go-sdk) 
 
 ### Motivation
@@ -16,24 +15,16 @@
 ### Feature
 
 * Writing By Golang
-* Simple
+* lightweight
 * Support Namespaces
-* Support Limited AB Publish
+* Support Limited Gray Publish
 * Storage Pluggable
 
-### Progress
+### Start
 
-* The basic functions have been completed
-*  A rich storage plug-in is being developed，such file、mysql ...
-
-### Plan
-
-* Support more storage
-* Support more language
-* Fix bugs
-
-### Bugs
-
+#### Deploy
+#### Run
+#### Operations
 
 ### About Me
 
@@ -43,7 +34,7 @@ If you want to connect me, you can send a mail.
 
 ### LICENSE
 
-   Copyright 2020 chenhaohu
+   Copyright 2020 chenhao hu
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
