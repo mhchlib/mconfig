@@ -9,6 +9,7 @@ import (
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg/config"
 	"github.com/mhchlib/mconfig/pkg/event"
+	"github.com/mhchlib/mconfig/pkg/filter"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/store"
 )
@@ -117,6 +118,45 @@ func (e *EtcdStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) e
 	return nil
 }
 
+func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
+	entity := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_FILTER,
+		appKey:    appKey,
+	}
+	storeKey, err := getStoreKey(entity)
+	if err != nil {
+		return nil, err
+	}
+	filters := []*mconfig.FilterEntity{}
+	response, err := kv.Get(context.Background(), storeKey, clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	for _, kv := range response.Kvs {
+		k := string(kv.Key)
+		v := kv.Value
+		key, err := parseStoreKey(k)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+		f := &mconfig.FilterStoreVal{}
+		err = json.Unmarshal(v, f)
+		if err != nil {
+			log.Error(err, "key:", k, "value:", string(v))
+			return nil, err
+		}
+		filters = append(filters, &mconfig.FilterEntity{
+			Env:    key.env,
+			Weight: f.Weight,
+			Code:   f.Code,
+			Mode:   f.Mode,
+		})
+	}
+	return filters, nil
+}
+
 func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
 	syncData := make(map[mconfig.AppKey]map[mconfig.ConfigEnv]*mconfig.EnvData)
 	Response, err := kv.Get(context.Background(), prefix_common, clientv3.WithPrefix())
@@ -197,13 +237,18 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 						}
 						eventKey = config.EVENT_KEY
 					case CLASS_FILTER:
-					//metadate := config.ConfigEventMetadata{
-					//	AppKey:    key.appKey,
-					//	ConfigKey: key.configKey,
-					//	Env:       key.env,
-					//	Val:       mconfig.ConfigVal(e.Kv.Value),
-					//}
-					//eventKey := config.EVENT_KEY
+						f := &mconfig.FilterStoreVal{}
+						err = json.Unmarshal(e.Kv.Value, f)
+						if err != nil {
+							log.Error(err)
+							continue
+						}
+						metadate = filter.FilterEventMetadata{
+							AppKey: key.appKey,
+							Env:    key.env,
+							Val:    f,
+						}
+						eventKey = filter.EVENT_KEY
 					default:
 						log.Error("key class <" + key.class + ">is not declare")
 						continue
@@ -218,27 +263,44 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 					if err != nil {
 						log.Error(err)
 					}
-					log.Debug("etcd update key:", string(e.Kv.Key), "value:", string(e.Kv.Value))
+					log.Info("etcd update key:", string(e.Kv.Key), "value:", string(e.Kv.Value))
 				case mvccpb.DELETE:
 					key, err := parseStoreKey(string(e.Kv.Key))
 					if err != nil {
 						log.Error(err)
-						break
+						continue
+					}
+					var metadate interface{}
+					var eventKey event.EventKey
+					switch key.class {
+					case CLASS_CONFIG:
+						metadate = config.ConfigEventMetadata{
+							AppKey:    key.appKey,
+							ConfigKey: key.configKey,
+							Env:       key.env,
+						}
+						eventKey = config.EVENT_KEY
+					case CLASS_FILTER:
+						metadate = filter.FilterEventMetadata{
+							AppKey: key.appKey,
+							Env:    key.env,
+						}
+						eventKey = filter.EVENT_KEY
+					default:
+						log.Error("key class <" + key.class + ">is not declare")
+						continue
 					}
 					err = consumers.AddEvent(&event.Event{
 						EventDesc: event.EventDesc{
 							EventType: event.Event_Delete,
-							EventKey:  config.EVENT_KEY,
+							EventKey:  eventKey,
 						},
-						Metadata: config.ConfigEventMetadata{
-							AppKey:    key.appKey,
-							ConfigKey: key.configKey,
-							Env:       key.env,
-						},
+						Metadata: metadate,
 					})
 					if err != nil {
 						log.Error(err)
 					}
+					log.Info("etcd delete key:", string(e.Kv.Key))
 				}
 			}
 		}

@@ -1,27 +1,30 @@
 package filter
 
 import (
+	"errors"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 )
 
-type FilterMode string
-
-const (
-	FilterMode_lua    FilterMode = "lua"
-	FilterMode_simple FilterMode = "simple"
-	FilterMode_mep    FilterMode = "mep"
-)
-
-func GetEffectEnvKey(appkey mconfig.AppKey, metatdata map[string]string) (mconfig.ConfigEnv, error) {
-	filters := getFilterByAppKey(appkey)
-	//calculate effect env
-	calculateEffectEnvKey(filters, metatdata)
-
-	return "", nil
+func InitFilterEngine() {
+	initCache()
+	initEvent()
 }
 
-func calculateEffectEnvKey(filters []*FilterEntity, metatdata map[string]string) (mconfig.ConfigEnv, error) {
+func GetEffectEnvKey(appkey mconfig.AppKey, metatdata map[string]string) (mconfig.ConfigEnv, error) {
+	filters, err := getFilterByAppKey(appkey)
+	if err != nil {
+		return "", err
+	}
+	//calculate effect env
+	envKey, err := calculateEffectEnvKey(filters, metatdata)
+	if err != nil {
+		return "", err
+	}
+	return envKey, nil
+}
+
+func calculateEffectEnvKey(filters []*mconfig.FilterEntity, metatdata map[string]string) (mconfig.ConfigEnv, error) {
 	var effecfEnv mconfig.ConfigEnv
 	maxWeight := -1
 	for _, filter := range filters {
@@ -34,20 +37,25 @@ func calculateEffectEnvKey(filters []*FilterEntity, metatdata map[string]string)
 			goto result
 		}
 		switch filter.Mode {
-		case FilterMode_lua:
+		case mconfig.FilterMode_lua:
 			calResult = CalLuaFilter(string(filter.Code), metatdata)
-		case FilterMode_simple:
+		case mconfig.FilterMode_simple:
 			calResult = CalSimpleFilter(string(filter.Code), metatdata)
-		case FilterMode_mep:
+		case mconfig.FilterMode_mep:
 			calResult = CalMepFilter(string(filter.Code), metatdata)
 		default:
 			log.Error("not support filter mode", filter.Mode, "in env", filter.Env)
 		}
+		log.Info(string(filter.Env), filter.Weight, string(filter.Code), metatdata, calResult)
+
 	result:
 		if calResult {
 			maxWeight = filter.Weight
 			effecfEnv = filter.Env
 		}
+	}
+	if effecfEnv == "" {
+		return "", errors.New("not found effect env")
 	}
 	return effecfEnv, nil
 }

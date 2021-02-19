@@ -23,6 +23,8 @@ type MConfigStore interface {
 	DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
 	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
 
+	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error)
+
 	GetSyncData() (mconfig.AppData, error)
 	PutSyncData(data *mconfig.AppData) error
 	Close() error

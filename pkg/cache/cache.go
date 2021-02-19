@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"sync"
 )
 
@@ -26,7 +25,7 @@ func (cache *Cache) GetCache(key CacheKey) (CacheValue, error) {
 	if ok {
 		return value, nil
 	}
-	return nil, errors.New("not found")
+	return nil, ERROR_CACHE_NOT_FOUND
 }
 
 func (cache *Cache) PutCache(key CacheKey, val CacheValue) error {

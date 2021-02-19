@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
+	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg/cache"
-	"github.com/mhchlib/mconfig/pkg/client"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/store"
 )
@@ -51,6 +51,13 @@ func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfi
 			if err != nil {
 				return nil, err
 			}
+			//sync to store
+			go func() {
+				err := PutConfigToCache(appKey, configKey, env, val)
+				if err != nil {
+					log.Info(err)
+				}
+			}()
 		}
 		configs = append(configs, &mconfig.ConfigEntity{
 			Key: configKey,
@@ -58,12 +65,4 @@ func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfi
 		})
 	}
 	return configs, nil
-}
-
-func WatchConfig(c *client.Client, appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
-	err := c.BuildClientConfigRelation(appKey, configKeys, env)
-	if err != nil {
-		return err
-	}
-	return nil
 }

@@ -11,6 +11,32 @@ type ConfigEntity struct {
 	Val ConfigVal `json:"val"`
 }
 
+type ConfigChangeNotifyMsg struct {
+	Key ConfigKey `json:"key"`
+	Val ConfigVal `json:"val"`
+}
+
+type FilterMode string
+
+const (
+	FilterMode_lua    FilterMode = "lua"
+	FilterMode_simple FilterMode = "simple"
+	FilterMode_mep    FilterMode = "mep"
+)
+
+type FilterEntity struct {
+	Env    ConfigEnv
+	Weight int
+	Code   FilterVal
+	Mode   FilterMode
+}
+
+type FilterStoreVal struct {
+	Weight int        `json:"weight"`
+	Code   FilterVal  `json:"code"`
+	Mode   FilterMode `json:"mode"`
+}
+
 type FilterVal string
 
 type ConfigEnv string

@@ -1,8 +1,9 @@
 package client
 
 import (
-	"errors"
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig/pkg/config"
+	"github.com/mhchlib/mconfig/pkg/filter"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"sync/atomic"
 )
@@ -13,10 +14,9 @@ var count int32 = 0
 
 type ClientId int32
 
-var relationManagement *ClientConfigRelationManagement
-
 func InitClientManagement() {
-	relationManagement = NewClientConfigRelationManagement()
+	initRelationMap()
+	initEvent()
 }
 
 type Client struct {
@@ -33,9 +33,6 @@ type Client struct {
 type MetaData map[string]string
 
 func NewClient(metadata MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Client, error) {
-	if relationManagement == nil {
-		return nil, errors.New("client config relation management does not init...")
-	}
 	id, err := getClientId()
 	if err != nil {
 		return nil, err
@@ -72,12 +69,11 @@ func getClientId() (ClientId, error) {
 	return ClientId(id), nil
 }
 
-func (client *Client) BuildClientConfigRelation(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+func (client *Client) BuildClientRelation(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	client.appKey = appKey
 	client.configKeys = configKeys
 	client.configEnv = env
-
-	err := relationManagement.addClientConfigRelation(*client)
+	err := buildClientRelation(client)
 	if err != nil {
 		return err
 	}
@@ -88,7 +84,7 @@ func (client *Client) BuildClientConfigRelation(appKey mconfig.AppKey, configKey
 func (client *Client) RemoveClient() error {
 	clientId := client.Id
 	if client.isbuildClientConfigRelation {
-		err := relationManagement.removeClientConfigRelation(*client)
+		err := removeClientRelation(client)
 		if err != nil {
 			return err
 		}
@@ -101,11 +97,51 @@ func (client *Client) RemoveClient() error {
 	return nil
 }
 
-func (client *Client) SendMsg(data interface{}) error {
+func (client *Client) SendConfigChangeNotifyMsg(data *mconfig.ConfigChangeNotifyMsg) error {
 	err := client.msgBus.sendMsg(data)
 	return err
 }
 
 func (client *Client) Hold() {
 	<-client.close
+}
+
+func (client *Client) ReCalEffectEnv() error {
+	env, err := filter.GetEffectEnvKey(client.appKey, client.metadata)
+	if err != nil {
+		return err
+	}
+	client.configEnv = env
+	err = client.ReloadNewConfig()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (client *Client) ReloadNewConfig() error {
+	configs, err := config.GetConfig(client.appKey, client.configKeys, client.configEnv)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	for _, c := range configs {
+		err = client.SendConfigChangeNotifyMsg(&mconfig.ConfigChangeNotifyMsg{
+			Key: c.Key,
+			Val: c.Val,
+		})
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+	return nil
+}
+
+func (client *Client) WatchConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+	err := client.BuildClientRelation(appKey, configKeys, env)
+	if err != nil {
+		return err
+	}
+	return nil
 }

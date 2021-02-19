@@ -1,20 +1,32 @@
 package client
 
-import "sync"
+import (
+	"fmt"
+	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"sync"
+)
 
 type ClientSet struct {
 	sync.RWMutex
 	m map[ClientId]*Client
 }
 
-func (set *ClientSet) add(client Client) error {
+func NewClientSet() *ClientSet {
+	clientSet := &ClientSet{
+		m: make(map[ClientId]*Client),
+	}
+	return clientSet
+}
+
+func (set *ClientSet) add(client *Client) error {
 	set.Lock()
-	set.m[client.Id] = &client
+	set.m[client.Id] = client
 	set.Unlock()
 	return nil
 }
 
-func (set *ClientSet) remove(client Client) error {
+func (set *ClientSet) remove(client *Client) error {
 	set.Lock()
 	delete(set.m, client.Id)
 	set.Unlock()
@@ -28,6 +40,33 @@ func (set *ClientSet) contains(client *Client) bool {
 	return ok
 }
 
-func (set *ClientSet) GetClients() map[ClientId]*Client {
-	return set.m
+//func (set *ClientSet) GetClients() map[ClientId]*Client {
+//	return set.m
+//}
+
+func (set *ClientSet) SendMsg(data *mconfig.ConfigChangeNotifyMsg) error {
+	set.RLock()
+	defer set.RUnlock()
+	for _, c := range set.m {
+		err := c.SendConfigChangeNotifyMsg(data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (set *ClientSet) ReCalEffectEnv() error {
+	set.RLock()
+	defer set.RUnlock()
+	for _, c := range set.m {
+		go func() {
+			err := c.ReCalEffectEnv()
+			if err != nil {
+				log.Error(err, "client:", fmt.Sprintf("%v", c))
+			}
+		}()
+		continue
+	}
+	return nil
 }

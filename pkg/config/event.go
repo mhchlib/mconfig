@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/client"
 	"github.com/mhchlib/mconfig/pkg/event"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 )
@@ -37,32 +36,29 @@ func configChange(metadata event.Metadata) {
 		log.Error(err)
 		return
 	}
+	//avoid use a lot of memory，so here we just put cache what we need
+	//cacheVal,err := GetConfigFromCache(eventMetadata.AppKey, eventMetadata.ConfigKey, eventMetadata.Env)
+	//if cacheVal == "" && errors.As(err, &cache.ERROR_CACHE_NOT_FOUND) {
+	//	log.Info("reject put config to cache key",eventMetadata.ConfigKey)
+	//	return
+	//}
 	err = PutConfigToCache(eventMetadata.AppKey, eventMetadata.ConfigKey, eventMetadata.Env, eventMetadata.Val)
 	if err != nil {
 		log.Error(err)
 	}
-	clientSet := client.GetOnlineClientSet(eventMetadata.AppKey, eventMetadata.ConfigKey, eventMetadata.Env)
-	if clientSet == nil {
-		return
-	}
-	clients := clientSet.GetClients()
-	val, err := GetConfigFromCache(eventMetadata.AppKey, eventMetadata.ConfigKey, eventMetadata.Env)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	for _, c := range clients {
-		err := c.SendMsg(
-			&mconfig.ConfigEntity{
-				Key: eventMetadata.ConfigKey,
-				Val: val,
-			},
-		)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-	}
+
+	_ = event.AddEvent(&event.Event{
+		EventDesc: event.EventDesc{
+			EventType: event.Event_Change,
+			EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
+		},
+		Metadata: mconfig.ClientNotifyEventMetadata{
+			AppKey:    eventMetadata.AppKey,
+			ConfigKey: eventMetadata.ConfigKey,
+			Env:       eventMetadata.Env,
+			Type:      mconfig.Event_Type_Config,
+		},
+	})
 }
 
 func configDelete(metadata event.Metadata) {

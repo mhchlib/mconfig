@@ -2,8 +2,10 @@ package filter
 
 import (
 	"fmt"
+	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/pkg/cache"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/store"
 )
 
 type FilterCacheKey struct {
@@ -14,14 +16,7 @@ type FilterCacheKey struct {
 type FilterCacheValue struct {
 	weight int
 	code   mconfig.FilterVal
-	mode   FilterMode
-}
-
-type FilterEntity struct {
-	Env    mconfig.ConfigEnv
-	Weight int
-	Code   mconfig.FilterVal
-	Mode   FilterMode
+	mode   mconfig.FilterMode
 }
 
 var filterCache *cache.Cache
@@ -30,34 +25,26 @@ func initCache() {
 	filterCache = cache.NewCache()
 }
 
-func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val mconfig.FilterVal) error {
+func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig.FilterStoreVal) error {
 	key := &FilterCacheKey{
 		appKey: appKey,
 		env:    env,
 	}
-	return filterCache.PutCache(*key, val)
+	return filterCache.PutCache(*key, &FilterCacheValue{
+		weight: val.Weight,
+		code:   val.Code,
+		mode:   val.Mode,
+	})
 }
 
-func GetFilterFromCache(appKey mconfig.AppKey, env mconfig.ConfigEnv) (mconfig.FilterVal, error) {
-	key := &FilterCacheKey{
-		appKey: appKey,
-		env:    env,
-	}
-	c, err := filterCache.GetCache(*key)
-	if err != nil {
-		return "", err
-	}
-	return mconfig.FilterVal(fmt.Sprintf("%v", c)), nil
-}
-
-func getFilterByAppKey(appKey mconfig.AppKey) []*FilterEntity {
+func GetFilterFromCache(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 	cacheMap := filterCache.GetCacheMap()
-	filters := make([]*FilterEntity, 0)
+	filters := make([]*mconfig.FilterEntity, 0)
 	for key, value := range cacheMap {
 		k := key.(FilterCacheKey)
-		v := value.(FilterCacheValue)
+		v := value.(*FilterCacheValue)
 		if appKey == k.appKey {
-			filters = append(filters, &FilterEntity{
+			filters = append(filters, &mconfig.FilterEntity{
 				Env:    k.env,
 				Weight: v.weight,
 				Code:   v.code,
@@ -65,5 +52,35 @@ func getFilterByAppKey(appKey mconfig.AppKey) []*FilterEntity {
 			})
 		}
 	}
-	return filters
+	if len(filters) == 0 {
+		return nil, cache.ERROR_CACHE_NOT_FOUND
+	}
+	return filters, nil
+}
+
+func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
+	var filters []*mconfig.FilterEntity
+	filters, _ = GetFilterFromCache(appKey)
+	if filters == nil {
+		appFilters, err := store.GetCurrentMConfigStore().GetAppFilters(appKey)
+		if err != nil {
+			return nil, err
+		}
+		filters = appFilters
+		//sync to cache
+		for _, filter := range appFilters {
+			_ = filterCache.PutCache(FilterCacheKey{
+				appKey: appKey,
+				env:    filter.Env,
+			}, &FilterCacheValue{
+				weight: filter.Weight,
+				code:   filter.Code,
+				mode:   filter.Mode,
+			})
+		}
+	}
+	for _, filter := range filters {
+		log.Info(fmt.Sprintf("%v", filter))
+	}
+	return filters, nil
 }

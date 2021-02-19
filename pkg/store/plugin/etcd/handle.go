@@ -50,15 +50,12 @@ func getStoreKey(entity *KeyEntity) (string, error) {
 		return "", errors.New("class can not be null")
 	}
 	key = key + string(entity.class) + SEPARATOR
-	if entity.appKey == "" {
-		return "", errors.New("appkey can not be null")
+	if entity.appKey != "" {
+		key = key + string(entity.appKey) + SEPARATOR
 	}
-	key = key + string(entity.appKey) + SEPARATOR
-	if entity.env == "" {
-		return "", errors.New("envkey can not be null")
+	if entity.env != "" {
+		key = key + string(entity.env) + SEPARATOR
 	}
-	key = key + string(entity.env) + SEPARATOR
-
 	if entity.configKey != "" {
 		key = key + string(entity.configKey) + SEPARATOR
 	}
