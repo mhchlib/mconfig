@@ -7,7 +7,14 @@
 
 ### Related
 
-* [mconfig go sdk](https://github.com/mhchlib/mconfig-go-sdk) 
+| Name                                                         | Intro                   |
+| ------------------------------------------------------------ | ----------------------- |
+| [mconfig-admin](https://github.com/mhchlib/mconfig-admin)    | mconfig admin back end  |
+| [mconfig-api](https://github.com/mhchlib/mconfig-api)        | mconfig server rpc api  |
+| [mconfig-go-sdk](https://github.com/mhchlib/mconfig-go-sdk)  | mconfig go sdk          |
+| [mconfig-admin-front](https://github.com/mhchlib/mconfig-admin-front) | mconfig admin front end |
+
+
 
 ### Motivation
 

@@ -4,10 +4,14 @@
 
 中文｜[English](../../README.md)
 
-
 ### 相关的
 
-* [mconfig go sdk](https://github.com/mhchlib/mconfig-go-sdk) 
+| 名称                                                         | 介绍                   |
+| ------------------------------------------------------------ | ---------------------- |
+| [mconfig-admin](https://github.com/mhchlib/mconfig-admin)    | mconfig admin 后端     |
+| [mconfig-api](https://github.com/mhchlib/mconfig-api)        | mconfig server rpc api |
+| [mconfig-go-sdk](https://github.com/mhchlib/mconfig-go-sdk)  | mconfig go sdk         |
+| [mconfig-admin-front](https://github.com/mhchlib/mconfig-admin-front) | mconfig admin 前端     |
 
 ### 动机
 
