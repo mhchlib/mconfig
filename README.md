@@ -31,11 +31,12 @@
 * Storage Pluggable
 * Stable
 
-### Example
+### Documents
 
 | Intro | Doc                    |
 | ----- | ---------------------- |
 | Start | [start](docs/start.md) |
+| Design | [design](docs/design.md) |
 
 
 
