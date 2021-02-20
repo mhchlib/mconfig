@@ -35,12 +35,41 @@ func (cache *Cache) PutCache(key CacheKey, val CacheValue) error {
 	return nil
 }
 
-func (cache *Cache) GetCacheMap() map[CacheKey]CacheValue {
-	cloneVal := make(map[CacheKey]CacheValue)
+func (cache *Cache) DeleteCache(key CacheKey) error {
 	cache.Lock()
+	defer cache.Unlock()
+	delete(cache.cache, key)
+	return nil
+}
+
+func (cache *Cache) CheckExist(key CacheKey) bool {
+	cache.RLock()
+	defer cache.RUnlock()
+	_, ok := cache.cache[key]
+	return ok
+}
+
+//func (cache *Cache) GetCacheMap() map[CacheKey]CacheValue {
+//	cloneVal := make(map[CacheKey]CacheValue)
+//	cache.Lock()
+//	for key, value := range cache.cache {
+//		cloneVal[key] = value
+//	}
+//	cache.Unlock()
+//	return cloneVal
+//}
+
+func (cache *Cache) ExecuteForEachItem(f func(key CacheKey, value CacheValue, param ...interface{}), param ...interface{}) error {
+	var wg sync.WaitGroup
+	cache.RLock()
 	for key, value := range cache.cache {
-		cloneVal[key] = value
+		wg.Add(1)
+		go func(key interface{}, value interface{}, param ...interface{}) {
+			defer wg.Done()
+			f(key, value, param)
+		}(key, value, param)
 	}
-	cache.Unlock()
-	return cloneVal
+	cache.RUnlock()
+	wg.Wait()
+	return nil
 }

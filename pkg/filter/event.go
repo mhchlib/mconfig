@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig/pkg/config"
 	"github.com/mhchlib/mconfig/pkg/event"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 )
@@ -36,11 +37,11 @@ func filterChange(metadata event.Metadata) {
 		return
 	}
 	//avoid use a lot of memory，so here we just put cache what we need
-	//cacheVal,_ := GetFilterFromCache(eventMetadata.AppKey)
-	//if cacheVal == nil {
-	//	log.Info("reject put config to cache key",eventMetadata.Env)
-	//	return
-	//}
+	exist := config.CheckRegisterAppNotifyExist(eventMetadata.AppKey)
+	if !exist {
+		log.Info("reject put config to cache with app", eventMetadata.AppKey)
+		return
+	}
 	err = PutFilterToCache(eventMetadata.AppKey, eventMetadata.Env, eventMetadata.Val)
 	if err != nil {
 		log.Error(err)

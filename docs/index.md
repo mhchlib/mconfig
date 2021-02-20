@@ -1,9 +1,7 @@
-## MConfig
+
+> a lightweight distributed configuration center
 
 ![mconfig](img/mconfig.png)
-
-[中文](zh/README.md)｜English
-
 
 ### Related
 

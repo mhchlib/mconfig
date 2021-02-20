@@ -37,11 +37,11 @@ func configChange(metadata event.Metadata) {
 		return
 	}
 	//avoid use a lot of memory，so here we just put cache what we need
-	//cacheVal,err := GetConfigFromCache(eventMetadata.AppKey, eventMetadata.ConfigKey, eventMetadata.Env)
-	//if cacheVal == "" && errors.As(err, &cache.ERROR_CACHE_NOT_FOUND) {
-	//	log.Info("reject put config to cache key",eventMetadata.ConfigKey)
-	//	return
-	//}
+	exist := CheckRegisterAppNotifyExist(eventMetadata.AppKey)
+	if !exist {
+		log.Info("reject put config to cache with app", eventMetadata.AppKey)
+		return
+	}
 	err = PutConfigToCache(eventMetadata.AppKey, eventMetadata.ConfigKey, eventMetadata.Env, eventMetadata.Val)
 	if err != nil {
 		log.Error(err)

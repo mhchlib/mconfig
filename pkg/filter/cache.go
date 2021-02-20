@@ -6,6 +6,7 @@ import (
 	"github.com/mhchlib/mconfig/pkg/cache"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"github.com/mhchlib/mconfig/pkg/store"
+	"sync"
 )
 
 type FilterCacheKey struct {
@@ -37,20 +38,54 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 	})
 }
 
+func DeleteFilterFromCacheByApp(appKey mconfig.AppKey) error {
+	err := filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
+		k := key.(FilterCacheKey)
+		if appKey == k.appKey {
+			_ = filterCache.DeleteCache(k)
+			log.Info("recycle filter cache with app key:", fmt.Sprintf("%+v", k))
+		}
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetFilterFromCache(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
-	cacheMap := filterCache.GetCacheMap()
 	filters := make([]*mconfig.FilterEntity, 0)
-	for key, value := range cacheMap {
+	mutex := sync.Mutex{}
+	//for key, value := range cacheMap {
+	//	k := key.(FilterCacheKey)
+	//	v := value.(*FilterCacheValue)
+	//	if appKey == k.appKey {
+	//		filters = append(filters, &mconfig.FilterEntity{
+	//			Env:    k.env,
+	//			Weight: v.weight,
+	//			Code:   v.code,
+	//			Mode:   v.mode,
+	//		})
+	//	}
+	//}
+	//if len(filters) == 0 {
+	//	return nil, cache.ERROR_CACHE_NOT_FOUND
+	//}
+	err := filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		k := key.(FilterCacheKey)
 		v := value.(*FilterCacheValue)
 		if appKey == k.appKey {
+			mutex.Lock()
 			filters = append(filters, &mconfig.FilterEntity{
 				Env:    k.env,
 				Weight: v.weight,
 				Code:   v.code,
 				Mode:   v.mode,
 			})
+			mutex.Unlock()
 		}
+	})
+	if err != nil {
+		return nil, err
 	}
 	if len(filters) == 0 {
 		return nil, cache.ERROR_CACHE_NOT_FOUND

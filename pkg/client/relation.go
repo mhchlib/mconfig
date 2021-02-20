@@ -2,6 +2,8 @@ package client
 
 import (
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig/pkg/config"
+	"github.com/mhchlib/mconfig/pkg/filter"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
 	"sync"
 )
@@ -42,6 +44,11 @@ func buildClientRelation(client *Client) error {
 	if err != nil {
 		return err
 	}
+	//register config notify
+	err = config.RegisterAppNotify(client.appKey)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -54,6 +61,23 @@ func removeClientRelation(client *Client) error {
 	if err != nil {
 		return err
 	}
+	//unregister app notify
+	count := getOnlineClientSetCountByAppRealtion(client.appKey)
+	if count == 0 {
+		err := config.UnRegisterAppNotify(client.appKey)
+		if err != nil {
+			log.Error(err)
+		}
+		//删除缓存数据
+		err = config.DeleteConfigFromCacheByApp(client.appKey)
+		if err != nil {
+			log.Error(err)
+		}
+		err = filter.DeleteFilterFromCacheByApp(client.appKey)
+		if err != nil {
+			log.Error(err)
+		}
+	}
 	return nil
 }
 
@@ -63,6 +87,10 @@ func getOnlineClientSetByConfigRealtion(appKey mconfig.AppKey, configKey mconfig
 
 func getOnlineClientSetByAppRealtion(appKey mconfig.AppKey) *ClientSet {
 	return appRelationMap.getClientSet(appKey)
+}
+
+func getOnlineClientSetCountByAppRealtion(appKey mconfig.AppKey) int {
+	return appRelationMap.getClientSetCount(appKey)
 }
 
 func (m *ClientAppRelationMap) addClientConfigRelation(client *Client) error {
@@ -108,6 +136,16 @@ func (m *ClientAppRelationMap) getClientSet(appKey mconfig.AppKey) *ClientSet {
 		return nil
 	}
 	return s
+}
+
+func (m *ClientAppRelationMap) getClientSetCount(appKey mconfig.AppKey) int {
+	m.RLock()
+	defer m.RUnlock()
+	set := m.m[appKey]
+	if set == nil {
+		return 0
+	}
+	return set.count()
 }
 
 func (m *ClientConfigRelationMap) addClientConfigRelation(client *Client) error {

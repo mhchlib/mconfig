@@ -40,6 +40,12 @@ func (set *ClientSet) contains(client *Client) bool {
 	return ok
 }
 
+func (set *ClientSet) count() int {
+	set.RLock()
+	defer set.RUnlock()
+	return len(set.m)
+}
+
 //func (set *ClientSet) GetClients() map[ClientId]*Client {
 //	return set.m
 //}
