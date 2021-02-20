@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/pkg/syncx"
 	"github.com/mhchlib/register/reg"
 	"google.golang.org/grpc"
 	"time"
@@ -16,18 +18,83 @@ import (
 type MConfigStore interface {
 	GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
 	WatchDynamicVal(customer *Consumer) error
-
 	PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.ConfigVal) error
 	PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.FilterVal) error
-
 	DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
 	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
-
 	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error)
-
 	GetSyncData() (mconfig.AppData, error)
 	PutSyncData(data *mconfig.AppData) error
 	Close() error
+}
+
+var shareCalls syncx.SharedCalls
+
+// share calls
+func GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+	key := fmt.Sprintf("%v-%v-%v-%v", "GetConfigVal", appKey, configKey, env)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetConfigVal(appKey, configKey, env)
+		return val, err
+	})
+	return v.(mconfig.ConfigVal), err
+}
+
+func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
+	key := fmt.Sprintf("%v-%v", "GetAppFilters", appKey)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetAppFilters(appKey)
+		return val, err
+	})
+	return v.([]*mconfig.FilterEntity), err
+}
+
+func GetSyncData() (mconfig.AppData, error) {
+	key := fmt.Sprintf("%v", "GetSyncData")
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetSyncData()
+		return val, err
+	})
+	return v.(mconfig.AppData), err
+}
+
+func DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+	key := fmt.Sprintf("%v-%v-%v-%v", "DeleteConfig", appKey, configKey, env)
+	_, err := shareCalls.Do(key, func() (interface{}, error) {
+		err := currentMConfigStore.DeleteConfig(appKey, configKey, env)
+		return nil, err
+	})
+	return err
+}
+
+func DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
+	key := fmt.Sprintf("%v-%v-%v", "DeleteFilter", appKey, env)
+	_, err := shareCalls.Do(key, func() (interface{}, error) {
+		err := currentMConfigStore.DeleteFilter(appKey, env)
+		return nil, err
+	})
+	return err
+}
+
+// --------
+func WatchDynamicVal(customer *Consumer) error {
+	return currentMConfigStore.WatchDynamicVal(customer)
+}
+
+func PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.ConfigVal) error {
+	return currentMConfigStore.PutConfigVal(appKey, env, configKey, content)
+}
+
+func PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.FilterVal) error {
+	return currentMConfigStore.PutFilterVal(appKey, env, content)
+}
+
+func PutSyncData(data *mconfig.AppData) error {
+	return currentMConfigStore.PutSyncData(data)
+}
+
+func Close() error {
+	return currentMConfigStore.Close()
 }
 
 //CurrentMConfigStore
@@ -53,15 +120,20 @@ func InitStore(storeType string, storeAddress string) {
 		}
 	}()
 	currentStorePlugin = plugin
+	initShareCalls()
+}
+
+func initShareCalls() {
+	shareCalls = syncx.NewSharedCalls()
 }
 
 func GetStorePlugin() *StorePlugin {
 	return currentStorePlugin
 }
 
-func GetCurrentMConfigStore() MConfigStore {
-	return currentMConfigStore
-}
+//func GetCurrentMConfigStore() MConfigStore {
+//	return currentMConfigStore
+//}
 
 func CheckSyncData() bool {
 	if currentStorePlugin.Mode == MODE_LOCAL {

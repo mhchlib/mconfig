@@ -97,7 +97,7 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 	var filters []*mconfig.FilterEntity
 	filters, _ = GetFilterFromCache(appKey)
 	if filters == nil {
-		appFilters, err := store.GetCurrentMConfigStore().GetAppFilters(appKey)
+		appFilters, err := store.GetAppFilters(appKey)
 		if err != nil {
 			return nil, err
 		}

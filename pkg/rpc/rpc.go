@@ -105,7 +105,7 @@ func send(stream server.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
 }
 
 func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.GetNodeStoreDataRequest) (*server.GetNodeStoreDataResponse, error) {
-	data, err := store.GetCurrentMConfigStore().GetSyncData()
+	data, err := store.GetSyncData()
 	if err != nil {
 		return nil, err
 	}
@@ -119,13 +119,12 @@ func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.Ge
 }
 
 func (m *MConfigServer) UpdateConfig(ctx context.Context, request *server.UpdateConfigRequest) (*server.UpdateConfiResponse, error) {
-	mConfigStore := store.GetCurrentMConfigStore()
-	err := mConfigStore.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
+	err := store.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
 	if err != nil {
 		return nil, err
 	}
 	if request.Config != "" {
-		err = mConfigStore.PutConfigVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.ConfigKey(request.Config), mconfig.ConfigVal(request.Val))
+		err = store.PutConfigVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.ConfigKey(request.Config), mconfig.ConfigVal(request.Val))
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +133,7 @@ func (m *MConfigServer) UpdateConfig(ctx context.Context, request *server.Update
 }
 
 func (m *MConfigServer) GetNodeDetail(ctx context.Context, e *empty.Empty) (*server.GetNodeDetailResponse, error) {
-	storeData, err := store.GetCurrentMConfigStore().GetSyncData()
+	storeData, err := store.GetSyncData()
 	if err != nil {
 		return nil, err
 	}
@@ -151,16 +150,14 @@ func (m *MConfigServer) GetNodeDetail(ctx context.Context, e *empty.Empty) (*ser
 }
 
 func (m *MConfigServer) DeletConfig(ctx context.Context, request *server.DeletConfigRequest) (*empty.Empty, error) {
-	currentMConfigStore := store.GetCurrentMConfigStore()
-	err := currentMConfigStore.DeleteConfig(mconfig.AppKey(request.App), mconfig.ConfigKey(request.Config), mconfig.ConfigEnv(request.Env))
+	err := store.DeleteConfig(mconfig.AppKey(request.App), mconfig.ConfigKey(request.Config), mconfig.ConfigEnv(request.Env))
 	if err != nil {
 		return nil, err
 	}
 	return &empty.Empty{}, nil
 }
 func (m *MConfigServer) DeletFilter(ctx context.Context, request *server.DeletFilterRequest) (*empty.Empty, error) {
-	currentMConfigStore := store.GetCurrentMConfigStore()
-	err := currentMConfigStore.DeleteFilter(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env))
+	err := store.DeleteFilter(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env))
 	if err != nil {
 		return nil, err
 	}
@@ -168,8 +165,7 @@ func (m *MConfigServer) DeletFilter(ctx context.Context, request *server.DeletFi
 }
 
 func (m *MConfigServer) UpdateFilter(ctx context.Context, request *server.UpdateFilterRequest) (*empty.Empty, error) {
-	currentMConfigStore := store.GetCurrentMConfigStore()
-	err := currentMConfigStore.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
+	err := store.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
 	if err != nil {
 		return nil, err
 	}

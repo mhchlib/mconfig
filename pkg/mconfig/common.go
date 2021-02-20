@@ -6,7 +6,18 @@ type ConfigKey string
 
 type ConfigVal string
 
+type StoreVal struct {
+	Md5     string      `json:"md5"`
+	Version int64       `json:"version"`
+	Data    interface{} `json:"data"`
+}
+
 type ConfigEntity struct {
+	Key ConfigKey `json:"key"`
+	Val ConfigVal `json:"val"`
+}
+
+type ConfigStoreVal struct {
 	Key ConfigKey `json:"key"`
 	Val ConfigVal `json:"val"`
 }

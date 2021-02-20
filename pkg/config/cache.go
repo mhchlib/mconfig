@@ -70,7 +70,7 @@ func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfi
 	for _, configKey := range configKeys {
 		val, err := GetConfigFromCache(appKey, configKey, env)
 		if err != nil {
-			val, err = store.GetCurrentMConfigStore().GetConfigVal(appKey, configKey, env)
+			val, err = store.GetConfigVal(appKey, configKey, env)
 			if err != nil {
 				return nil, err
 			}
