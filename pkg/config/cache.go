@@ -115,21 +115,12 @@ func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfi
 			if err != nil {
 				return nil, err
 			}
-			val, err := mconfig.TransformMap2ConfigStoreVal(storeVal.Data)
+			//put to store
+			err = PutConfigToCache(appKey, configKey, env, storeVal)
 			if err != nil {
-				return nil, err
+				log.Info(err)
 			}
-			cacheVal = &mconfig.ConfigEntity{
-				Key: val.Key,
-				Val: val.Val,
-			}
-			//sync to store
-			go func() {
-				err := PutConfigToCache(appKey, configKey, env, storeVal)
-				if err != nil {
-					log.Info(err)
-				}
-			}()
+			cacheVal, _ = GetConfigFromCache(appKey, configKey, env)
 		}
 		configs = append(configs, cacheVal)
 	}

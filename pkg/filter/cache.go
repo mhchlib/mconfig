@@ -125,13 +125,14 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 				return nil, err
 			}
 			_ = PutFilterToCache(appKey, val.Env, filter)
-			filters = append(filters, &mconfig.FilterEntity{
-				Env:    val.Env,
-				Weight: val.Weight,
-				Code:   val.Code,
-				Mode:   val.Mode,
-			})
+			//filters = append(filters, &mconfig.FilterEntity{
+			//	Env:    val.Env,
+			//	Weight: val.Weight,
+			//	Code:   val.Code,
+			//	Mode:   val.Mode,
+			//})
 		}
+		filters, _ = GetFilterFromCache(appKey)
 	}
 	//for _, filter := range filters {
 	//	log.Info(fmt.Sprintf("%v", filter))
