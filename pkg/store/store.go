@@ -16,13 +16,13 @@ import (
 
 // MConfigStore ...
 type MConfigStore interface {
-	GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error)
+	GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error)
 	WatchDynamicVal(customer *Consumer) error
-	PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.ConfigVal) error
-	PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.FilterVal) error
+	PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.StoreVal) error
+	PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.StoreVal) error
 	DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
 	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
-	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error)
+	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error)
 	GetSyncData() (mconfig.AppData, error)
 	PutSyncData(data *mconfig.AppData) error
 	Close() error
@@ -31,22 +31,22 @@ type MConfigStore interface {
 var shareCalls syncx.SharedCalls
 
 // share calls
-func GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+func GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	key := fmt.Sprintf("%v-%v-%v-%v", "GetConfigVal", appKey, configKey, env)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
 		val, err := currentMConfigStore.GetConfigVal(appKey, configKey, env)
 		return val, err
 	})
-	return v.(mconfig.ConfigVal), err
+	return v.(*mconfig.StoreVal), err
 }
 
-func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
+func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
 	key := fmt.Sprintf("%v-%v", "GetAppFilters", appKey)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
 		val, err := currentMConfigStore.GetAppFilters(appKey)
 		return val, err
 	})
-	return v.([]*mconfig.FilterEntity), err
+	return v.([]*mconfig.StoreVal), err
 }
 
 func GetSyncData() (mconfig.AppData, error) {
@@ -81,11 +81,11 @@ func WatchDynamicVal(customer *Consumer) error {
 	return currentMConfigStore.WatchDynamicVal(customer)
 }
 
-func PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.ConfigVal) error {
+func PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.StoreVal) error {
 	return currentMConfigStore.PutConfigVal(appKey, env, configKey, content)
 }
 
-func PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.FilterVal) error {
+func PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.StoreVal) error {
 	return currentMConfigStore.PutFilterVal(appKey, env, content)
 }
 

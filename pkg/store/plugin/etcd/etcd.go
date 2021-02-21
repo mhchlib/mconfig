@@ -50,7 +50,7 @@ type EtcdStore struct {
 	cancelFunc context.CancelFunc
 }
 
-func (e *EtcdStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, val mconfig.ConfigVal) error {
+func (e *EtcdStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, val mconfig.StoreVal) error {
 	entity := &KeyEntity{
 		namespace: namespce,
 		class:     CLASS_CONFIG,
@@ -62,11 +62,12 @@ func (e *EtcdStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, c
 	if err != nil {
 		return err
 	}
-	_, err = kv.Put(context.Background(), key, string(val))
+	data, _ := json.Marshal(val)
+	_, err = kv.Put(context.Background(), key, string(data))
 	return err
 }
 
-func (e *EtcdStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, val mconfig.FilterVal) error {
+func (e *EtcdStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, val mconfig.StoreVal) error {
 	entity := &KeyEntity{
 		namespace: namespce,
 		class:     CLASS_FILTER,
@@ -77,7 +78,8 @@ func (e *EtcdStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, v
 	if err != nil {
 		return err
 	}
-	_, err = kv.Put(context.Background(), key, string(val))
+	data, _ := json.Marshal(val)
+	_, err = kv.Put(context.Background(), key, string(data))
 	return err
 }
 
@@ -118,7 +120,7 @@ func (e *EtcdStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) e
 	return nil
 }
 
-func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
+func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
 		class:     CLASS_FILTER,
@@ -128,7 +130,7 @@ func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntit
 	if err != nil {
 		return nil, err
 	}
-	filters := []*mconfig.FilterEntity{}
+	filters := []*mconfig.StoreVal{}
 	response, err := kv.Get(context.Background(), storeKey, clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
@@ -136,23 +138,18 @@ func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.FilterEntit
 	for _, kv := range response.Kvs {
 		k := string(kv.Key)
 		v := kv.Value
-		key, err := parseStoreKey(k)
-		if err != nil {
-			log.Error(err)
-			return nil, err
-		}
-		f := &mconfig.FilterStoreVal{}
+		//key, err := parseStoreKey(k)
+		//if err != nil {
+		//	log.Error(err)
+		//	return nil, err
+		//}
+		f := &mconfig.StoreVal{}
 		err = json.Unmarshal(v, f)
 		if err != nil {
 			log.Error(err, "key:", k, "value:", string(v))
 			return nil, err
 		}
-		filters = append(filters, &mconfig.FilterEntity{
-			Env:    key.env,
-			Weight: f.Weight,
-			Code:   f.Code,
-			Mode:   f.Mode,
-		})
+		filters = append(filters, f)
 	}
 	return filters, nil
 }
@@ -183,13 +180,25 @@ func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
 		if storeKey.class == CLASS_CONFIG {
 			configs := envData.Configs
 			if configs == nil {
-				configs = make(map[mconfig.ConfigKey]mconfig.ConfigVal)
+				configs = make(map[mconfig.ConfigKey]mconfig.StoreVal)
 				envData.Configs = configs
 			}
-			configs[storeKey.configKey] = mconfig.ConfigVal(v.Value)
+			val := &mconfig.StoreVal{}
+			err = json.Unmarshal(v.Value, val)
+			if err != nil {
+				log.Error(err, v.Value)
+				continue
+			}
+			configs[storeKey.configKey] = *val
 		}
 		if storeKey.class == CLASS_FILTER {
-			envData.Filter = mconfig.FilterVal(v.Value)
+			val := &mconfig.StoreVal{}
+			err = json.Unmarshal(v.Value, val)
+			if err != nil {
+				log.Error(err, v.Value)
+				continue
+			}
+			envData.Filter = *val
 		}
 	}
 	return syncData, nil
@@ -227,26 +236,27 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 					}
 					var metadate interface{}
 					var eventKey event.EventKey
+
+					val := &mconfig.StoreVal{}
+					err = json.Unmarshal(e.Kv.Value, val)
+					if err != nil {
+						log.Error(err)
+						continue
+					}
 					switch key.class {
 					case CLASS_CONFIG:
 						metadate = config.ConfigEventMetadata{
 							AppKey:    key.appKey,
 							ConfigKey: key.configKey,
 							Env:       key.env,
-							Val:       mconfig.ConfigVal(e.Kv.Value),
+							Val:       val,
 						}
 						eventKey = config.EVENT_KEY
 					case CLASS_FILTER:
-						f := &mconfig.FilterStoreVal{}
-						err = json.Unmarshal(e.Kv.Value, f)
-						if err != nil {
-							log.Error(err)
-							continue
-						}
 						metadate = filter.FilterEventMetadata{
 							AppKey: key.appKey,
 							Env:    key.env,
-							Val:    f,
+							Val:    val,
 						}
 						eventKey = filter.EVENT_KEY
 					default:
@@ -307,7 +317,7 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 	}
 }
 
-func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (mconfig.ConfigVal, error) {
+func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
 		class:     CLASS_CONFIG,
@@ -317,16 +327,22 @@ func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.Config
 	}
 	key, err := getStoreKey(entity)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	Response, err := cli.Get(context.Background(), key)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if Response.Count != 1 {
-		return "", errors.New("not found")
+		return nil, errors.New("not found")
 	}
-	return mconfig.ConfigVal(Response.Kvs[0].Value), nil
+	val := &mconfig.StoreVal{}
+	err = json.Unmarshal(Response.Kvs[0].Value, val)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	return val, nil
 }
 
 func (e *EtcdStore) Close() error {

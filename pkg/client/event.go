@@ -60,7 +60,7 @@ func notifyClientConfigChange(appKey mconfig.AppKey, configKey mconfig.ConfigKey
 	}
 	err = clientSet.SendMsg(&mconfig.ConfigChangeNotifyMsg{
 		Key: configKey,
-		Val: val,
+		Val: val.Val,
 	})
 	if err != nil {
 		log.Error(err)

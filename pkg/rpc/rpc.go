@@ -119,12 +119,24 @@ func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.Ge
 }
 
 func (m *MConfigServer) UpdateConfig(ctx context.Context, request *server.UpdateConfigRequest) (*server.UpdateConfiResponse, error) {
-	err := store.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
+	filterVal := &mconfig.StoreVal{}
+	err := json.Unmarshal([]byte(request.Filter), filterVal)
+	if err != nil {
+		log.Error(err, "data:", request.Filter)
+		return nil, err
+	}
+	err = store.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), *filterVal)
 	if err != nil {
 		return nil, err
 	}
 	if request.Config != "" {
-		err = store.PutConfigVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.ConfigKey(request.Config), mconfig.ConfigVal(request.Val))
+		configVal := &mconfig.StoreVal{}
+		err := json.Unmarshal([]byte(request.Val), configVal)
+		if err != nil {
+			log.Error(err, "data:", request.Config)
+			return nil, err
+		}
+		err = store.PutConfigVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.ConfigKey(request.Config), *configVal)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +177,13 @@ func (m *MConfigServer) DeletFilter(ctx context.Context, request *server.DeletFi
 }
 
 func (m *MConfigServer) UpdateFilter(ctx context.Context, request *server.UpdateFilterRequest) (*empty.Empty, error) {
-	err := store.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), mconfig.FilterVal(request.Filter))
+	filterVal := &mconfig.StoreVal{}
+	err := json.Unmarshal([]byte(request.Filter), filterVal)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	err = store.PutFilterVal(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env), *filterVal)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@ const EVENT_KEY event.EventKey = "filter"
 type FilterEventMetadata struct {
 	AppKey mconfig.AppKey
 	Env    mconfig.ConfigEnv
-	Val    *mconfig.FilterStoreVal
+	Val    *mconfig.StoreVal
 }
 
 func initEvent() {

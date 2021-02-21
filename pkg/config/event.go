@@ -14,7 +14,7 @@ type ConfigEventMetadata struct {
 	AppKey    mconfig.AppKey
 	ConfigKey mconfig.ConfigKey
 	Env       mconfig.ConfigEnv
-	Val       mconfig.ConfigVal
+	Val       *mconfig.StoreVal
 }
 
 func initEvent() {
