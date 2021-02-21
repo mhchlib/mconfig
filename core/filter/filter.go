@@ -3,7 +3,7 @@ package filter
 import (
 	"errors"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/mconfig"
 )
 
 func InitFilterEngine() {

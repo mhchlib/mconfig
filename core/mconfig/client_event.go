@@ -1,6 +1,6 @@
 package mconfig
 
-import "github.com/mhchlib/mconfig/pkg/event"
+import "github.com/mhchlib/mconfig/core/event"
 
 const EVENT_KEY_CLIENT_NOTIFY event.EventKey = "client_notify"
 

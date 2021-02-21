@@ -2,7 +2,7 @@ package etcd
 
 import (
 	"errors"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/mconfig"
 	"strings"
 )
 

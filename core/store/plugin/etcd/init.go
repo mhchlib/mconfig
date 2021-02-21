@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/coreos/etcd/clientv3"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/store"
+	"github.com/mhchlib/mconfig/core/store"
 	"google.golang.org/grpc"
 	"strings"
 	"time"

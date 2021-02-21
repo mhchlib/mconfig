@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/event"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/event"
+	"github.com/mhchlib/mconfig/core/mconfig"
 )
 
 const EVENT_KEY event.EventKey = "config"

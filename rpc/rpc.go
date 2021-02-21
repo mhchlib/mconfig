@@ -7,11 +7,11 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/server"
-	"github.com/mhchlib/mconfig/pkg/client"
-	"github.com/mhchlib/mconfig/pkg/config"
-	"github.com/mhchlib/mconfig/pkg/env"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
-	"github.com/mhchlib/mconfig/pkg/store"
+	"github.com/mhchlib/mconfig/core/client"
+	"github.com/mhchlib/mconfig/core/config"
+	"github.com/mhchlib/mconfig/core/env"
+	"github.com/mhchlib/mconfig/core/mconfig"
+	"github.com/mhchlib/mconfig/core/store"
 )
 
 type MConfigServer struct {

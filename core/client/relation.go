@@ -2,9 +2,9 @@ package client
 
 import (
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/config"
-	"github.com/mhchlib/mconfig/pkg/filter"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/config"
+	"github.com/mhchlib/mconfig/core/filter"
+	"github.com/mhchlib/mconfig/core/mconfig"
 	"sync"
 )
 

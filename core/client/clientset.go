@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/mconfig"
 	"sync"
 )
 

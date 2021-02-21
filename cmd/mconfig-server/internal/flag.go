@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/mconfig"
 	"net/http"
 	"strconv"
 	"strings"

@@ -3,9 +3,9 @@ package filter
 import (
 	"fmt"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/cache"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
-	"github.com/mhchlib/mconfig/pkg/store"
+	"github.com/mhchlib/mconfig/core/cache"
+	"github.com/mhchlib/mconfig/core/mconfig"
+	"github.com/mhchlib/mconfig/core/store"
 	"sync"
 )
 

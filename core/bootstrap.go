@@ -1,12 +1,12 @@
-package pkg
+package core
 
 import (
-	"github.com/mhchlib/mconfig/pkg/client"
-	"github.com/mhchlib/mconfig/pkg/config"
-	"github.com/mhchlib/mconfig/pkg/event"
-	"github.com/mhchlib/mconfig/pkg/filter"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
-	"github.com/mhchlib/mconfig/pkg/store"
+	"github.com/mhchlib/mconfig/core/client"
+	"github.com/mhchlib/mconfig/core/config"
+	"github.com/mhchlib/mconfig/core/event"
+	"github.com/mhchlib/mconfig/core/filter"
+	"github.com/mhchlib/mconfig/core/mconfig"
+	"github.com/mhchlib/mconfig/core/store"
 )
 
 // InitMconfig ...

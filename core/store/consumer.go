@@ -1,6 +1,6 @@
 package store
 
-import "github.com/mhchlib/mconfig/pkg/event"
+import "github.com/mhchlib/mconfig/core/event"
 
 type Consumer struct {
 }

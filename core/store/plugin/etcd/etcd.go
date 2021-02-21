@@ -7,11 +7,11 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/config"
-	"github.com/mhchlib/mconfig/pkg/event"
-	"github.com/mhchlib/mconfig/pkg/filter"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
-	"github.com/mhchlib/mconfig/pkg/store"
+	"github.com/mhchlib/mconfig/core/config"
+	"github.com/mhchlib/mconfig/core/event"
+	"github.com/mhchlib/mconfig/core/filter"
+	"github.com/mhchlib/mconfig/core/mconfig"
+	"github.com/mhchlib/mconfig/core/store"
 )
 
 var (

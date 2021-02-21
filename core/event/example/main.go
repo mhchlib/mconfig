@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	log "github.com/mhchlib/logger"
-	"github.com/mhchlib/mconfig/pkg/event"
+	"github.com/mhchlib/mconfig/core/event"
 )
 
 func main() {
