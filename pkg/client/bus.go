@@ -15,7 +15,6 @@ type ClientMsgBus struct {
 }
 
 func (bus *ClientMsgBus) sendMsg(data interface{}) error {
-	//get config from cache and send data
 	err := bus.SendFunc(data)
 	if err != nil {
 		return err

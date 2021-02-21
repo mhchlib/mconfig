@@ -8,7 +8,7 @@ type StoreVal struct {
 func buildStoreVal(val interface{}) (*StoreVal, error) {
 	storeVal := &StoreVal{
 		DataVersion: DataVersion{
-			Md5:     getDataMd5(val),
+			Md5:     GetInterfaceMd5(val),
 			Version: createDataVersion(),
 		},
 		Data: val,

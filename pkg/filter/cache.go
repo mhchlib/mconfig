@@ -133,8 +133,8 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 			})
 		}
 	}
-	for _, filter := range filters {
-		log.Info(fmt.Sprintf("%v", filter))
-	}
+	//for _, filter := range filters {
+	//	log.Info(fmt.Sprintf("%v", filter))
+	//}
 	return filters, nil
 }

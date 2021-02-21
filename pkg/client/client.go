@@ -2,6 +2,7 @@ package client
 
 import (
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig/pkg/cache"
 	"github.com/mhchlib/mconfig/pkg/config"
 	"github.com/mhchlib/mconfig/pkg/filter"
 	"github.com/mhchlib/mconfig/pkg/mconfig"
@@ -28,6 +29,7 @@ type Client struct {
 	configEnv                   mconfig.ConfigEnv
 	isbuildClientConfigRelation bool
 	close                       chan interface{}
+	configUpdateMsgCache        *cache.Cache
 }
 
 type MetaData map[string]string
@@ -38,10 +40,11 @@ func NewClient(metadata MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Cl
 		return nil, err
 	}
 	c := &Client{
-		Id:       id,
-		metadata: metadata,
-		msgBus:   newClientMsgBus(send, recv),
-		close:    make(chan interface{}),
+		Id:                   id,
+		metadata:             metadata,
+		msgBus:               newClientMsgBus(send, recv),
+		close:                make(chan interface{}),
+		configUpdateMsgCache: cache.NewCache(),
 	}
 	err = c.msgBus.RecvFunc(c)
 	if err != nil {
@@ -98,7 +101,19 @@ func (client *Client) RemoveClient() error {
 }
 
 func (client *Client) SendConfigChangeNotifyMsg(data *mconfig.ConfigChangeNotifyMsg) error {
+	//check cache exist
+	exist := client.checkConfigUpdateMsgCacheExist(data.Key, data)
+	if exist {
+		return nil
+	}
 	err := client.msgBus.sendMsg(data)
+	if err == nil {
+		//put cache
+		err = client.putConfigUpdateMsgCache(data.Key, data)
+		if err != nil {
+			log.Error("client msg bus put cache error")
+		}
+	}
 	return err
 }
 
@@ -144,4 +159,20 @@ func (client *Client) WatchConfig(appKey mconfig.AppKey, configKeys []mconfig.Co
 		return err
 	}
 	return nil
+}
+
+func (client *Client) checkConfigUpdateMsgCacheExist(key interface{}, data interface{}) bool {
+	md5 := mconfig.GetInterfaceMd5(data)
+	value, err := client.configUpdateMsgCache.GetCache(key)
+	if err != nil {
+		return false
+	}
+	if value.(string) == md5 {
+		return true
+	}
+	return false
+}
+
+func (client *Client) putConfigUpdateMsgCache(key interface{}, data interface{}) error {
+	return client.configUpdateMsgCache.PutCache(key, mconfig.GetInterfaceMd5(data))
 }
