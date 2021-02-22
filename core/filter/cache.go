@@ -22,7 +22,7 @@ type FilterCacheValue struct {
 	mconfig.DataVersion
 }
 
-var filterCache *cache.Cache
+var filterCache cache.Cache
 
 func initCache() {
 	filterCache = cache.NewCache()
@@ -152,6 +152,7 @@ func CheckCacheUpToDateWithStore() error {
 				log.Error(fmt.Sprintf("cron sync filter -- store put filter val key: %v value: %v fail:", cacheKey, filter), err.Error())
 				continue
 			}
+			log.Info(cacheValue.Version, filter.Version, cacheValue.Md5, filter.Md5)
 			if cacheValue.Version != filter.Version || cacheValue.Md5 != filter.Md5 {
 				_ = PutFilterToCache(cacheKey.AppKey, val.Env, filter)
 				flag = true

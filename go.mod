@@ -5,9 +5,9 @@ go 1.14
 require (
 	github.com/ChenHaoHu/ExpressionParser v0.0.0-20200730123550-c11f86762d52
 	github.com/coreos/etcd v3.3.25+incompatible
-	github.com/go-kit/kit v0.10.1
 	github.com/golang/protobuf v1.4.0
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/hashicorp/golang-lru v0.5.3
 	github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/register v0.0.0-20201023050446-420de20374cc

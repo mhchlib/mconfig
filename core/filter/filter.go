@@ -12,6 +12,8 @@ func InitFilterEngine() {
 }
 
 func GetEffectEnvKey(appkey mconfig.AppKey, metatdata map[string]string) (mconfig.ConfigEnv, error) {
+	//effect cache
+
 	filters, err := getFilterByAppKey(appkey)
 	if err != nil {
 		return "", err

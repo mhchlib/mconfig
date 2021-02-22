@@ -23,8 +23,8 @@ type ConfigCacheValue struct {
 	mconfig.DataVersion
 }
 
-var configCache *cache.Cache
-var appRegisterCache *cache.Cache
+var configCache cache.Cache
+var appRegisterCache cache.Cache
 
 var registerLock sync.Mutex
 

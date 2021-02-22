@@ -29,7 +29,7 @@ type Client struct {
 	configEnv                   mconfig.ConfigEnv
 	isbuildClientConfigRelation bool
 	close                       chan interface{}
-	configUpdateMsgCache        *cache.Cache
+	configUpdateMsgCache        cache.Cache
 }
 
 type MetaData map[string]string
