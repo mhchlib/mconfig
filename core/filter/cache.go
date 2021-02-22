@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/core/cache"
+	"github.com/mhchlib/mconfig/core/event"
 	"github.com/mhchlib/mconfig/core/mconfig"
 	"github.com/mhchlib/mconfig/core/store"
 	"sync"
@@ -32,14 +33,14 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 		AppKey: appKey,
 		Env:    env,
 	}
-	exist := filterCache.CheckExist(key)
+	exist := filterCache.CheckExist(*key)
 	if exist {
-		value, err := filterCache.GetCache(key)
+		value, err := filterCache.GetCache(*key)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
-		cacheValue, ok := value.(FilterCacheValue)
+		cacheValue, ok := value.(*FilterCacheValue)
 		if !ok {
 			log.Error("filter cache value transform fail:", fmt.Sprintf("%+v", value))
 			return nil
@@ -47,6 +48,12 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 		if val.Version < cacheValue.Version {
 			log.Info("filter update version", val.Version, "is smaller than cache version", cacheValue.Version)
 			return nil
+		}
+		if val.Version == cacheValue.Version {
+			if val.Md5 == cacheValue.Md5 {
+				log.Info("filter update md5", val.Md5, "is equal with cache md5", cacheValue.Md5)
+				return nil
+			}
 		}
 	}
 	storeVal, err := mconfig.TransformMap2FilterStoreVal(val.Data)
@@ -131,19 +138,36 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 func CheckCacheUpToDateWithStore() error {
 	return filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		cacheKey := key.(FilterCacheKey)
+		cacheValue := value.(*FilterCacheValue)
 		appFilters, err := store.GetAppFilters(cacheKey.AppKey)
 		if err != nil {
 			log.Error(fmt.Sprintf("cron sync filter -- store get filter val %v fail:", cacheKey), err.Error())
 			return
 		}
 		//put to store
+		flag := false
 		for _, filter := range appFilters {
 			val, err := mconfig.TransformMap2FilterStoreVal(filter.Data)
 			if err != nil {
 				log.Error(fmt.Sprintf("cron sync filter -- store put filter val key: %v value: %v fail:", cacheKey, filter), err.Error())
 				continue
 			}
-			_ = PutFilterToCache(cacheKey.AppKey, val.Env, filter)
+			if cacheValue.Version != filter.Version || cacheValue.Md5 != filter.Md5 {
+				_ = PutFilterToCache(cacheKey.AppKey, val.Env, filter)
+				flag = true
+			}
+		}
+		if flag {
+			_ = event.AddEvent(&event.Event{
+				EventDesc: event.EventDesc{
+					EventType: event.Event_Change,
+					EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
+				},
+				Metadata: mconfig.ClientNotifyEventMetadata{
+					AppKey: cacheKey.AppKey,
+					Type:   mconfig.Event_Type_Filter,
+				},
+			})
 		}
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/core/cache"
+	"github.com/mhchlib/mconfig/core/event"
 	"github.com/mhchlib/mconfig/core/mconfig"
 	"github.com/mhchlib/mconfig/core/store"
 	"sync"
@@ -39,14 +40,14 @@ func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mc
 		ConfigKey: configKey,
 		Env:       env,
 	}
-	exist := configCache.CheckExist(key)
+	exist := configCache.CheckExist(*key)
 	if exist {
-		value, err := configCache.GetCache(key)
+		value, err := configCache.GetCache(*key)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
-		cacheValue, ok := value.(ConfigCacheValue)
+		cacheValue, ok := value.(*ConfigCacheValue)
 		if !ok {
 			log.Error("config cache value transform fail:", fmt.Sprintf("%v", value))
 			return nil
@@ -54,6 +55,12 @@ func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mc
 		if val.Version < cacheValue.Version {
 			log.Info("config update version", val.Version, "is smaller than cache version", cacheValue.Version)
 			return nil
+		}
+		if val.Version == cacheValue.Version {
+			if val.Md5 == cacheValue.Md5 {
+				log.Info("config update md5", val.Md5, "is equal with cache md5", cacheValue.Md5)
+				return nil
+			}
 		}
 	}
 	//storeVal, ok := val.Data.(mconfig.ConfigStoreVal)
@@ -172,16 +179,32 @@ func CheckRegisterAppNotifyExist(app mconfig.AppKey) bool {
 func CheckCacheUpToDateWithStore() error {
 	return configCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		cacheKey := key.(ConfigCacheKey)
+		cacheValue := value.(*ConfigCacheValue)
 		storeVal, err := store.GetConfigVal(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env)
 		if err != nil {
 			log.Error(fmt.Sprintf("cron sync config -- store get config val %v fail:", cacheKey), err.Error())
 			return
 		}
-		//put to store
-		err = PutConfigToCache(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env, storeVal)
-		if err != nil {
-			log.Error(fmt.Sprintf("cron sync config -- store put config val key: %v value: %v fail:", cacheKey, storeVal), err.Error())
-			return
+		if storeVal.Version != cacheValue.Version || storeVal.Md5 != cacheValue.Md5 {
+			//put to store
+			err = PutConfigToCache(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env, storeVal)
+			if err != nil {
+				log.Error(fmt.Sprintf("cron sync config -- store put config val key: %v value: %v fail:", cacheKey, storeVal), err.Error())
+				return
+			}
+			//notify
+			_ = event.AddEvent(&event.Event{
+				EventDesc: event.EventDesc{
+					EventType: event.Event_Change,
+					EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
+				},
+				Metadata: mconfig.ClientNotifyEventMetadata{
+					AppKey:    cacheKey.AppKey,
+					ConfigKey: cacheKey.ConfigKey,
+					Env:       cacheKey.Env,
+					Type:      mconfig.Event_Type_Config,
+				},
+			})
 		}
 	})
 }
