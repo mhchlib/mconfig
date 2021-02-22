@@ -135,14 +135,20 @@ func GetStorePlugin() *StorePlugin {
 //	return currentMConfigStore
 //}
 
-func CheckSyncData() bool {
+func CheckNeedSyncData() bool {
 	if currentStorePlugin.Mode == MODE_LOCAL {
 		return true
 	}
 	return false
 }
 
+var syncRegClient reg.Register
+var syncServiceName string
+
 func SyncOtherMconfigData(regClient reg.Register, serviceName string) error {
+	syncRegClient = regClient
+	syncServiceName = serviceName
+
 	allServices, err := regClient.ListAllServices(serviceName)
 	if err != nil {
 		return err
@@ -181,4 +187,11 @@ func SyncOtherMconfigData(regClient reg.Register, serviceName string) error {
 		}
 	}
 	return errors.New("not found sync node")
+}
+
+func SyncOtherMconfigDataCron() {
+	err := SyncOtherMconfigData(syncRegClient, syncServiceName)
+	if err != nil {
+		log.Error("cron sync other mconfig data error:", err)
+	}
 }

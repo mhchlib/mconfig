@@ -10,8 +10,8 @@ import (
 )
 
 type FilterCacheKey struct {
-	appKey mconfig.AppKey
-	env    mconfig.ConfigEnv
+	AppKey mconfig.AppKey
+	Env    mconfig.ConfigEnv
 }
 
 type FilterCacheValue struct {
@@ -29,8 +29,8 @@ func initCache() {
 
 func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig.StoreVal) error {
 	key := &FilterCacheKey{
-		appKey: appKey,
-		env:    env,
+		AppKey: appKey,
+		Env:    env,
 	}
 	exist := filterCache.CheckExist(key)
 	if exist {
@@ -67,7 +67,7 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 func DeleteFilterFromCacheByApp(appKey mconfig.AppKey) error {
 	err := filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		k := key.(FilterCacheKey)
-		if appKey == k.appKey {
+		if appKey == k.AppKey {
 			_ = filterCache.DeleteCache(k)
 			log.Info("recycle filter cache with app key:", fmt.Sprintf("%+v", k))
 		}
@@ -84,10 +84,10 @@ func GetFilterFromCache(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) 
 	err := filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		k := key.(FilterCacheKey)
 		v := value.(*FilterCacheValue)
-		if appKey == k.appKey {
+		if appKey == k.AppKey {
 			mutex.Lock()
 			filters = append(filters, &mconfig.FilterEntity{
-				Env:    k.env,
+				Env:    k.Env,
 				Weight: v.Weight,
 				Code:   v.Code,
 				Mode:   v.Mode,
@@ -114,23 +114,11 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 		}
 		//sync to cache
 		for _, filter := range appFilters {
-			//val,ok := filter.Data.(mconfig.FilterStoreVal)
-			//val := &mconfig.FilterStoreVal{}
-			//err := mapstructure.Decode(filter.Data, &val)
-			//if err!=nil {
-			//	log.Error("filter store value transform fail:",fmt.Sprintf("%+v",filter.Data),"err:",err)
-			//}
 			val, err := mconfig.TransformMap2FilterStoreVal(filter.Data)
 			if err != nil {
 				return nil, err
 			}
 			_ = PutFilterToCache(appKey, val.Env, filter)
-			//filters = append(filters, &mconfig.FilterEntity{
-			//	Env:    val.Env,
-			//	Weight: val.Weight,
-			//	Code:   val.Code,
-			//	Mode:   val.Mode,
-			//})
 		}
 		filters, _ = GetFilterFromCache(appKey)
 	}
@@ -138,4 +126,24 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 	//	log.Info(fmt.Sprintf("%v", filter))
 	//}
 	return filters, nil
+}
+
+func CheckCacheUpToDateWithStore() error {
+	return filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
+		cacheKey := key.(FilterCacheKey)
+		appFilters, err := store.GetAppFilters(cacheKey.AppKey)
+		if err != nil {
+			log.Error(fmt.Sprintf("cron sync filter -- store get filter val %v fail:", cacheKey), err.Error())
+			return
+		}
+		//put to store
+		for _, filter := range appFilters {
+			val, err := mconfig.TransformMap2FilterStoreVal(filter.Data)
+			if err != nil {
+				log.Error(fmt.Sprintf("cron sync filter -- store put filter val key: %v value: %v fail:", cacheKey, filter), err.Error())
+				continue
+			}
+			_ = PutFilterToCache(cacheKey.AppKey, val.Env, filter)
+		}
+	})
 }

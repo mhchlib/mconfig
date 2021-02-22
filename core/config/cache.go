@@ -113,12 +113,13 @@ func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfi
 		if err != nil {
 			storeVal, err := store.GetConfigVal(appKey, configKey, env)
 			if err != nil {
+				log.Error(fmt.Sprintf("store get config val %v fail:", configKey), err.Error())
 				return nil, err
 			}
 			//put to store
 			err = PutConfigToCache(appKey, configKey, env, storeVal)
 			if err != nil {
-				log.Info(err)
+				log.Error(fmt.Sprintf("store put config val key: %v value: %v fail:", configKey, storeVal), err.Error())
 			}
 			cacheVal, _ = GetConfigFromCache(appKey, configKey, env)
 		}
@@ -166,4 +167,21 @@ func UnRegisterAppNotify(app mconfig.AppKey) error {
 
 func CheckRegisterAppNotifyExist(app mconfig.AppKey) bool {
 	return appRegisterCache.CheckExist(app)
+}
+
+func CheckCacheUpToDateWithStore() error {
+	return configCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
+		cacheKey := key.(ConfigCacheKey)
+		storeVal, err := store.GetConfigVal(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env)
+		if err != nil {
+			log.Error(fmt.Sprintf("cron sync config -- store get config val %v fail:", cacheKey), err.Error())
+			return
+		}
+		//put to store
+		err = PutConfigToCache(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env, storeVal)
+		if err != nil {
+			log.Error(fmt.Sprintf("cron sync config -- store put config val key: %v value: %v fail:", cacheKey, storeVal), err.Error())
+			return
+		}
+	})
 }

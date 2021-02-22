@@ -59,7 +59,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		demandSync := store.CheckSyncData()
+		demandSync := store.CheckNeedSyncData()
 		if demandSync {
 			err := store.SyncOtherMconfigData(regClient, SERVICE_NAME)
 			if err != nil {
