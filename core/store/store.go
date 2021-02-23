@@ -9,7 +9,7 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/core/mconfig"
 	"github.com/mhchlib/mconfig/core/syncx"
-	"github.com/mhchlib/register/reg"
+	"github.com/mhchlib/register"
 	"google.golang.org/grpc"
 	"time"
 )
@@ -162,10 +162,10 @@ func CheckNeedSyncData() bool {
 	return false
 }
 
-var syncRegClient reg.Register
+var syncRegClient register.Register
 var syncServiceName string
 
-func SyncOtherMconfigData(regClient reg.Register, serviceName string) error {
+func SyncOtherMconfigData(regClient register.Register, serviceName string) error {
 	syncRegClient = regClient
 	syncServiceName = serviceName
 

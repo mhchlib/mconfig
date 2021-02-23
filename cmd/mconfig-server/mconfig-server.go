@@ -10,8 +10,7 @@ import (
 	_ "github.com/mhchlib/mconfig/core/store/plugin/etcd"
 	"github.com/mhchlib/mconfig/rpc"
 	"github.com/mhchlib/register"
-	"github.com/mhchlib/register/common"
-	"github.com/mhchlib/register/reg"
+	"github.com/mhchlib/register/regutils"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -36,27 +35,24 @@ func main() {
 	done := make(chan os.Signal, 1)
 	defer core.InitMconfig(m)()
 	if m.EnableRegistry {
-
-		var registerType reg.RegistryType
+		var registerTypeChoose register.Option
 		if m.RegistryType == "etcd" {
-			registerType = reg.RegistryType_Etcd
+			registerTypeChoose = register.SelectEtcdRegister()
 		}
-		regClient, err := register.InitRegister(func(options *reg.Options) {
-			options.RegisterType = registerType
-			options.Address = strings.Split(m.RegistryAddress, ",")
-			options.NameSpace = m.Namspace
-			if m.ServerIp == "" {
-				ip, err := common.GetClientIp()
-				if err != nil {
-					log.Fatal("get client ip error")
-				}
-				m.ServerIp = ip
+		if m.ServerIp == "" {
+			ip, err := regutils.GetClientIp()
+			if err != nil {
+				log.Fatal("get client ip error")
 			}
-			options.ServerInstance = m.ServerIp + ":" + strconv.Itoa(m.ServerPort)
-			options.Metadata = map[string]interface{}{
-				"mode": store.GetStorePlugin().Mode,
-			}
-		})
+			m.ServerIp = ip
+		}
+		regClient, err := register.InitRegister(
+			registerTypeChoose,
+			register.ResgisterAddress(strings.Split(m.RegistryAddress, ",")),
+			register.Namespace(m.Namspace),
+			register.Instance(m.ServerIp+":"+strconv.Itoa(m.ServerPort)),
+			register.Metadata("mode", store.GetStorePlugin().Mode),
+		)
 		if err != nil {
 			log.Fatal(err)
 		}
