@@ -4,11 +4,11 @@ import (
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/cmd/mconfig-server/internal"
-	"github.com/mhchlib/mconfig/pkg"
-	"github.com/mhchlib/mconfig/pkg/mconfig"
-	"github.com/mhchlib/mconfig/pkg/rpc"
-	"github.com/mhchlib/mconfig/pkg/store"
-	_ "github.com/mhchlib/mconfig/pkg/store/plugin/etcd"
+	"github.com/mhchlib/mconfig/core"
+	"github.com/mhchlib/mconfig/core/mconfig"
+	"github.com/mhchlib/mconfig/core/store"
+	_ "github.com/mhchlib/mconfig/core/store/plugin/etcd"
+	"github.com/mhchlib/mconfig/rpc"
 	"github.com/mhchlib/register"
 	"github.com/mhchlib/register/common"
 	"github.com/mhchlib/register/reg"
@@ -33,7 +33,7 @@ const SERVICE_NAME = "mconfig-server"
 
 func main() {
 	done := make(chan os.Signal, 1)
-	defer pkg.InitMconfig(m)()
+	defer core.InitMconfig(m)()
 	if m.EnableRegistry {
 
 		var registerType reg.RegistryType
@@ -59,7 +59,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		demandSync := store.CheckSyncData()
+		demandSync := store.CheckNeedSyncData()
 		if demandSync {
 			err := store.SyncOtherMconfigData(regClient, SERVICE_NAME)
 			if err != nil {

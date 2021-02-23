@@ -1,13 +1,13 @@
 package test
 
 import (
-	"github.com/mhchlib/mconfig/pkg/mconfig"
+	"github.com/mhchlib/mconfig/core/mconfig"
 	"math/rand"
 	"strconv"
 )
 
-func MockAppkey() mconfig.Appkey {
-	return mconfig.Appkey("appkey_" + strconv.Itoa(rand.Intn(10000)))
+func MockAppkey() mconfig.AppKey {
+	return mconfig.AppKey("appkey_" + strconv.Itoa(rand.Intn(10000)))
 }
 
 func MockConfigkey() mconfig.ConfigKey {
