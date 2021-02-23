@@ -42,20 +42,11 @@ func filterChange(metadata event.Metadata) {
 		log.Info("reject put config to cache with app", eventMetadata.AppKey)
 		return
 	}
+	_ = deleteEffectFilterCacheWithAppKey(eventMetadata.AppKey)
 	err = PutFilterToCache(eventMetadata.AppKey, eventMetadata.Env, eventMetadata.Val)
 	if err != nil {
 		log.Error(err)
 	}
-	_ = event.AddEvent(&event.Event{
-		EventDesc: event.EventDesc{
-			EventType: event.Event_Change,
-			EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
-		},
-		Metadata: mconfig.ClientNotifyEventMetadata{
-			AppKey: eventMetadata.AppKey,
-			Type:   mconfig.Event_Type_Filter,
-		},
-	})
 }
 
 func filterDelete(metadata event.Metadata) {

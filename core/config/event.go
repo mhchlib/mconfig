@@ -46,19 +46,6 @@ func configChange(metadata event.Metadata) {
 	if err != nil {
 		log.Error(err)
 	}
-
-	_ = event.AddEvent(&event.Event{
-		EventDesc: event.EventDesc{
-			EventType: event.Event_Change,
-			EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
-		},
-		Metadata: mconfig.ClientNotifyEventMetadata{
-			AppKey:    eventMetadata.AppKey,
-			ConfigKey: eventMetadata.ConfigKey,
-			Env:       eventMetadata.Env,
-			Type:      mconfig.Event_Type_Config,
-		},
-	})
 }
 
 func configDelete(metadata event.Metadata) {

@@ -32,6 +32,7 @@ func init() {
 const SERVICE_NAME = "mconfig-server"
 
 func main() {
+	log.SetDebugLogLevel()
 	done := make(chan os.Signal, 1)
 	defer core.InitMconfig(m)()
 	if m.EnableRegistry {

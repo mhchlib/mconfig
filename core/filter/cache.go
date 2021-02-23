@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"errors"
 	"fmt"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/core/cache"
@@ -23,9 +24,38 @@ type FilterCacheValue struct {
 }
 
 var filterCache cache.Cache
+var effectFilterCache cache.Cache
+
+type EffectFilterCacheKey struct {
+	AppKey      mconfig.AppKey `json:"app_key"`
+	MetadataMd5 string         `json:"metadata"`
+}
 
 func initCache() {
 	filterCache = cache.NewCache()
+	effectFilterCache = cache.NewLRUCache(20)
+}
+
+func putEffectFilterCache(key *EffectFilterCacheKey, value mconfig.ConfigEnv) {
+	_ = effectFilterCache.PutCache(*key, value)
+}
+
+func getFromEffectFilterCache(key *EffectFilterCacheKey) (mconfig.ConfigEnv, bool) {
+	value, err := effectFilterCache.GetCache(*key)
+	if err != nil {
+		return "", false
+	}
+	return mconfig.ConfigEnv(fmt.Sprintf("%v", value)), true
+}
+
+func deleteEffectFilterCacheWithAppKey(appKey mconfig.AppKey) error {
+	return effectFilterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
+		cacheKey := key.(EffectFilterCacheKey)
+		if cacheKey.AppKey == appKey {
+			_ = effectFilterCache.DeleteCache(key)
+		}
+	})
+
 }
 
 func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig.StoreVal) error {
@@ -60,7 +90,8 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 	if err != nil {
 		return err
 	}
-	return filterCache.PutCache(*key, &FilterCacheValue{
+
+	err = filterCache.PutCache(*key, &FilterCacheValue{
 		Weight: storeVal.Weight,
 		Code:   storeVal.Code,
 		Mode:   storeVal.Mode,
@@ -69,6 +100,23 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 			Version: val.Version,
 		},
 	})
+	if err != nil {
+		return err
+	}
+	err = event.AddEvent(&event.Event{
+		EventDesc: event.EventDesc{
+			EventType: event.Event_Change,
+			EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
+		},
+		Metadata: mconfig.ClientNotifyEventMetadata{
+			AppKey: appKey,
+			Type:   mconfig.Event_Type_Filter,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func DeleteFilterFromCacheByApp(appKey mconfig.AppKey) error {
@@ -82,6 +130,14 @@ func DeleteFilterFromCacheByApp(appKey mconfig.AppKey) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func DeleteFilterFromCache(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
+	_ = filterCache.DeleteCache(&FilterCacheKey{
+		AppKey: appKey,
+		Env:    env,
+	})
 	return nil
 }
 
@@ -139,36 +195,23 @@ func CheckCacheUpToDateWithStore() error {
 	return filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		cacheKey := key.(FilterCacheKey)
 		cacheValue := value.(*FilterCacheValue)
-		appFilters, err := store.GetAppFilters(cacheKey.AppKey)
+		filterVal, err := store.GetFilterVal(cacheKey.AppKey, cacheKey.Env)
 		if err != nil {
-			log.Error(fmt.Sprintf("cron sync filter -- store get filter val %v fail:", cacheKey), err.Error())
-			return
+			if errors.Is(err, mconfig.ERROR_STORE_NOT_FOUND) {
+				_ = DeleteFilterFromCache(cacheKey.AppKey, cacheKey.Env)
+			} else {
+				log.Error(fmt.Sprintf("cron sync filter -- store get config val %v fail:", cacheKey), err.Error())
+				return
+			}
 		}
-		//put to store
-		flag := false
-		for _, filter := range appFilters {
-			val, err := mconfig.TransformMap2FilterStoreVal(filter.Data)
+		//log.Info(cacheValue.Version, filterVal.Version, cacheValue.Md5, filterVal.Md5)
+		if cacheValue.Version != filterVal.Version || cacheValue.Md5 != filterVal.Md5 {
+			err = PutFilterToCache(cacheKey.AppKey, cacheKey.Env, filterVal)
 			if err != nil {
-				log.Error(fmt.Sprintf("cron sync filter -- store put filter val key: %v value: %v fail:", cacheKey, filter), err.Error())
-				continue
+				log.Error(fmt.Sprintf("cron sync filter -- store put filter val key: %v value: %v fail:", cacheKey, filterVal), err.Error())
+				return
 			}
-			log.Info(cacheValue.Version, filter.Version, cacheValue.Md5, filter.Md5)
-			if cacheValue.Version != filter.Version || cacheValue.Md5 != filter.Md5 {
-				_ = PutFilterToCache(cacheKey.AppKey, val.Env, filter)
-				flag = true
-			}
-		}
-		if flag {
-			_ = event.AddEvent(&event.Event{
-				EventDesc: event.EventDesc{
-					EventType: event.Event_Change,
-					EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
-				},
-				Metadata: mconfig.ClientNotifyEventMetadata{
-					AppKey: cacheKey.AppKey,
-					Type:   mconfig.Event_Type_Filter,
-				},
-			})
+
 		}
 	})
 }

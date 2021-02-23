@@ -25,5 +25,3 @@ replace github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc => ../logge
 replace github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc => ../mconfig-api
 
 replace github.com/mhchlib/register v0.0.0-20201023050446-420de20374cc => ../register
-
-replace github.com/go-kit/kit v0.10.1 => ../kit

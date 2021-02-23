@@ -63,16 +63,11 @@ func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mc
 			}
 		}
 	}
-	//storeVal, ok := val.Data.(mconfig.ConfigStoreVal)
-	//if !ok {
-	//	log.Error("config store value transform fail:", fmt.Sprintf("%v", val.Data))
-	//	return nil
-	//}
 	storeVal, err := mconfig.TransformMap2ConfigStoreVal(val.Data)
 	if err != nil {
 		return err
 	}
-	return configCache.PutCache(*key, &ConfigCacheValue{
+	err = configCache.PutCache(*key, &ConfigCacheValue{
 		Key: storeVal.Key,
 		Val: storeVal.Val,
 		DataVersion: mconfig.DataVersion{
@@ -80,6 +75,25 @@ func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mc
 			Version: val.Version,
 		},
 	})
+	if err != nil {
+		return err
+	}
+	err = event.AddEvent(&event.Event{
+		EventDesc: event.EventDesc{
+			EventType: event.Event_Change,
+			EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
+		},
+		Metadata: mconfig.ClientNotifyEventMetadata{
+			AppKey:    appKey,
+			ConfigKey: configKey,
+			Env:       env,
+			Type:      mconfig.Event_Type_Config,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.ConfigEntity, error) {
@@ -110,6 +124,15 @@ func DeleteConfigFromCacheByApp(appKey mconfig.AppKey) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func DeleteConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
+	_ = configCache.DeleteCache(&ConfigCacheKey{
+		AppKey:    appKey,
+		ConfigKey: configKey,
+		Env:       env,
+	})
 	return nil
 }
 
@@ -182,8 +205,12 @@ func CheckCacheUpToDateWithStore() error {
 		cacheValue := value.(*ConfigCacheValue)
 		storeVal, err := store.GetConfigVal(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env)
 		if err != nil {
-			log.Error(fmt.Sprintf("cron sync config -- store get config val %v fail:", cacheKey), err.Error())
-			return
+			if errors.Is(err, mconfig.ERROR_STORE_NOT_FOUND) {
+				_ = DeleteConfigFromCache(cacheKey.AppKey, cacheKey.ConfigKey, cacheKey.Env)
+			} else {
+				log.Error(fmt.Sprintf("cron sync config -- store get config val %v fail:", cacheKey), err.Error())
+				return
+			}
 		}
 		if storeVal.Version != cacheValue.Version || storeVal.Md5 != cacheValue.Md5 {
 			//put to store
@@ -192,19 +219,6 @@ func CheckCacheUpToDateWithStore() error {
 				log.Error(fmt.Sprintf("cron sync config -- store put config val key: %v value: %v fail:", cacheKey, storeVal), err.Error())
 				return
 			}
-			//notify
-			_ = event.AddEvent(&event.Event{
-				EventDesc: event.EventDesc{
-					EventType: event.Event_Change,
-					EventKey:  mconfig.EVENT_KEY_CLIENT_NOTIFY,
-				},
-				Metadata: mconfig.ClientNotifyEventMetadata{
-					AppKey:    cacheKey.AppKey,
-					ConfigKey: cacheKey.ConfigKey,
-					Env:       cacheKey.Env,
-					Type:      mconfig.Event_Type_Config,
-				},
-			})
 		}
 	})
 }
