@@ -1,12 +1,13 @@
+VERSION=$(shell git describe --tags --always --dirty --dirty="")
 
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -o mconfig-server cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go
 
-docker: build
-	docker build -t dockerhcy/mconfig:v0.2  .
+image: build
+	docker build -t dockerhcy/mconfig:${VERSION}   .
 
-push: docker
-	docker push dockerhcy/mconfig:v0.2
+push: image
+	docker push dockerhcy/mconfig:${VERSION}
 
 dev:
 	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go cmd/mconfig-server/debug.go  --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770 --expose :8081 --debug
@@ -14,7 +15,7 @@ dev:
 dev2:
 	go run cmd/mconfig-server/mconfig-server.go cmd/mconfig-server/plugin.go --namespace=local_test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770 --expose :8081 --debug
 
-clear:
-	rm mconfig
+clean:
+	-rm mconfig-server
 
-.PHONY: example
+.PHONY: clean
