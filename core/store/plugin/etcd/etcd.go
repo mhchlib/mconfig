@@ -3,7 +3,6 @@ package etcd
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/mhchlib/logger"
@@ -152,6 +151,36 @@ func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, e
 		filters = append(filters, f)
 	}
 	return filters, nil
+}
+
+func (e *EtcdStore) GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error) {
+	entity := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_CONFIG,
+		appKey:    appKey,
+		env:       env,
+	}
+	storeKey, err := getStoreKey(entity)
+	if err != nil {
+		return nil, err
+	}
+	configs := []*mconfig.StoreVal{}
+	response, err := kv.Get(context.Background(), storeKey, clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	for _, kv := range response.Kvs {
+		k := string(kv.Key)
+		v := kv.Value
+		f := &mconfig.StoreVal{}
+		err = json.Unmarshal(v, f)
+		if err != nil {
+			log.Error(err, "key:", k, "value:", string(v))
+			return nil, err
+		}
+		configs = append(configs, f)
+	}
+	return configs, nil
 }
 
 func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
@@ -334,7 +363,34 @@ func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.Config
 		return nil, err
 	}
 	if Response.Count != 1 {
-		return nil, errors.New("not found")
+		return nil, mconfig.ERROR_STORE_NOT_FOUND
+	}
+	val := &mconfig.StoreVal{}
+	err = json.Unmarshal(Response.Kvs[0].Value, val)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	return val, nil
+}
+
+func (e *EtcdStore) GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
+	entity := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_FILTER,
+		appKey:    appKey,
+		env:       env,
+	}
+	key, err := getStoreKey(entity)
+	if err != nil {
+		return nil, err
+	}
+	Response, err := cli.Get(context.Background(), key)
+	if err != nil {
+		return nil, err
+	}
+	if Response.Count != 1 {
+		return nil, mconfig.ERROR_STORE_NOT_FOUND
 	}
 	val := &mconfig.StoreVal{}
 	err = json.Unmarshal(Response.Kvs[0].Value, val)

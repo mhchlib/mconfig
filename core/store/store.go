@@ -9,7 +9,7 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/core/mconfig"
 	"github.com/mhchlib/mconfig/core/syncx"
-	"github.com/mhchlib/register/reg"
+	"github.com/mhchlib/register"
 	"google.golang.org/grpc"
 	"time"
 )
@@ -17,12 +17,14 @@ import (
 // MConfigStore ...
 type MConfigStore interface {
 	GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error)
+	GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error)
 	WatchDynamicVal(customer *Consumer) error
 	PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.StoreVal) error
 	PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.StoreVal) error
 	DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error
 	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
 	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error)
+	GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error)
 	GetSyncData() (mconfig.AppData, error)
 	PutSyncData(data *mconfig.AppData) error
 	Close() error
@@ -35,6 +37,15 @@ func GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfi
 	key := fmt.Sprintf("%v-%v-%v-%v", "GetConfigVal", appKey, configKey, env)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
 		val, err := currentMConfigStore.GetConfigVal(appKey, configKey, env)
+		return val, err
+	})
+	return v.(*mconfig.StoreVal), err
+}
+
+func GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
+	key := fmt.Sprintf("%v-%v-%v", "GetFilterVal", appKey, env)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetFilterVal(appKey, env)
 		return val, err
 	})
 	return v.(*mconfig.StoreVal), err
@@ -70,7 +81,16 @@ func DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfi
 func DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	key := fmt.Sprintf("%v-%v-%v", "DeleteFilter", appKey, env)
 	_, err := shareCalls.Do(key, func() (interface{}, error) {
-		err := currentMConfigStore.DeleteFilter(appKey, env)
+		//delete when no have config in this env
+		configs, err := currentMConfigStore.GetAppConfigs(appKey, env)
+		if err != nil {
+			return nil, err
+		}
+		if len(configs) == 0 {
+			err = currentMConfigStore.DeleteFilter(appKey, env)
+		} else {
+			return nil, errors.New("this environment has some active configs, so cannot be deleted")
+		}
 		return nil, err
 	})
 	return err
@@ -142,10 +162,10 @@ func CheckNeedSyncData() bool {
 	return false
 }
 
-var syncRegClient reg.Register
+var syncRegClient register.Register
 var syncServiceName string
 
-func SyncOtherMconfigData(regClient reg.Register, serviceName string) error {
+func SyncOtherMconfigData(regClient register.Register, serviceName string) error {
 	syncRegClient = regClient
 	syncServiceName = serviceName
 

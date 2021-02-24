@@ -12,8 +12,15 @@ func InitFilterEngine() {
 }
 
 func GetEffectEnvKey(appkey mconfig.AppKey, metatdata map[string]string) (mconfig.ConfigEnv, error) {
+	effectFilterCacheKey := &EffectFilterCacheKey{
+		AppKey:      appkey,
+		MetadataMd5: mconfig.GetInterfaceMd5(metatdata),
+	}
 	//effect cache
-
+	effectFilterCacheVal, ok := getFromEffectFilterCache(effectFilterCacheKey)
+	if ok {
+		return effectFilterCacheVal, nil
+	}
 	filters, err := getFilterByAppKey(appkey)
 	if err != nil {
 		return "", err
@@ -23,6 +30,7 @@ func GetEffectEnvKey(appkey mconfig.AppKey, metatdata map[string]string) (mconfi
 	if err != nil {
 		return "", err
 	}
+	putEffectFilterCache(effectFilterCacheKey, envKey)
 	return envKey, nil
 }
 
@@ -48,7 +56,7 @@ func calculateEffectEnvKey(filters []*mconfig.FilterEntity, metatdata map[string
 		default:
 			log.Error("not support filter mode", filter.Mode, "in env", filter.Env)
 		}
-		log.Info(string(filter.Env), filter.Weight, string(filter.Code), metatdata, calResult)
+		log.Debug(string(filter.Env), filter.Weight, string(filter.Code), metatdata, calResult)
 
 	result:
 		if calResult {

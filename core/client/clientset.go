@@ -66,13 +66,12 @@ func (set *ClientSet) ReCalEffectEnv() error {
 	set.RLock()
 	defer set.RUnlock()
 	for _, c := range set.m {
-		go func() {
+		go func(c *Client) {
 			err := c.ReCalEffectEnv()
 			if err != nil {
 				log.Error(err, "client:", fmt.Sprintf("%v", c))
 			}
-		}()
-		continue
+		}(c)
 	}
 	return nil
 }
