@@ -38,7 +38,7 @@ func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStrea
 		return err
 	}
 	//get data from cache or store
-	configEntitys, err := config.GetConfig(mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), mconfig.ConfigEnv(configEnv))
+	configEntitys, err := config.GetConfig(mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), configEnv)
 	configs := make([]*server.ConfigVal, 0)
 	for _, entity := range configEntitys {
 		configs = append(configs, &server.ConfigVal{

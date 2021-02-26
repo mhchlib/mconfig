@@ -138,6 +138,15 @@ func DeleteConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, e
 
 func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) ([]*mconfig.ConfigEntity, error) {
 	configs := make([]*mconfig.ConfigEntity, 0)
+	//when configKeys len is 0, will get all config
+	if len(configKeys) == 0 {
+		keys, err := store.GetAppConfigKeys(appKey, env)
+		if err != nil {
+			return nil, err
+		}
+		configKeys = keys
+	}
+
 	for _, configKey := range configKeys {
 		cacheVal, err := GetConfigFromCache(appKey, configKey, env)
 		if err != nil {

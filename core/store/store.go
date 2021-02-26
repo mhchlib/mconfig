@@ -25,6 +25,7 @@ type MConfigStore interface {
 	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
 	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error)
 	GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error)
+	GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error)
 	GetSyncData() (mconfig.AppData, error)
 	PutSyncData(data *mconfig.AppData) error
 	Close() error
@@ -49,6 +50,24 @@ func GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreV
 		return val, err
 	})
 	return v.(*mconfig.StoreVal), err
+}
+
+func GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error) {
+	key := fmt.Sprintf("%v-%v-%v", "GetAppConfigKeys", appKey, env)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetAppConfigKeys(appKey, env)
+		return val, err
+	})
+	return v.([]mconfig.ConfigKey), err
+}
+
+func GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error) {
+	key := fmt.Sprintf("%v-%v-%v", "GetAppConfigs", appKey, env)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetAppConfigs(appKey, env)
+		return val, err
+	})
+	return v.([]*mconfig.StoreVal), err
 }
 
 func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
@@ -82,7 +101,7 @@ func DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	key := fmt.Sprintf("%v-%v-%v", "DeleteFilter", appKey, env)
 	_, err := shareCalls.Do(key, func() (interface{}, error) {
 		//delete when no have config in this env
-		configs, err := currentMConfigStore.GetAppConfigs(appKey, env)
+		configs, err := GetAppConfigs(appKey, env)
 		if err != nil {
 			return nil, err
 		}
