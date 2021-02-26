@@ -31,11 +31,12 @@ func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStrea
 	appKey := request.AppKey
 	configKeys := request.ConfigKeys
 	metadata := request.Metadata
-	//get config env
-	//env := "env_tPssBH6pAH0"
-	configEnv, err := env.GetEffectEnvKey(mconfig.AppKey(appKey), metadata)
-	if err != nil {
-		return err
+	configEnv := mconfig.ConfigEnv(request.EnvKey)
+	if configEnv == "" {
+		configEnv, err = env.GetEffectEnvKey(mconfig.AppKey(appKey), metadata)
+		if err != nil {
+			return err
+		}
 	}
 	//get data from cache or store
 	configEntitys, err := config.GetConfig(mconfig.AppKey(appKey), mconfig.ConfigKeys(configKeys), configEnv)
