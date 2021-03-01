@@ -1,6 +1,4 @@
 ### START
- 
-#### INSTALL
 
 1 install mconfig server
 ```shell
