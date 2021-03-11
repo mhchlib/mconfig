@@ -1,0 +1,38 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ aa ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+    - name: copy file to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        password: ${{ secrets.PASSWD }}
+        port: ${{ secrets.PORT }}
+        source: "mconfig-server"
+        target: "~/mconfig-test"
+    - name: run app on server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        password: ${{ secrets.PASSWD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /githubci
+          kill -9 `lsof -i :9299 | awk {'print $2'}  | head -n 2 | tail -n 1`
+          nohup java -jar /githubci/target/webtable-1.0.1.jar > Log.log 2>&1 &
+          echo "deploy ok"
