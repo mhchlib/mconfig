@@ -2,6 +2,7 @@ package internal
 
 import (
 	log "github.com/mhchlib/logger"
+	"github.com/mhchlib/mconfig/version"
 )
 
 var banner = `
@@ -13,9 +14,10 @@ var banner = `
        \ \__\    \ \__\\ \_______\\ \_______\\ \__\\ \__\\ \__\    \ \__\\ \_______\
         \|__|     \|__| \|_______| \|_______| \|__| \|__| \|__|     \|__| \|_______|
 
-	mconfig-server made by QMS
 `
 
 func ShowBanner() {
+	banner = banner + "mconfig-server made by QMS \n"
+	banner = banner + "version: " + version.GetVersion() + "\n"
 	log.Info(banner)
 }

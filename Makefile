@@ -1,5 +1,8 @@
 VERSION=$(shell git describe --tags --always --dirty --dirty="")
 
+buildVersion:
+	 version/buildVerison.sh ${VERSION}
+
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64  go build -o mconfig-server cmd/mconfig-server/main.go cmd/mconfig-server/plugin.go
 
