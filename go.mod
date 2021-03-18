@@ -11,6 +11,7 @@ require (
 	github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc
 	github.com/mhchlib/register v0.0.0-20201023050446-420de20374cc
+	github.com/micro/cli/v2 v2.1.2
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mkevac/debugcharts v0.0.0-20191222103121-ae1c48aa8615
@@ -28,8 +29,8 @@ replace github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc => ../
 
 replace github.com/mhchlib/register v0.0.0-20201023050446-420de20374cc => ../register
 
-replace go.etcd.io/etcd v3.3.25+incompatible => go.etcd.io/etcd v3.3.25+incompatible
-
-replace github.com/coreos/etcd v3.3.25+incompatible => go.etcd.io/etcd v3.3.25+incompatible
+//replace go.etcd.io/etcd v3.3.25+incompatible => go.etcd.io/etcd v3.3.25+incompatible
+//
+//replace github.com/coreos/etcd v3.3.25+incompatible => go.etcd.io/etcd v3.3.25+incompatible
 
 replace google.golang.org/grpc v1.27.0 => google.golang.org/grpc v1.26.0

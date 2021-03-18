@@ -20,6 +20,13 @@ dev:
 	   --expose :8081 \
 	   --debug
 
+dev-file:
+	go run cmd/mconfig-server/main.go cmd/mconfig-server/plugin.go cmd/mconfig-server/debug.go \
+	   --namespace=local_test \
+	   --registry=etcd://etcd.u.hcyang.top:31770 \
+	   --expose :8082 \
+	   --debug
+
 clean:
 	-rm mconfig-server
 
