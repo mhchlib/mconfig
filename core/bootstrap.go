@@ -1,6 +1,7 @@
 package core
 
 import (
+	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/core/client"
 	"github.com/mhchlib/mconfig/core/config"
 	"github.com/mhchlib/mconfig/core/cron"
@@ -18,6 +19,7 @@ func InitMconfig(mconfig *mconfig.MConfig) func() {
 	client.InitClientManagement()
 	store.InitStore(mconfig.StoreType, mconfig.StoreAddress)
 	cron.InitCron()
+	log.Info("mconfig core init success")
 	return EndMconfig()
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/cmd/mconfig-server/internal"
 	"github.com/mhchlib/mconfig/core"
@@ -10,6 +11,7 @@ import (
 	"github.com/mhchlib/mconfig/rpc"
 	"github.com/mhchlib/register"
 	"github.com/mhchlib/register/regutils"
+	"github.com/olekukonko/tablewriter"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -34,7 +36,6 @@ func main() {
 	log.SetDebugLogLevel()
 	done := make(chan os.Signal, 1)
 	defer core.InitMconfig(m)()
-
 	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(m.ServerPort))
 	log.Info("mconfig-server listen :" + strconv.Itoa(m.ServerPort) + " success")
 	if err != nil {
@@ -99,6 +100,30 @@ func main() {
 		}()
 	}
 
+	//print some useful data with ASCII
+	printMconfigDetail()
+
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 	<-done
+}
+
+func printMconfigDetail() {
+	log.Info("print some useful data about mconfig ↓ ↓ ↓ ↓")
+	data := [][]string{
+		[]string{"Namespace", m.Namspace},
+		[]string{"Store Type", m.StoreType},
+		[]string{"Store Address", m.StoreAddress},
+		[]string{"Store Mode", fmt.Sprintf("%s", store.GetStorePlugin().Mode)},
+		[]string{"Store Plugin", fmt.Sprintf("%s", store.GetStorePlugin().Name)},
+		[]string{"Register Type", m.RegistryType},
+		[]string{"Register Address", m.RegistryAddress},
+		[]string{"Register Server Address", m.ServerIp + ":" + strconv.Itoa(m.ServerPort)},
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Name", "Val"})
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render()
 }
