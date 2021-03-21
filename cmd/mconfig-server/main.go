@@ -108,7 +108,6 @@ func main() {
 }
 
 func printMconfigDetail() {
-	log.Info("print some useful data about mconfig ↓ ↓ ↓ ↓")
 	data := [][]string{
 		[]string{"Namespace", m.Namspace},
 		[]string{"Store Type", m.StoreType},
@@ -119,11 +118,7 @@ func printMconfigDetail() {
 		[]string{"Register Address", m.RegistryAddress},
 		[]string{"Register Server Address", m.ServerIp + ":" + strconv.Itoa(m.ServerPort)},
 	}
-	table := tablewriter.NewWriter(log.OutWrite())
-	table.SetHeader([]string{"Name", "Val"})
-	for _, v := range data {
-		table.Append(v)
-	}
-	//table.SetRowLine(true)
-	table.Render()
+	headers := []string{"Name", "Val"}
+	log.PrintDataTable(data, headers, "print some useful data about mconfig ↓ ↓ ↓ ↓", func(table *tablewriter.Table) {
+	})
 }
