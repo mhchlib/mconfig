@@ -119,11 +119,11 @@ func printMconfigDetail() {
 		[]string{"Register Address", m.RegistryAddress},
 		[]string{"Register Server Address", m.ServerIp + ":" + strconv.Itoa(m.ServerPort)},
 	}
-	table := tablewriter.NewWriter(os.Stdout)
+	table := tablewriter.NewWriter(log.OutWrite())
 	table.SetHeader([]string{"Name", "Val"})
 	for _, v := range data {
 		table.Append(v)
 	}
-	table.SetRowLine(true)
+	//table.SetRowLine(true)
 	table.Render()
 }
