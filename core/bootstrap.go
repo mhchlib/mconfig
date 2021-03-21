@@ -17,7 +17,7 @@ func InitMconfig(mconfig *mconfig.MConfigConfig) func() {
 	config.InitConfigCenter()
 	filter.InitFilterEngine()
 	client.InitClientManagement()
-	store.InitStore(mconfig.StoreType, mconfig.StoreAddress)
+	store.InitStore(mconfig.StoreAddress)
 	cron.InitCron()
 	log.Info("mconfig core init success")
 	return EndMconfig()

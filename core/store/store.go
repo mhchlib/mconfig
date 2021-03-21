@@ -11,6 +11,7 @@ import (
 	"github.com/mhchlib/mconfig/core/syncx"
 	"github.com/mhchlib/register"
 	"google.golang.org/grpc"
+	"strings"
 	"time"
 )
 
@@ -141,7 +142,11 @@ var currentMConfigStore MConfigStore
 var currentStorePlugin *StorePlugin
 
 // InitStore ...
-func InitStore(storeType string, storeAddress string) {
+func InitStore(storeAddressStr string) {
+	storeType, storeAddress, err := parseStoreAddressStr(storeAddressStr)
+	if err != nil {
+		log.Fatal("parse store address str fail:", err.Error())
+	}
 	plugin, ok := storePluginMap[storeType]
 	if !ok {
 		log.Fatal("store type:", storeType, "does not be supported, you can choose:", storePluginNames)
@@ -160,6 +165,14 @@ func InitStore(storeType string, storeAddress string) {
 	}()
 	currentStorePlugin = plugin
 	initShareCalls()
+}
+
+func parseStoreAddressStr(str string) (string, string, error) {
+	splits := strings.Split(str, "://")
+	if len(splits) != 2 {
+		return "", "", errors.New(str + " is invalid Address")
+	}
+	return splits[0], splits[1], nil
 }
 
 func initShareCalls() {

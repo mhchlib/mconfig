@@ -5,6 +5,7 @@ import (
 	"flag"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/core/mconfig"
+	"github.com/mhchlib/register/regutils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,9 +20,8 @@ type MconfigFlag struct {
 }
 
 var (
-	ConfigSeparateSymbol = "://"
-	DefaultExposePort    = 8080
-	DefaultExposeIp      = ""
+	DefaultExposePort = 8080
+	DefaultExposeIp   = ""
 )
 
 func NewMconfigFlag() *MconfigFlag {
@@ -42,24 +42,11 @@ func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfigConfig) err
 	mconfig.Namspace = *mconfigFlag.Namspace
 	//registry
 	if *mconfigFlag.RegistryStr != "" {
-		mconfig.EnableRegistry = true
-		registryStr := *mconfigFlag.RegistryStr
-		registerType, registerAddress, err := parseAddressFlag(registryStr)
-		if err != nil {
-			return err
-		}
-		mconfig.RegistryAddress = registerAddress
-		mconfig.RegistryType = registerType
+		mconfig.RegistryAddress = *mconfigFlag.RegistryStr
 	}
 	//store
 	if *mconfigFlag.StoreStr != "" {
-		storeStr := *mconfigFlag.StoreStr
-		storeSType, storeAddress, err := parseAddressFlag(storeStr)
-		if err != nil {
-			return err
-		}
-		mconfig.StoreType = storeSType
-		mconfig.StoreAddress = storeAddress
+		mconfig.StoreAddress = *mconfigFlag.StoreStr
 	}
 	//expose
 	mconfig.ServerIp = DefaultExposeIp
@@ -71,6 +58,13 @@ func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfigConfig) err
 		}
 		mconfig.ServerIp = ip
 		mconfig.ServerPort = port
+		if mconfig.ServerIp == "" {
+			ip, err := regutils.GetClientIp()
+			if err != nil {
+				log.Fatal("get client ip error")
+			}
+			mconfig.ServerIp = ip
+		}
 	}
 	//debug
 	if *mconfigFlag.EnableDebug {
@@ -82,7 +76,6 @@ func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfigConfig) err
 		log.Info("you can now open http://localhost:6060/debug/charts/ in your browser for debug, support ppprof")
 		//------------------
 	}
-
 	return nil
 }
 
@@ -97,14 +90,6 @@ func parseExposeFlag(exposeStr string) (string, int, error) {
 		return "", 0, errors.New(exposeStr + " is invalid Expose Address")
 	}
 	return ip, port, nil
-}
-
-func parseAddressFlag(str string) (string, string, error) {
-	splits := strings.Split(str, ConfigSeparateSymbol)
-	if len(splits) != 2 {
-		return "", "", errors.New(str + " is invalid Address")
-	}
-	return splits[0], splits[1], nil
 }
 
 func initFlagConfig() *MconfigFlag {

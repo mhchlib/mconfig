@@ -10,14 +10,12 @@ import (
 	_ "github.com/mhchlib/mconfig/core/store/plugin/etcd"
 	"github.com/mhchlib/mconfig/rpc"
 	"github.com/mhchlib/register"
-	"github.com/mhchlib/register/regutils"
 	"github.com/olekukonko/tablewriter"
 	"google.golang.org/grpc"
 	"net"
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 )
 
@@ -56,29 +54,16 @@ func main() {
 		}
 	}()
 	//register service to register center
-	if m.EnableRegistry {
-		var registerTypeChoose register.Option
-		if m.RegistryType == "etcd" {
-			registerTypeChoose = register.SelectEtcdRegister()
-		}
-		if m.ServerIp == "" {
-			ip, err := regutils.GetClientIp()
-			if err != nil {
-				log.Fatal("get client ip error")
-			}
-			m.ServerIp = ip
-		}
+	if m.RegistryAddress != "" {
 		regClient, err := register.InitRegister(
-			registerTypeChoose,
-			register.ResgisterAddress(strings.Split(m.RegistryAddress, ",")),
 			register.Namespace(m.Namspace),
+			register.ResgisterAddress(m.RegistryAddress),
 			register.Instance(m.ServerIp+":"+strconv.Itoa(m.ServerPort)),
 			register.Metadata("mode", store.GetStorePlugin().Mode),
 		)
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		demandSync := store.CheckNeedSyncData()
 		if demandSync {
 			err := store.SyncOtherMconfigData(regClient, SERVICE_NAME)
