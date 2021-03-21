@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/cmd/mconfig-server/internal"
@@ -34,15 +35,19 @@ func main() {
 	log.SetDebugLogLevel()
 	done := make(chan os.Signal, 1)
 	defer core.InitMconfig(m)()
+
 	listener, err := net.Listen("tcp", "0.0.0.0"+":"+strconv.Itoa(m.ServerPort))
-	log.Info("mconfig-server listen :" + strconv.Itoa(m.ServerPort) + " success")
+	log.Info(fmt.Sprintf("mconfig-server listen :%d success", m.ServerPort))
 	if err != nil {
 		log.Fatal(err)
 	}
 	s := grpc.NewServer()
 	defer func() {
-		_ = listener.Close()
-		s.Stop()
+		s.GracefulStop()
+		err = listener.Close()
+		if err != nil {
+			log.Error(err)
+		}
 	}()
 	rpc.InitRpc(s)
 	go func() {
@@ -53,6 +58,21 @@ func main() {
 			return
 		}
 	}()
+	err, closeFunc := initRegister()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		closeFunc()
+	}()
+	//print some useful data with ASCII
+	printMconfigDetail()
+
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	<-done
+}
+
+func initRegister() (error, func()) {
 	//register service to register center
 	if m.RegistryAddress != "" {
 		regClient, err := register.InitRegister(
@@ -62,34 +82,25 @@ func main() {
 			register.Metadata("mode", store.GetStorePlugin().Mode),
 		)
 		if err != nil {
-			log.Fatal(err)
+			return err, nil
 		}
 		demandSync := store.CheckNeedSyncData()
 		if demandSync {
 			err := store.SyncOtherMconfigData(regClient, SERVICE_NAME)
 			if err != nil {
-				log.Fatal("sync store data fail:", err)
+				return errors.New("sync store data fail:" + err.Error()), nil
 			}
 		}
 
-		err = regClient.RegisterService(SERVICE_NAME, nil)
+		unRegisterFunc, err := regClient.RegisterService(SERVICE_NAME, nil)
 		if err != nil {
-			log.Fatal(err)
+			return err, nil
 		}
-
-		defer func() {
-			err = regClient.UnRegisterService(SERVICE_NAME)
-			if err != nil {
-				log.Error(err)
-			}
-		}()
+		return nil, func() {
+			unRegisterFunc()
+		}
 	}
-
-	//print some useful data with ASCII
-	printMconfigDetail()
-
-	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
-	<-done
+	return nil, func() {}
 }
 
 func printMconfigDetail() {
