@@ -84,15 +84,16 @@ func initRegister() (error, func()) {
 		if err != nil {
 			return err, nil
 		}
+		m.RegistryType = string(regClient.RegisterType)
 		demandSync := store.CheckNeedSyncData()
 		if demandSync {
-			err := store.SyncOtherMconfigData(regClient, SERVICE_NAME)
+			err := store.SyncOtherMconfigData(regClient.Srv, SERVICE_NAME)
 			if err != nil {
 				return errors.New("sync store data fail:" + err.Error()), nil
 			}
 		}
 
-		unRegisterFunc, err := regClient.RegisterService(SERVICE_NAME, nil)
+		unRegisterFunc, err := regClient.Srv.RegisterService(SERVICE_NAME, nil)
 		if err != nil {
 			return err, nil
 		}
