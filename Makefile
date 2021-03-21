@@ -1,6 +1,6 @@
 VERSION=$(shell git describe --tags --always --dirty --dirty="")
 
-buildVersion:
+rebuildVersion:
 	 version/buildVerison.sh ${VERSION}
 
 build:
