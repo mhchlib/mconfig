@@ -323,9 +323,15 @@ func (f *FileStore) GetSyncData() (mconfig.AppData, error) {
 	return syncData, nil
 }
 
-func (e *FileStore) PutSyncData(data *mconfig.AppData) error {
-	d, _ := json.Marshal(data)
-	log.Info(string(d))
+func (e *FileStore) PutSyncData(appData *mconfig.AppData) error {
+	for appKey, envData := range *appData {
+		for env, data := range envData {
+			e.PutFilterVal(appKey, env, data.Filter)
+			for configKey, val := range data.Configs {
+				e.PutConfigVal(appKey, env, configKey, val)
+			}
+		}
+	}
 	return nil
 }
 

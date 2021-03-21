@@ -58,7 +58,7 @@ func main() {
 			return
 		}
 	}()
-	err, closeFunc := initRegister()
+	closeFunc, err := initRegister()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func main() {
 	<-done
 }
 
-func initRegister() (error, func()) {
+func initRegister() (func(), error) {
 	//register service to register center
 	if m.RegistryAddress != "" {
 		regClient, err := register.InitRegister(
@@ -80,28 +80,48 @@ func initRegister() (error, func()) {
 			register.ResgisterAddress(m.RegistryAddress),
 			register.Instance(m.ServerIp+":"+strconv.Itoa(m.ServerPort)),
 			register.Metadata("mode", store.GetStorePlugin().Mode),
+			register.Metadata("plugin", store.GetStorePlugin().Name),
 		)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
 		m.RegistryType = string(regClient.RegisterType)
-		demandSync := store.CheckNeedSyncData()
-		if demandSync {
-			err := store.SyncOtherMconfigData(regClient.Srv, SERVICE_NAME)
+		storePluginMode := store.GetStorePluginModel()
+		storePluginName := store.GetStorePluginName()
+		if storePluginMode == store.MODE_LOCAL {
+			//register center only have one instance
+			services, err := regClient.Srv.ListAllServices(SERVICE_NAME)
 			if err != nil {
-				return errors.New("sync store data fail:" + err.Error()), nil
+				return nil, err
+			}
+			if len(services) != 0 {
+				return nil, errors.New("Store local mode only can register one instance in register center")
+			}
+		}
+		if storePluginMode == store.MODE_SHARE {
+			//register center only have one class instance
+			services, err := regClient.Srv.ListAllServices(SERVICE_NAME)
+			if err != nil {
+				return nil, err
+			}
+			if len(services) != 0 {
+				//check one service plugin
+				service := services[0]
+				if service.Metadata["plugin"] != storePluginName {
+					return nil, errors.New("Store share mode only can register one class plugin in register center")
+				}
 			}
 		}
 
 		unRegisterFunc, err := regClient.Srv.RegisterService(SERVICE_NAME, nil)
 		if err != nil {
-			return err, nil
+			return nil, err
 		}
-		return nil, func() {
+		return func() {
 			unRegisterFunc()
-		}
+		}, nil
 	}
-	return nil, func() {}
+	return func() {}, nil
 }
 
 func printMconfigDetail() {
