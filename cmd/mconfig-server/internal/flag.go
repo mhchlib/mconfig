@@ -28,7 +28,7 @@ func NewMconfigFlag() *MconfigFlag {
 	return &MconfigFlag{}
 }
 
-func ParseFlag(mconfig *mconfig.MConfig) {
+func ParseFlag(mconfig *mconfig.MConfigConfig) {
 	mconfigFlag := initFlagConfig()
 	flag.Parse()
 	err := parseFlagData(mconfigFlag, mconfig)
@@ -37,7 +37,7 @@ func ParseFlag(mconfig *mconfig.MConfig) {
 	}
 }
 
-func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfig) error {
+func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfigConfig) error {
 	//namespace
 	mconfig.Namspace = *mconfigFlag.Namspace
 	//registry
@@ -111,7 +111,7 @@ func initFlagConfig() *MconfigFlag {
 	mconfigFlag := NewMconfigFlag()
 	mconfigFlag.Namspace = flag.String("namespace", "com.github.mhchlib", "input your namespace")
 	mconfigFlag.RegistryStr = flag.String("registry", "", "input registry address like etcd://127.0.0.1:2389")
-	mconfigFlag.StoreStr = flag.String("store", "file://file_mconfig/", "input store address like file://t_file/")
+	mconfigFlag.StoreStr = flag.String("store", "file://mconfigData/", "input store address like file://mconfigData/")
 	mconfigFlag.ExposeStr = flag.String("expose", ":8080", "input server ip, default local ip")
 	mconfigFlag.EnableDebug = flag.Bool("debug", false, "enable debug mode")
 	return mconfigFlag

@@ -21,7 +21,7 @@ import (
 	"syscall"
 )
 
-var m *mconfig.MConfig
+var m *mconfig.MConfigConfig
 
 func init() {
 	m = mconfig.NewMConfig()

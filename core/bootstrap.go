@@ -12,7 +12,7 @@ import (
 )
 
 // InitMconfig ...
-func InitMconfig(mconfig *mconfig.MConfig) func() {
+func InitMconfig(mconfig *mconfig.MConfigConfig) func() {
 	event.InitEventBus()
 	config.InitConfigCenter()
 	filter.InitFilterEngine()
