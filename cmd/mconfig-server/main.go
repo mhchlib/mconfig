@@ -12,6 +12,7 @@ import (
 	"github.com/mhchlib/mconfig/rpc"
 	"github.com/mhchlib/register"
 	"github.com/olekukonko/tablewriter"
+	_ "go.uber.org/automaxprocs"
 	"google.golang.org/grpc"
 	"net"
 	"os"
