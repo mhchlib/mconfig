@@ -1,17 +1,16 @@
 package mconfig
 
 // MConfig ...
-type MConfig struct {
+type MConfigConfig struct {
 	Namspace        string
 	RegistryAddress string
 	RegistryType    string
-	EnableRegistry  bool
 	StoreType       string
 	StoreAddress    string
 	ServerIp        string
 	ServerPort      int
 }
 
-func NewMConfig() *MConfig {
-	return &MConfig{}
+func NewMConfig() *MConfigConfig {
+	return &MConfigConfig{}
 }

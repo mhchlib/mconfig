@@ -183,6 +183,33 @@ func (e *EtcdStore) GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) 
 	return configs, nil
 }
 
+func (e *EtcdStore) GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error) {
+	entity := &KeyEntity{
+		namespace: namespce,
+		class:     CLASS_CONFIG,
+		appKey:    appKey,
+		env:       env,
+	}
+	storeKey, err := getStoreKey(entity)
+	if err != nil {
+		return nil, err
+	}
+	configs := []mconfig.ConfigKey{}
+	response, err := kv.Get(context.Background(), storeKey, clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	for _, kv := range response.Kvs {
+		k := string(kv.Key)
+		keyEntity, err := parseStoreKey(k)
+		if err != nil {
+			log.Error(err)
+		}
+		configs = append(configs, keyEntity.configKey)
+	}
+	return configs, nil
+}
+
 func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
 	syncData := make(map[mconfig.AppKey]map[mconfig.ConfigEnv]*mconfig.EnvData)
 	Response, err := kv.Get(context.Background(), prefix_common, clientv3.WithPrefix())

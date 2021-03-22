@@ -11,6 +11,7 @@ import (
 	"github.com/mhchlib/mconfig/core/syncx"
 	"github.com/mhchlib/register"
 	"google.golang.org/grpc"
+	"strings"
 	"time"
 )
 
@@ -25,6 +26,7 @@ type MConfigStore interface {
 	DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error
 	GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error)
 	GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error)
+	GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error)
 	GetSyncData() (mconfig.AppData, error)
 	PutSyncData(data *mconfig.AppData) error
 	Close() error
@@ -49,6 +51,24 @@ func GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreV
 		return val, err
 	})
 	return v.(*mconfig.StoreVal), err
+}
+
+func GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error) {
+	key := fmt.Sprintf("%v-%v-%v", "GetAppConfigKeys", appKey, env)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetAppConfigKeys(appKey, env)
+		return val, err
+	})
+	return v.([]mconfig.ConfigKey), err
+}
+
+func GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error) {
+	key := fmt.Sprintf("%v-%v-%v", "GetAppConfigs", appKey, env)
+	v, err := shareCalls.Do(key, func() (interface{}, error) {
+		val, err := currentMConfigStore.GetAppConfigs(appKey, env)
+		return val, err
+	})
+	return v.([]*mconfig.StoreVal), err
 }
 
 func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
@@ -82,7 +102,7 @@ func DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	key := fmt.Sprintf("%v-%v-%v", "DeleteFilter", appKey, env)
 	_, err := shareCalls.Do(key, func() (interface{}, error) {
 		//delete when no have config in this env
-		configs, err := currentMConfigStore.GetAppConfigs(appKey, env)
+		configs, err := GetAppConfigs(appKey, env)
 		if err != nil {
 			return nil, err
 		}
@@ -122,14 +142,18 @@ var currentMConfigStore MConfigStore
 var currentStorePlugin *StorePlugin
 
 // InitStore ...
-func InitStore(storeType string, storeAddress string) {
+func InitStore(storeAddressStr string) (string, error) {
+	storeType, storeAddress, err := parseStoreAddressStr(storeAddressStr)
+	if err != nil {
+		return "", errors.New("parse store address str fail:" + err.Error())
+	}
 	plugin, ok := storePluginMap[storeType]
 	if !ok {
-		log.Fatal("store type:", storeType, "does not be supported, you can choose:", storePluginNames)
+		return "", errors.New(fmt.Sprintf("store type: %s does not be supported, you can choose: %s", storeType, storePluginNames))
 	}
 	store, err := plugin.Init(storeAddress)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	currentMConfigStore = store
 	log.Info("store init success with", storeType, storeAddress)
@@ -141,6 +165,15 @@ func InitStore(storeType string, storeAddress string) {
 	}()
 	currentStorePlugin = plugin
 	initShareCalls()
+	return storeType, nil
+}
+
+func parseStoreAddressStr(str string) (string, string, error) {
+	splits := strings.Split(str, "://")
+	if len(splits) != 2 {
+		return "", "", errors.New(str + " is invalid Address")
+	}
+	return splits[0], splits[1], nil
 }
 
 func initShareCalls() {
@@ -155,11 +188,12 @@ func GetStorePlugin() *StorePlugin {
 //	return currentMConfigStore
 //}
 
-func CheckNeedSyncData() bool {
-	if currentStorePlugin.Mode == MODE_LOCAL {
-		return true
-	}
-	return false
+func GetStorePluginModel() StoreMode {
+	return currentStorePlugin.Mode
+}
+
+func GetStorePluginName() string {
+	return currentStorePlugin.Name
 }
 
 var syncRegClient register.Register
@@ -207,11 +241,4 @@ func SyncOtherMconfigData(regClient register.Register, serviceName string) error
 		}
 	}
 	return errors.New("not found sync node")
-}
-
-func SyncOtherMconfigDataCron() {
-	err := SyncOtherMconfigData(syncRegClient, syncServiceName)
-	if err != nil {
-		log.Error("cron sync other mconfig data error:", err)
-	}
 }

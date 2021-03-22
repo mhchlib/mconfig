@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  mconfig-server:
+    image: dockerhcy/mconfig-server:v1.0.0-70-g4cb575f
+    container_name: mconfig-server
+    restart: always
+    networks:
+      - mconfig
+    command: --namespace=docker-compse-test --registry=etcd://etcd.u.hcyang.top:31770 --store=etcd://etcd.u.hcyang.top:31770 --expose mconfig:8081 --debug
+    ports:
+      - 8081:8081
+
+networks:
+  mconfig:
+    external: true
