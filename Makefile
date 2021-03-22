@@ -25,7 +25,7 @@ dev:
 
 dev-file:
 	go run cmd/mconfig-server/main.go cmd/mconfig-server/plugin.go cmd/mconfig-server/debug.go \
-	   --namespace=local_test \
+	   --namespace=local_test_plugin_file \
 	   --registry=etcd://etcd.u.hcyang.top:31770 \
 	   --expose :8082 \
 	   --debug
