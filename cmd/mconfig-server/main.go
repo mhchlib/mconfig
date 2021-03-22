@@ -17,6 +17,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"syscall"
 )
@@ -127,6 +128,7 @@ func initRegister() (func(), error) {
 
 func printMconfigDetail() {
 	data := [][]string{
+		[]string{"Process Num", fmt.Sprintf("%v", runtime.GOMAXPROCS(0))},
 		[]string{"Namespace", m.Namspace},
 		[]string{"Store Type", m.StoreType},
 		[]string{"Store Address", m.StoreAddress},
@@ -138,5 +140,6 @@ func printMconfigDetail() {
 	}
 	headers := []string{"Name", "Val"}
 	log.PrintDataTable(data, headers, "print some useful data about mconfig ↓ ↓ ↓ ↓", func(table *tablewriter.Table) {
+		table.SetAlignment(1)
 	})
 }
