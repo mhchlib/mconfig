@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// InitCron ...
 func InitCron() {
 	initSyncWithStoreCron(5 * 60 * time.Second)
 }

@@ -11,11 +11,13 @@ import (
 	"sync"
 )
 
+// FilterCacheKey ...
 type FilterCacheKey struct {
 	AppKey mconfig.AppKey
 	Env    mconfig.ConfigEnv
 }
 
+// FilterCacheValue ...
 type FilterCacheValue struct {
 	Weight int
 	Code   mconfig.FilterVal
@@ -26,6 +28,7 @@ type FilterCacheValue struct {
 var filterCache cache.Cache
 var effectFilterCache cache.Cache
 
+// EffectFilterCacheKey ...
 type EffectFilterCacheKey struct {
 	AppKey      mconfig.AppKey `json:"app_key"`
 	MetadataMd5 string         `json:"metadata"`
@@ -58,6 +61,7 @@ func deleteEffectFilterCacheWithAppKey(appKey mconfig.AppKey) error {
 
 }
 
+// PutFilterToCache ...
 func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig.StoreVal) error {
 	key := &FilterCacheKey{
 		AppKey: appKey,
@@ -119,6 +123,7 @@ func PutFilterToCache(appKey mconfig.AppKey, env mconfig.ConfigEnv, val *mconfig
 	return nil
 }
 
+// DeleteFilterFromCacheByApp ...
 func DeleteFilterFromCacheByApp(appKey mconfig.AppKey) error {
 	err := filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		k := key.(FilterCacheKey)
@@ -133,6 +138,7 @@ func DeleteFilterFromCacheByApp(appKey mconfig.AppKey) error {
 	return nil
 }
 
+// DeleteFilterFromCache ...
 func DeleteFilterFromCache(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	_ = filterCache.DeleteCache(&FilterCacheKey{
 		AppKey: appKey,
@@ -141,6 +147,7 @@ func DeleteFilterFromCache(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	return nil
 }
 
+// GetFilterFromCache ...
 func GetFilterFromCache(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 	filters := make([]*mconfig.FilterEntity, 0)
 	mutex := sync.Mutex{}
@@ -191,6 +198,7 @@ func getFilterByAppKey(appKey mconfig.AppKey) ([]*mconfig.FilterEntity, error) {
 	return filters, nil
 }
 
+// CheckCacheUpToDateWithStore ...
 func CheckCacheUpToDateWithStore() error {
 	return filterCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		cacheKey := key.(FilterCacheKey)

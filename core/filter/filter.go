@@ -6,11 +6,13 @@ import (
 	"github.com/mhchlib/mconfig/core/mconfig"
 )
 
+// InitFilterEngine ...
 func InitFilterEngine() {
 	initCache()
 	initEvent()
 }
 
+// GetEffectEnvKey ...
 func GetEffectEnvKey(appkey mconfig.AppKey, metatdata map[string]string) (mconfig.ConfigEnv, error) {
 	effectFilterCacheKey := &EffectFilterCacheKey{
 		AppKey:      appkey,

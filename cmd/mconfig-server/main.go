@@ -30,6 +30,7 @@ func init() {
 	internal.ParseFlag(m)
 }
 
+// SERVICE_NAME ...
 const SERVICE_NAME = "mconfig-server"
 
 func main() {

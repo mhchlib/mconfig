@@ -11,12 +11,14 @@ import (
 	"sync"
 )
 
+// ConfigCacheKey ...
 type ConfigCacheKey struct {
 	AppKey    mconfig.AppKey
 	ConfigKey mconfig.ConfigKey
 	Env       mconfig.ConfigEnv
 }
 
+// ConfigCacheValue ...
 type ConfigCacheValue struct {
 	Key mconfig.ConfigKey
 	Val mconfig.ConfigVal
@@ -34,6 +36,7 @@ func initCache() {
 	registerLock = sync.Mutex{}
 }
 
+// PutConfigToCache ...
 func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv, val *mconfig.StoreVal) error {
 	key := &ConfigCacheKey{
 		AppKey:    appKey,
@@ -96,6 +99,7 @@ func PutConfigToCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mc
 	return nil
 }
 
+// GetConfigFromCache ...
 func GetConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.ConfigEntity, error) {
 	key := &ConfigCacheKey{
 		AppKey:    appKey,
@@ -113,6 +117,7 @@ func GetConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env 
 	}, nil
 }
 
+// DeleteConfigFromCacheByApp ...
 func DeleteConfigFromCacheByApp(appKey mconfig.AppKey) error {
 	err := configCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		k := key.(ConfigCacheKey)
@@ -127,6 +132,7 @@ func DeleteConfigFromCacheByApp(appKey mconfig.AppKey) error {
 	return nil
 }
 
+// DeleteConfigFromCache ...
 func DeleteConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	_ = configCache.DeleteCache(&ConfigCacheKey{
 		AppKey:    appKey,
@@ -136,6 +142,7 @@ func DeleteConfigFromCache(appKey mconfig.AppKey, configKey mconfig.ConfigKey, e
 	return nil
 }
 
+// GetConfig ...
 func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) ([]*mconfig.ConfigEntity, error) {
 	configs := make([]*mconfig.ConfigEntity, 0)
 	//when configKeys len is 0, will get all config
@@ -167,6 +174,7 @@ func GetConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfi
 	return configs, nil
 }
 
+// RegisterAppNotify ...
 func RegisterAppNotify(app mconfig.AppKey) error {
 	registerLock.Lock()
 	defer registerLock.Unlock()
@@ -184,6 +192,7 @@ func RegisterAppNotify(app mconfig.AppKey) error {
 	return appRegisterCache.PutCache(app, count)
 }
 
+// UnRegisterAppNotify ...
 func UnRegisterAppNotify(app mconfig.AppKey) error {
 	registerLock.Lock()
 	defer registerLock.Unlock()
@@ -204,10 +213,12 @@ func UnRegisterAppNotify(app mconfig.AppKey) error {
 	return appRegisterCache.PutCache(app, count)
 }
 
+// CheckRegisterAppNotifyExist ...
 func CheckRegisterAppNotifyExist(app mconfig.AppKey) bool {
 	return appRegisterCache.CheckExist(app)
 }
 
+// CheckCacheUpToDateWithStore ...
 func CheckCacheUpToDateWithStore() error {
 	return configCache.ExecuteForEachItem(func(key cache.CacheKey, value cache.CacheValue, param ...interface{}) {
 		cacheKey := key.(ConfigCacheKey)

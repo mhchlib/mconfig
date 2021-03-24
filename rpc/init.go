@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// InitRpc ...
 func InitRpc(s *grpc.Server) {
 	server.RegisterMConfigServer(s, NewMConfigServer())
 }

@@ -11,6 +11,7 @@ func init() {
 	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_LOCAL, Init)
 }
 
+// Init ...
 func Init(addressStr string) (store.MConfigStore, error) {
 	exists, err := file.Exists(addressStr)
 	if err != nil {

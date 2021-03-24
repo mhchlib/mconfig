@@ -19,14 +19,23 @@ var (
 	watcher clientv3.Watcher
 )
 
+// KeyNamespce ...
 type KeyNamespce string
+
+// KeyMode ...
 type KeyMode string
+
+// KeyClass ...
 type KeyClass string
 
 const (
-	PLUGIN_NAME           = "etcd"
-	SEPARATOR             = "/"
+	// PLUGIN_NAME ...
+	PLUGIN_NAME = "etcd"
+	// SEPARATOR ...
+	SEPARATOR = "/"
+	// CLASS_CONFIG ...
 	CLASS_CONFIG KeyClass = "config"
+	// CLASS_FILTER ...
 	CLASS_FILTER KeyClass = "filter"
 )
 
@@ -37,6 +46,7 @@ var prefix_common = SEPARATOR + string(namespce)
 var prefix_config = prefix_common + SEPARATOR + string(CLASS_CONFIG)
 var prefix_filter = SEPARATOR + string(namespce) + SEPARATOR + string(CLASS_FILTER)
 
+// KeyEntity ...
 type KeyEntity struct {
 	namespace KeyNamespce
 	class     KeyClass
@@ -45,10 +55,12 @@ type KeyEntity struct {
 	env       mconfig.ConfigEnv
 }
 
+// EtcdStore ...
 type EtcdStore struct {
 	cancelFunc context.CancelFunc
 }
 
+// PutConfigVal ...
 func (e *EtcdStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, val mconfig.StoreVal) error {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -66,6 +78,7 @@ func (e *EtcdStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, c
 	return err
 }
 
+// PutFilterVal ...
 func (e *EtcdStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, val mconfig.StoreVal) error {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -82,6 +95,7 @@ func (e *EtcdStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, v
 	return err
 }
 
+// DeleteConfig ...
 func (e *EtcdStore) DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	k := &KeyEntity{
 		namespace: namespce,
@@ -101,6 +115,7 @@ func (e *EtcdStore) DeleteConfig(appKey mconfig.AppKey, configKey mconfig.Config
 	return nil
 }
 
+// DeleteFilter ...
 func (e *EtcdStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	k := &KeyEntity{
 		namespace: namespce,
@@ -119,6 +134,7 @@ func (e *EtcdStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) e
 	return nil
 }
 
+// GetAppFilters ...
 func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -153,6 +169,7 @@ func (e *EtcdStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, e
 	return filters, nil
 }
 
+// GetAppConfigs ...
 func (e *EtcdStore) GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -183,6 +200,7 @@ func (e *EtcdStore) GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) 
 	return configs, nil
 }
 
+// GetAppConfigKeys ...
 func (e *EtcdStore) GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -210,6 +228,7 @@ func (e *EtcdStore) GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEn
 	return configs, nil
 }
 
+// GetSyncData ...
 func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
 	syncData := make(map[mconfig.AppKey]map[mconfig.ConfigEnv]*mconfig.EnvData)
 	Response, err := kv.Get(context.Background(), prefix_common, clientv3.WithPrefix())
@@ -260,12 +279,14 @@ func (e *EtcdStore) GetSyncData() (mconfig.AppData, error) {
 	return syncData, nil
 }
 
+// PutSyncData ...
 func (e *EtcdStore) PutSyncData(data *mconfig.AppData) error {
 	d, _ := json.Marshal(data)
 	log.Info(string(d))
 	return nil
 }
 
+// WatchDynamicVal ...
 func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 	var watchChan clientv3.WatchChan
 	ctx, cancelFunc := context.WithCancel(context.Background())
@@ -373,6 +394,7 @@ func (e *EtcdStore) WatchDynamicVal(consumers *store.Consumer) error {
 	}
 }
 
+// GetConfigVal ...
 func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -401,6 +423,7 @@ func (e *EtcdStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.Config
 	return val, nil
 }
 
+// GetFilterVal ...
 func (e *EtcdStore) GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -428,6 +451,7 @@ func (e *EtcdStore) GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (
 	return val, nil
 }
 
+// Close ...
 func (e *EtcdStore) Close() error {
 	e.cancelFunc()
 	return nil

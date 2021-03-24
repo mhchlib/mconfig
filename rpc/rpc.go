@@ -14,13 +14,16 @@ import (
 	"github.com/mhchlib/mconfig/core/store"
 )
 
+// MConfigServer ...
 type MConfigServer struct {
 }
 
+// NewMConfigServer ...
 func NewMConfigServer() *MConfigServer {
 	return &MConfigServer{}
 }
 
+// WatchConfigStream ...
 func (m *MConfigServer) WatchConfigStream(stream server.MConfig_WatchConfigStreamServer) error {
 	request := &server.WatchConfigStreamRequest{}
 	err := stream.RecvMsg(request)
@@ -105,6 +108,7 @@ func send(stream server.MConfig_WatchConfigStreamServer) client.ClientSendFunc {
 	}
 }
 
+// GetNodeStoreData ...
 func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.GetNodeStoreDataRequest) (*server.GetNodeStoreDataResponse, error) {
 	data, err := store.GetSyncData()
 	if err != nil {
@@ -119,6 +123,7 @@ func (m *MConfigServer) GetNodeStoreData(ctx context.Context, request *server.Ge
 	}, nil
 }
 
+// UpdateConfig ...
 func (m *MConfigServer) UpdateConfig(ctx context.Context, request *server.UpdateConfigRequest) (*server.UpdateConfiResponse, error) {
 	filterVal := &mconfig.StoreVal{}
 	err := json.Unmarshal([]byte(request.Filter), filterVal)
@@ -145,6 +150,7 @@ func (m *MConfigServer) UpdateConfig(ctx context.Context, request *server.Update
 	return &server.UpdateConfiResponse{}, nil
 }
 
+// GetNodeDetail ...
 func (m *MConfigServer) GetNodeDetail(ctx context.Context, e *empty.Empty) (*server.GetNodeDetailResponse, error) {
 	storeData, err := store.GetSyncData()
 	if err != nil {
@@ -162,6 +168,7 @@ func (m *MConfigServer) GetNodeDetail(ctx context.Context, e *empty.Empty) (*ser
 	}, nil
 }
 
+// DeletConfig ...
 func (m *MConfigServer) DeletConfig(ctx context.Context, request *server.DeletConfigRequest) (*empty.Empty, error) {
 	err := store.DeleteConfig(mconfig.AppKey(request.App), mconfig.ConfigKey(request.Config), mconfig.ConfigEnv(request.Env))
 	if err != nil {
@@ -169,6 +176,8 @@ func (m *MConfigServer) DeletConfig(ctx context.Context, request *server.DeletCo
 	}
 	return &empty.Empty{}, nil
 }
+
+// DeletFilter ...
 func (m *MConfigServer) DeletFilter(ctx context.Context, request *server.DeletFilterRequest) (*empty.Empty, error) {
 	err := store.DeleteFilter(mconfig.AppKey(request.App), mconfig.ConfigEnv(request.Env))
 	if err != nil {
@@ -177,6 +186,7 @@ func (m *MConfigServer) DeletFilter(ctx context.Context, request *server.DeletFi
 	return &empty.Empty{}, nil
 }
 
+// UpdateFilter ...
 func (m *MConfigServer) UpdateFilter(ctx context.Context, request *server.UpdateFilterRequest) (*empty.Empty, error) {
 	filterVal := &mconfig.StoreVal{}
 	err := json.Unmarshal([]byte(request.Filter), filterVal)

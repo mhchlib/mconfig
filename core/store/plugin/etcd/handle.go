@@ -62,6 +62,7 @@ func getStoreKey(entity *KeyEntity) (string, error) {
 	return key[0 : len(key)-len(SEPARATOR)], nil
 }
 
+// Prefix ...
 func Prefix(prefix string, v string) string {
 	return prefix + v
 }

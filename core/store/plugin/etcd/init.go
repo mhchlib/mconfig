@@ -14,6 +14,7 @@ func init() {
 	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_SHARE, Init)
 }
 
+// Init ...
 func Init(addressStr string) (store.MConfigStore, error) {
 	address := strings.Split(addressStr, ",")
 	var err error

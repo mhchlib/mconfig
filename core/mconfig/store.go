@@ -1,5 +1,6 @@
 package mconfig
 
+// StoreVal ...
 type StoreVal struct {
 	DataVersion
 	Data interface{} `json:"data"`

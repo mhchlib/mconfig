@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// MconfigFlag ...
 type MconfigFlag struct {
 	Namspace    *string
 	RegistryStr *string
@@ -20,14 +21,18 @@ type MconfigFlag struct {
 }
 
 var (
+	// DefaultExposePort ...
 	DefaultExposePort = 8080
-	DefaultExposeIp   = ""
+	// DefaultExposeIp ...
+	DefaultExposeIp = ""
 )
 
+// NewMconfigFlag ...
 func NewMconfigFlag() *MconfigFlag {
 	return &MconfigFlag{}
 }
 
+// ParseFlag ...
 func ParseFlag(mconfig *mconfig.MConfigConfig) {
 	mconfigFlag := initFlagConfig()
 	flag.Parse()

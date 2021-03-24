@@ -4,17 +4,20 @@ import (
 	"sync"
 )
 
+// GeneralCache ...
 type GeneralCache struct {
 	cache map[CacheKey]CacheValue
 	sync.RWMutex
 }
 
+// NewGeneralCache ...
 func NewGeneralCache() *GeneralCache {
 	return &GeneralCache{
 		cache: make(map[CacheKey]CacheValue),
 	}
 }
 
+// GetCache ...
 func (cache *GeneralCache) GetCache(key CacheKey) (CacheValue, error) {
 	cache.RLock()
 	value, ok := cache.cache[key]
@@ -25,6 +28,7 @@ func (cache *GeneralCache) GetCache(key CacheKey) (CacheValue, error) {
 	return nil, ERROR_CACHE_NOT_FOUND
 }
 
+// PutCache ...
 func (cache *GeneralCache) PutCache(key CacheKey, val CacheValue) error {
 	cache.Lock()
 	defer cache.Unlock()
@@ -32,6 +36,7 @@ func (cache *GeneralCache) PutCache(key CacheKey, val CacheValue) error {
 	return nil
 }
 
+// DeleteCache ...
 func (cache *GeneralCache) DeleteCache(key CacheKey) error {
 	cache.Lock()
 	defer cache.Unlock()
@@ -39,6 +44,7 @@ func (cache *GeneralCache) DeleteCache(key CacheKey) error {
 	return nil
 }
 
+// CheckExist ...
 func (cache *GeneralCache) CheckExist(key CacheKey) bool {
 	cache.RLock()
 	defer cache.RUnlock()
@@ -46,16 +52,7 @@ func (cache *GeneralCache) CheckExist(key CacheKey) bool {
 	return ok
 }
 
-//func (cache *Cache) GetCacheMap() map[CacheKey]CacheValue {
-//	cloneVal := make(map[CacheKey]CacheValue)
-//	cache.Lock()
-//	for key, value := range cache.cache {
-//		cloneVal[key] = value
-//	}
-//	cache.Unlock()
-//	return cloneVal
-//}
-
+// ExecuteForEachItem ...
 func (cache *GeneralCache) ExecuteForEachItem(f func(key CacheKey, value CacheValue, param ...interface{}), param ...interface{}) error {
 	var wg sync.WaitGroup
 	cache.RLock()

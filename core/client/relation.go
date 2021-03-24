@@ -11,17 +11,20 @@ import (
 var configRelationMap *ClientConfigRelationMap
 var appRelationMap *ClientAppRelationMap
 
+// ClientConfigKey ...
 type ClientConfigKey struct {
 	appKey    mconfig.AppKey
 	configKey mconfig.ConfigKey
 	configEnv mconfig.ConfigEnv
 }
 
+// ClientConfigRelationMap ...
 type ClientConfigRelationMap struct {
 	sync.RWMutex
 	m map[ClientConfigKey]*ClientSet
 }
 
+// ClientAppRelationMap ...
 type ClientAppRelationMap struct {
 	sync.RWMutex
 	m map[mconfig.AppKey]*ClientSet
