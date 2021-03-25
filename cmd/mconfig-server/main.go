@@ -11,6 +11,7 @@ import (
 	_ "github.com/mhchlib/mconfig/core/store/plugin/etcd"
 	"github.com/mhchlib/mconfig/rpc"
 	"github.com/mhchlib/register"
+	"github.com/mhchlib/register/registerOpts"
 	"github.com/olekukonko/tablewriter"
 	_ "go.uber.org/automaxprocs"
 	"google.golang.org/grpc"
@@ -79,11 +80,11 @@ func initRegister() (func(), error) {
 	//register service to register center
 	if m.RegistryAddress != "" {
 		regClient, err := register.InitRegister(
-			register.Namespace(m.Namspace),
-			register.ResgisterAddress(m.RegistryAddress),
-			register.Instance(m.ServerIp+":"+strconv.Itoa(m.ServerPort)),
-			register.Metadata("mode", store.GetStorePlugin().Mode),
-			register.Metadata("plugin", store.GetStorePlugin().Name),
+			registerOpts.Namespace(m.Namspace),
+			registerOpts.ResgisterAddress(m.RegistryAddress),
+			registerOpts.Instance(m.ServerIp+":"+strconv.Itoa(m.ServerPort)),
+			registerOpts.Metadata("mode", store.GetStorePlugin().Mode),
+			registerOpts.Metadata("plugin", store.GetStorePlugin().Name),
 		)
 		if err != nil {
 			return nil, err
