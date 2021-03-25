@@ -9,7 +9,7 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/core/mconfig"
 	"github.com/mhchlib/mconfig/core/syncx"
-	"github.com/mhchlib/register"
+	"github.com/mhchlib/mregister/register"
 	"google.golang.org/grpc"
 	"strings"
 	"time"
