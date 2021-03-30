@@ -8,7 +8,11 @@ import (
 )
 
 func init() {
-	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_LOCAL, Init)
+	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_LOCAL, Init, GracefulStop)
+}
+
+func GracefulStop() error {
+	return nil
 }
 
 // Init ...
