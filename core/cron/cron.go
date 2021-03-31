@@ -14,8 +14,10 @@ func InitCron() {
 
 func initSyncWithStoreCron(t time.Duration) {
 	go func() {
+		timer := time.NewTimer(t)
+		defer timer.Stop()
 		for {
-			<-time.After(t)
+			<-timer.C
 			syncWithStore()
 		}
 	}()
