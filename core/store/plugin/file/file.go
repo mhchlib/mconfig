@@ -13,16 +13,26 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
+// KeyNamespce ...
 type KeyNamespce string
+
+// KeyMode ...
 type KeyMode string
+
+// KeyClass ...
 type KeyClass string
 
 const (
-	PLUGIN_NAME           = "file"
-	SEPARATOR             = "/"
+	// PLUGIN_NAME ...
+	PLUGIN_NAME = "file"
+	// SEPARATOR ...
+	SEPARATOR = "/"
+	// CLASS_CONFIG ...
 	CLASS_CONFIG KeyClass = "config"
+	// CLASS_FILTER ...
 	CLASS_FILTER KeyClass = "filter"
-	MAX_SUFFIX            = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+	// MAX_SUFFIX ...
+	MAX_SUFFIX = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 )
 
 var namespce KeyNamespce = "com.github.hchlib.mconfig"
@@ -32,6 +42,7 @@ var prefix_common = SEPARATOR + string(namespce)
 var prefix_config = prefix_common + SEPARATOR + string(CLASS_CONFIG)
 var prefix_filter = SEPARATOR + string(namespce) + SEPARATOR + string(CLASS_FILTER)
 
+// KeyEntity ...
 type KeyEntity struct {
 	namespace KeyNamespce
 	class     KeyClass
@@ -40,21 +51,27 @@ type KeyEntity struct {
 	env       mconfig.ConfigEnv
 }
 
+// Event_EventType ...
 type Event_EventType int32
 
 const (
-	PUT    Event_EventType = 0
+	// PUT ...
+	PUT Event_EventType = 0
+	// DELETE ...
 	DELETE Event_EventType = 1
 )
 
+// ConfigEvent ...
 type ConfigEvent struct {
 	Key   []byte
 	Value []byte
 	Type  Event_EventType
 }
 
+// SIZE_CHANGEEVENTBUS ...
 const SIZE_CHANGEEVENTBUS = 20
 
+// FileStore ...
 type FileStore struct {
 	cancelFunc context.CancelFunc
 	watchChan  chan *ConfigEvent
@@ -62,6 +79,7 @@ type FileStore struct {
 	filter     *leveldb.DB
 }
 
+// PutConfigVal ...
 func (f *FileStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, val mconfig.StoreVal) error {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -79,6 +97,7 @@ func (f *FileStore) PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, c
 	return err
 }
 
+// PutFilterVal ...
 func (f *FileStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, val mconfig.StoreVal) error {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -100,6 +119,7 @@ func (f *FileStore) PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, v
 	return err
 }
 
+// DeleteConfig ...
 func (f *FileStore) DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	k := &KeyEntity{
 		namespace: namespce,
@@ -119,6 +139,7 @@ func (f *FileStore) DeleteConfig(appKey mconfig.AppKey, configKey mconfig.Config
 	return nil
 }
 
+// DeleteFilter ...
 func (f *FileStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	k := &KeyEntity{
 		namespace: namespce,
@@ -137,6 +158,7 @@ func (f *FileStore) DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) e
 	return nil
 }
 
+// GetAppFilters ...
 func (f *FileStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -167,6 +189,7 @@ func (f *FileStore) GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, e
 	return filters, nil
 }
 
+// GetAppConfigs ...
 func (f *FileStore) GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -199,6 +222,7 @@ func (f *FileStore) GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) 
 	return configs, nil
 }
 
+// GetAppConfigKeys ...
 func (f *FileStore) GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -226,6 +250,7 @@ func (f *FileStore) GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEn
 	return configs, nil
 }
 
+// GetSyncData ...
 func (f *FileStore) GetSyncData() (mconfig.AppData, error) {
 	syncData := make(map[mconfig.AppKey]map[mconfig.ConfigEnv]*mconfig.EnvData)
 	iterator := f.config.NewIterator(&util.Range{
@@ -323,6 +348,7 @@ func (f *FileStore) GetSyncData() (mconfig.AppData, error) {
 	return syncData, nil
 }
 
+// PutSyncData ...
 func (e *FileStore) PutSyncData(appData *mconfig.AppData) error {
 	for appKey, envData := range *appData {
 		for env, data := range envData {
@@ -335,6 +361,7 @@ func (e *FileStore) PutSyncData(appData *mconfig.AppData) error {
 	return nil
 }
 
+// WatchDynamicVal ...
 func (e *FileStore) WatchDynamicVal(consumers *store.Consumer) error {
 	for {
 		select {
@@ -431,6 +458,7 @@ func (e *FileStore) WatchDynamicVal(consumers *store.Consumer) error {
 	}
 }
 
+// GetConfigVal ...
 func (f *FileStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -456,6 +484,7 @@ func (f *FileStore) GetConfigVal(appKey mconfig.AppKey, configKey mconfig.Config
 	return val, nil
 }
 
+// GetFilterVal ...
 func (f *FileStore) GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	entity := &KeyEntity{
 		namespace: namespce,
@@ -477,6 +506,7 @@ func (f *FileStore) GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (
 	return val, nil
 }
 
+// Close ...
 func (e *FileStore) Close() error {
 	e.cancelFunc()
 	return nil

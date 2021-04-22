@@ -6,25 +6,31 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// ConfigKey ...
 type ConfigKey string
 
+// ConfigVal ...
 type ConfigVal string
 
+// ConfigEntity ...
 type ConfigEntity struct {
 	Key ConfigKey `json:"key"`
 	Val ConfigVal `json:"val"`
 }
 
+// ConfigStoreVal ...
 type ConfigStoreVal struct {
 	Key ConfigKey `json:"key"`
 	Val ConfigVal `json:"val"`
 }
 
+// ConfigChangeNotifyMsg ...
 type ConfigChangeNotifyMsg struct {
 	Key ConfigKey `json:"key"`
 	Val ConfigVal `json:"val"`
 }
 
+// ConfigKeys ...
 func ConfigKeys(keys []string) []ConfigKey {
 	configkeys := make([]ConfigKey, 0)
 	for _, key := range keys {
@@ -33,10 +39,12 @@ func ConfigKeys(keys []string) []ConfigKey {
 	return configkeys
 }
 
+// BuildConfigStoreVal ...
 func BuildConfigStoreVal(val *ConfigStoreVal) (*StoreVal, error) {
 	return buildStoreVal(val)
 }
 
+// TransformMap2ConfigStoreVal ...
 func TransformMap2ConfigStoreVal(val interface{}) (*ConfigStoreVal, error) {
 	storeVal := &ConfigStoreVal{}
 	err := mapstructure.Decode(val, &storeVal)

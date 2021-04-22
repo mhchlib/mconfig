@@ -6,6 +6,7 @@ package syncx
 //
 import "sync"
 
+// SharedCalls ...
 type (
 	// SharedCalls lets the concurrent calls with the same key to share the call result.
 	// For example, A called F, before it's done, B called F. Then B would not execute F,
@@ -30,12 +31,14 @@ type (
 	}
 )
 
+// NewSharedCalls ...
 func NewSharedCalls() SharedCalls {
 	return &sharedGroup{
 		calls: make(map[string]*call),
 	}
 }
 
+// Do ...
 func (g *sharedGroup) Do(key string, fn func() (interface{}, error)) (interface{}, error) {
 	c, done := g.createCall(key)
 	if done {
@@ -46,6 +49,7 @@ func (g *sharedGroup) Do(key string, fn func() (interface{}, error)) (interface{
 	return c.val, c.err
 }
 
+// DoEx ...
 func (g *sharedGroup) DoEx(key string, fn func() (interface{}, error)) (val interface{}, fresh bool, err error) {
 	c, done := g.createCall(key)
 	if done {

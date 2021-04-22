@@ -7,14 +7,17 @@ import (
 	"time"
 )
 
+// InitCron ...
 func InitCron() {
 	initSyncWithStoreCron(5 * 60 * time.Second)
 }
 
 func initSyncWithStoreCron(t time.Duration) {
 	go func() {
+		timer := time.NewTimer(t)
+		defer timer.Stop()
 		for {
-			<-time.After(t)
+			<-timer.C
 			syncWithStore()
 		}
 	}()

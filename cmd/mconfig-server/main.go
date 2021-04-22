@@ -10,12 +10,15 @@ import (
 	"github.com/mhchlib/mconfig/core/store"
 	_ "github.com/mhchlib/mconfig/core/store/plugin/etcd"
 	"github.com/mhchlib/mconfig/rpc"
-	"github.com/mhchlib/register"
+	"github.com/mhchlib/mregister"
+	"github.com/mhchlib/mregister/register"
 	"github.com/olekukonko/tablewriter"
+	_ "go.uber.org/automaxprocs"
 	"google.golang.org/grpc"
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"syscall"
 )
@@ -28,6 +31,7 @@ func init() {
 	internal.ParseFlag(m)
 }
 
+// SERVICE_NAME ...
 const SERVICE_NAME = "mconfig-server"
 
 func main() {
@@ -75,7 +79,7 @@ func main() {
 func initRegister() (func(), error) {
 	//register service to register center
 	if m.RegistryAddress != "" {
-		regClient, err := register.InitRegister(
+		regClient, err := mregister.InitRegister(
 			register.Namespace(m.Namspace),
 			register.ResgisterAddress(m.RegistryAddress),
 			register.Instance(m.ServerIp+":"+strconv.Itoa(m.ServerPort)),
@@ -126,6 +130,7 @@ func initRegister() (func(), error) {
 
 func printMconfigDetail() {
 	data := [][]string{
+		[]string{"Process Num", fmt.Sprintf("%v", runtime.GOMAXPROCS(0))},
 		[]string{"Namespace", m.Namspace},
 		[]string{"Store Type", m.StoreType},
 		[]string{"Store Address", m.StoreAddress},
@@ -137,5 +142,6 @@ func printMconfigDetail() {
 	}
 	headers := []string{"Name", "Val"}
 	log.PrintDataTable(data, headers, "print some useful data about mconfig ↓ ↓ ↓ ↓", func(table *tablewriter.Table) {
+		table.SetAlignment(1)
 	})
 }

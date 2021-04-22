@@ -11,6 +11,7 @@ type MConfigConfig struct {
 	ServerPort      int
 }
 
+// NewMConfig ...
 func NewMConfig() *MConfigConfig {
 	return &MConfigConfig{}
 }

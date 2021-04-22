@@ -8,9 +8,14 @@ import (
 )
 
 func init() {
-	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_LOCAL, Init)
+	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_LOCAL, Init, GracefulStop)
 }
 
+func GracefulStop() error {
+	return nil
+}
+
+// Init ...
 func Init(addressStr string) (store.MConfigStore, error) {
 	exists, err := file.Exists(addressStr)
 	if err != nil {

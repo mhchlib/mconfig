@@ -13,13 +13,16 @@ var n int32 = 1000
 
 var count int32 = 0
 
+// ClientId ...
 type ClientId int32
 
+// InitClientManagement ...
 func InitClientManagement() {
 	initRelationMap()
 	initEvent()
 }
 
+// Client ...
 type Client struct {
 	Id                          ClientId
 	metadata                    MetaData
@@ -32,8 +35,10 @@ type Client struct {
 	configUpdateMsgCache        cache.Cache
 }
 
+// MetaData ...
 type MetaData map[string]string
 
+// NewClient ...
 func NewClient(metadata MetaData, send ClientSendFunc, recv ClientRecvFunc) (*Client, error) {
 	id, err := getClientId()
 	if err != nil {
@@ -63,6 +68,7 @@ func reduceClientCount() {
 	atomic.AddInt32(&count, -1)
 }
 
+// GetOnLineClientCount ...
 func GetOnLineClientCount() int32 {
 	return count
 }
@@ -72,6 +78,7 @@ func getClientId() (ClientId, error) {
 	return ClientId(id), nil
 }
 
+// BuildClientRelation ...
 func (client *Client) BuildClientRelation(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	client.appKey = appKey
 	client.configKeys = configKeys
@@ -84,6 +91,7 @@ func (client *Client) BuildClientRelation(appKey mconfig.AppKey, configKeys []mc
 	return nil
 }
 
+// RemoveClient ...
 func (client *Client) RemoveClient() error {
 	clientId := client.Id
 	if client.isbuildClientConfigRelation {
@@ -100,6 +108,7 @@ func (client *Client) RemoveClient() error {
 	return nil
 }
 
+// SendConfigChangeNotifyMsg ...
 func (client *Client) SendConfigChangeNotifyMsg(data *mconfig.ConfigChangeNotifyMsg) error {
 	//check cache exist
 	exist := client.checkConfigUpdateMsgCacheExist(data.Key, data)
@@ -117,10 +126,12 @@ func (client *Client) SendConfigChangeNotifyMsg(data *mconfig.ConfigChangeNotify
 	return err
 }
 
+// Hold ...
 func (client *Client) Hold() {
 	<-client.close
 }
 
+// ReCalEffectEnv ...
 func (client *Client) ReCalEffectEnv() error {
 	env, err := filter.GetEffectEnvKey(client.appKey, client.metadata)
 	if err != nil {
@@ -134,6 +145,7 @@ func (client *Client) ReCalEffectEnv() error {
 	return nil
 }
 
+// ReloadNewConfig ...
 func (client *Client) ReloadNewConfig() error {
 	configs, err := config.GetConfig(client.appKey, client.configKeys, client.configEnv)
 	if err != nil {
@@ -153,6 +165,7 @@ func (client *Client) ReloadNewConfig() error {
 	return nil
 }
 
+// WatchConfig ...
 func (client *Client) WatchConfig(appKey mconfig.AppKey, configKeys []mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	err := client.BuildClientRelation(appKey, configKeys, env)
 	if err != nil {

@@ -4,9 +4,13 @@ import (
 	"sync"
 )
 
+// ClientSendFunc ...
 type ClientSendFunc func(interface{}) error
+
+// ClientRecvFunc ...
 type ClientRecvFunc func(c *Client) error
 
+// ClientMsgBus ...
 type ClientMsgBus struct {
 	sync.RWMutex
 	SendFunc      ClientSendFunc
@@ -22,6 +26,7 @@ func (bus *ClientMsgBus) sendMsg(data interface{}) error {
 	return nil
 }
 
+// Close ...
 func (bus *ClientMsgBus) Close() {
 	bus.willBeRemoved = true
 }

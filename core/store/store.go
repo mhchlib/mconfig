@@ -9,7 +9,7 @@ import (
 	"github.com/mhchlib/mconfig-api/api/v1/server"
 	"github.com/mhchlib/mconfig/core/mconfig"
 	"github.com/mhchlib/mconfig/core/syncx"
-	"github.com/mhchlib/register"
+	"github.com/mhchlib/mregister/register"
 	"google.golang.org/grpc"
 	"strings"
 	"time"
@@ -44,6 +44,7 @@ func GetConfigVal(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfi
 	return v.(*mconfig.StoreVal), err
 }
 
+// GetFilterVal ...
 func GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreVal, error) {
 	key := fmt.Sprintf("%v-%v-%v", "GetFilterVal", appKey, env)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -53,6 +54,7 @@ func GetFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv) (*mconfig.StoreV
 	return v.(*mconfig.StoreVal), err
 }
 
+// GetAppConfigKeys ...
 func GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.ConfigKey, error) {
 	key := fmt.Sprintf("%v-%v-%v", "GetAppConfigKeys", appKey, env)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -62,6 +64,7 @@ func GetAppConfigKeys(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]mconfig.C
 	return v.([]mconfig.ConfigKey), err
 }
 
+// GetAppConfigs ...
 func GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.StoreVal, error) {
 	key := fmt.Sprintf("%v-%v-%v", "GetAppConfigs", appKey, env)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -71,6 +74,7 @@ func GetAppConfigs(appKey mconfig.AppKey, env mconfig.ConfigEnv) ([]*mconfig.Sto
 	return v.([]*mconfig.StoreVal), err
 }
 
+// GetAppFilters ...
 func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
 	key := fmt.Sprintf("%v-%v", "GetAppFilters", appKey)
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -80,6 +84,7 @@ func GetAppFilters(appKey mconfig.AppKey) ([]*mconfig.StoreVal, error) {
 	return v.([]*mconfig.StoreVal), err
 }
 
+// GetSyncData ...
 func GetSyncData() (mconfig.AppData, error) {
 	key := fmt.Sprintf("%v", "GetSyncData")
 	v, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -89,6 +94,7 @@ func GetSyncData() (mconfig.AppData, error) {
 	return v.(mconfig.AppData), err
 }
 
+// DeleteConfig ...
 func DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfig.ConfigEnv) error {
 	key := fmt.Sprintf("%v-%v-%v-%v", "DeleteConfig", appKey, configKey, env)
 	_, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -98,6 +104,7 @@ func DeleteConfig(appKey mconfig.AppKey, configKey mconfig.ConfigKey, env mconfi
 	return err
 }
 
+// DeleteFilter ...
 func DeleteFilter(appKey mconfig.AppKey, env mconfig.ConfigEnv) error {
 	key := fmt.Sprintf("%v-%v-%v", "DeleteFilter", appKey, env)
 	_, err := shareCalls.Do(key, func() (interface{}, error) {
@@ -121,18 +128,22 @@ func WatchDynamicVal(customer *Consumer) error {
 	return currentMConfigStore.WatchDynamicVal(customer)
 }
 
+// PutConfigVal ...
 func PutConfigVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, configKey mconfig.ConfigKey, content mconfig.StoreVal) error {
 	return currentMConfigStore.PutConfigVal(appKey, env, configKey, content)
 }
 
+// PutFilterVal ...
 func PutFilterVal(appKey mconfig.AppKey, env mconfig.ConfigEnv, content mconfig.StoreVal) error {
 	return currentMConfigStore.PutFilterVal(appKey, env, content)
 }
 
+// PutSyncData ...
 func PutSyncData(data *mconfig.AppData) error {
 	return currentMConfigStore.PutSyncData(data)
 }
 
+// Close ...
 func Close() error {
 	return currentMConfigStore.Close()
 }
@@ -180,18 +191,17 @@ func initShareCalls() {
 	shareCalls = syncx.NewSharedCalls()
 }
 
+// GetStorePlugin ...
 func GetStorePlugin() *StorePlugin {
 	return currentStorePlugin
 }
 
-//func GetCurrentMConfigStore() MConfigStore {
-//	return currentMConfigStore
-//}
-
+// GetStorePluginModel ...
 func GetStorePluginModel() StoreMode {
 	return currentStorePlugin.Mode
 }
 
+// GetStorePluginName ...
 func GetStorePluginName() string {
 	return currentStorePlugin.Name
 }
@@ -199,6 +209,7 @@ func GetStorePluginName() string {
 var syncRegClient register.Register
 var syncServiceName string
 
+// SyncOtherMconfigData ...
 func SyncOtherMconfigData(regClient register.Register, serviceName string) error {
 	syncRegClient = regClient
 	syncServiceName = serviceName

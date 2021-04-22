@@ -6,12 +6,14 @@ import (
 	log "github.com/mhchlib/logger"
 )
 
+// EventLoop ...
 type EventLoop interface {
 	addEvent(event *Event) error
 	handleEvent() error
 	close()
 }
 
+// EventLoopImpl ...
 type EventLoopImpl struct {
 	management *EventManagement
 	eventBus   chan *Event

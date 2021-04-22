@@ -8,8 +8,10 @@ import (
 	"github.com/mhchlib/mconfig/core/mconfig"
 )
 
+// EVENT_KEY ...
 const EVENT_KEY event.EventKey = "config"
 
+// ConfigEventMetadata ...
 type ConfigEventMetadata struct {
 	AppKey    mconfig.AppKey
 	ConfigKey mconfig.ConfigKey

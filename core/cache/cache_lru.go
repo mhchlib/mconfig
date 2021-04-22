@@ -5,11 +5,13 @@ import (
 	"sync"
 )
 
+// LRUCache ...
 type LRUCache struct {
 	Max int
 	Lru *lru.Cache
 }
 
+// NewLRUCache ...
 func NewLRUCache(maxArr ...int) *LRUCache {
 	max := LRU_MAX
 	if len(maxArr) == 1 {
@@ -22,6 +24,7 @@ func NewLRUCache(maxArr ...int) *LRUCache {
 	}
 }
 
+// GetCache ...
 func (cache *LRUCache) GetCache(key CacheKey) (CacheValue, error) {
 	value, ok := cache.Lru.Get(key)
 	if !ok {
@@ -30,20 +33,24 @@ func (cache *LRUCache) GetCache(key CacheKey) (CacheValue, error) {
 	return value, nil
 }
 
+// PutCache ...
 func (cache *LRUCache) PutCache(key CacheKey, val CacheValue) error {
 	_ = cache.Lru.Add(key, val)
 	return nil
 }
 
+// DeleteCache ...
 func (cache *LRUCache) DeleteCache(key CacheKey) error {
 	_ = cache.Lru.Remove(key)
 	return nil
 }
 
+// CheckExist ...
 func (cache *LRUCache) CheckExist(key CacheKey) bool {
 	return cache.Lru.Contains(key)
 }
 
+// ExecuteForEachItem ...
 func (cache *LRUCache) ExecuteForEachItem(f func(key CacheKey, value CacheValue, param ...interface{}), param ...interface{}) error {
 	keys := cache.Lru.Keys()
 	var wg sync.WaitGroup

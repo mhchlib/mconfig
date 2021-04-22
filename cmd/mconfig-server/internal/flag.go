@@ -5,12 +5,13 @@ import (
 	"flag"
 	log "github.com/mhchlib/logger"
 	"github.com/mhchlib/mconfig/core/mconfig"
-	"github.com/mhchlib/register/regutils"
+	"github.com/mhchlib/mregister/register"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
+// MconfigFlag ...
 type MconfigFlag struct {
 	Namspace    *string
 	RegistryStr *string
@@ -20,14 +21,18 @@ type MconfigFlag struct {
 }
 
 var (
+	// DefaultExposePort ...
 	DefaultExposePort = 8080
-	DefaultExposeIp   = ""
+	// DefaultExposeIp ...
+	DefaultExposeIp = ""
 )
 
+// NewMconfigFlag ...
 func NewMconfigFlag() *MconfigFlag {
 	return &MconfigFlag{}
 }
 
+// ParseFlag ...
 func ParseFlag(mconfig *mconfig.MConfigConfig) {
 	mconfigFlag := initFlagConfig()
 	flag.Parse()
@@ -59,7 +64,7 @@ func parseFlagData(mconfigFlag *MconfigFlag, mconfig *mconfig.MConfigConfig) err
 		mconfig.ServerIp = ip
 		mconfig.ServerPort = port
 		if mconfig.ServerIp == "" {
-			ip, err := regutils.GetClientIp()
+			ip, err := register.GetClientIp()
 			if err != nil {
 				log.Fatal("get client ip error")
 			}

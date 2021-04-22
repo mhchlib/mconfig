@@ -11,9 +11,15 @@ import (
 )
 
 func init() {
-	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_SHARE, Init)
+	store.RegisterStorePlugin(PLUGIN_NAME, store.MODE_SHARE, Init, GracefulStop)
 }
 
+func GracefulStop() error {
+
+	return nil
+}
+
+// Init ...
 func Init(addressStr string) (store.MConfigStore, error) {
 	address := strings.Split(addressStr, ",")
 	var err error

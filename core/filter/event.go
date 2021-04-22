@@ -9,8 +9,10 @@ import (
 	"github.com/mhchlib/mconfig/core/mconfig"
 )
 
+// EVENT_KEY ...
 const EVENT_KEY event.EventKey = "filter"
 
+// FilterEventMetadata ...
 type FilterEventMetadata struct {
 	AppKey mconfig.AppKey
 	Env    mconfig.ConfigEnv

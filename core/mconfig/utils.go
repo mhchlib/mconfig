@@ -10,6 +10,7 @@ func createDataVersion() int64 {
 	return time.Now().UnixNano()
 }
 
+// GetInterfaceMd5 ...
 func GetInterfaceMd5(d interface{}) string {
 	str := fmt.Sprintf("%v", d)
 	return fmt.Sprintf("%x", (md5.Sum([]byte(str))))

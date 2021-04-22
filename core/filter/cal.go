@@ -7,6 +7,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+// CalMepFilter ...
 func CalMepFilter(code string, metatdata map[string]string) bool {
 	epEngine, err := mep.NewEpEngine(code)
 	if err != nil {
@@ -16,6 +17,7 @@ func CalMepFilter(code string, metatdata map[string]string) bool {
 	return check
 }
 
+// CalSimpleFilter ...
 func CalSimpleFilter(code string, metatdata map[string]string) bool {
 	metajson, _ := json.Marshal(metatdata)
 	if string(metajson) == code {
@@ -24,6 +26,7 @@ func CalSimpleFilter(code string, metatdata map[string]string) bool {
 	return false
 }
 
+// CalLuaFilter ...
 func CalLuaFilter(code string, metatdata map[string]string) bool {
 	L := lua.NewState()
 	defer L.Close()

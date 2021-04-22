@@ -7,11 +7,13 @@ import (
 	"sync"
 )
 
+// ClientSet ...
 type ClientSet struct {
 	sync.RWMutex
 	m map[ClientId]*Client
 }
 
+// NewClientSet ...
 func NewClientSet() *ClientSet {
 	clientSet := &ClientSet{
 		m: make(map[ClientId]*Client),
@@ -46,10 +48,7 @@ func (set *ClientSet) count() int {
 	return len(set.m)
 }
 
-//func (set *ClientSet) GetClients() map[ClientId]*Client {
-//	return set.m
-//}
-
+// SendMsg ...
 func (set *ClientSet) SendMsg(data *mconfig.ConfigChangeNotifyMsg) error {
 	set.RLock()
 	defer set.RUnlock()
@@ -62,6 +61,7 @@ func (set *ClientSet) SendMsg(data *mconfig.ConfigChangeNotifyMsg) error {
 	return nil
 }
 
+// ReCalEffectEnv ...
 func (set *ClientSet) ReCalEffectEnv() error {
 	set.RLock()
 	defer set.RUnlock()
