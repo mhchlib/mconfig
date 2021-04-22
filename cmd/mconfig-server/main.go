@@ -130,15 +130,15 @@ func initRegister() (func(), error) {
 
 func printMconfigDetail() {
 	data := [][]string{
-		[]string{"Process Num", fmt.Sprintf("%v", runtime.GOMAXPROCS(0))},
-		[]string{"Namespace", m.Namspace},
-		[]string{"Store Type", m.StoreType},
-		[]string{"Store Address", m.StoreAddress},
-		[]string{"Store Mode", fmt.Sprintf("%s", store.GetStorePlugin().Mode)},
-		[]string{"Store Plugin", fmt.Sprintf("%s", store.GetStorePlugin().Name)},
-		[]string{"Register Type", m.RegistryType},
-		[]string{"Register Address", m.RegistryAddress},
-		[]string{"Register Server Address", m.ServerIp + ":" + strconv.Itoa(m.ServerPort)},
+		{"Process Num", fmt.Sprintf("%v", runtime.GOMAXPROCS(0))},
+		{"Namespace", m.Namspace},
+		{"Store Type", m.StoreType},
+		{"Store Address", m.StoreAddress},
+		{"Store Mode", fmt.Sprintf("%s", store.GetStorePlugin().Mode)},
+		{"Store Plugin", fmt.Sprintf("%s", store.GetStorePlugin().Name)},
+		{"Register Type", m.RegistryType},
+		{"Register Address", m.RegistryAddress},
+		{"Register Server Address", m.ServerIp + ":" + strconv.Itoa(m.ServerPort)},
 	}
 	headers := []string{"Name", "Val"}
 	log.PrintDataTable(data, headers, "print some useful data about mconfig ↓ ↓ ↓ ↓", func(table *tablewriter.Table) {
