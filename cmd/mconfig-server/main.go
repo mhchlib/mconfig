@@ -70,7 +70,7 @@ func main() {
 		closeFunc()
 	}()
 	//print some useful data with ASCII
-	printMconfigDetail()
+	//printMconfigDetail()
 
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 	<-done
