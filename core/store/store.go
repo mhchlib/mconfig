@@ -153,18 +153,18 @@ var currentMConfigStore MConfigStore
 var currentStorePlugin *StorePlugin
 
 // InitStore ...
-func InitStore(storeAddressStr string) (string, error) {
+func InitStore(storeAddressStr string) (string, func(), error) {
 	storeType, storeAddress, err := parseStoreAddressStr(storeAddressStr)
 	if err != nil {
-		return "", errors.New("parse store address str fail:" + err.Error())
+		return "", nil, errors.New("parse store address str fail:" + err.Error())
 	}
 	plugin, ok := storePluginMap[storeType]
 	if !ok {
-		return "", errors.New(fmt.Sprintf("store type: %s does not be supported, you can choose: %s", storeType, storePluginNames))
+		return "", nil, errors.New(fmt.Sprintf("store type: %s does not be supported, you can choose: %s", storeType, storePluginNames))
 	}
 	store, err := plugin.Init(storeAddress)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	currentMConfigStore = store
 	log.Info("store init success with", storeType, storeAddress)
@@ -176,7 +176,12 @@ func InitStore(storeAddressStr string) (string, error) {
 	}()
 	currentStorePlugin = plugin
 	initShareCalls()
-	return storeType, nil
+	return storeType, func() {
+		err := plugin.GracefulStop()
+		if err != nil {
+			log.Error(err)
+		}
+	}, nil
 }
 
 func parseStoreAddressStr(str string) (string, string, error) {

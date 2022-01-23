@@ -11,9 +11,9 @@ require (
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.3
-	github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc
-	github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc
-	github.com/mhchlib/mregister v0.0.0-20201023050446-420de20374cc
+	github.com/mhchlib/logger v0.0.3-0.20210324103410-ddf65533f989
+	github.com/mhchlib/mconfig-api v0.0.2-0.20210326111514-9f081bbd6da2
+	github.com/mhchlib/mregister v0.0.2-0.20210825173657-52159fdd45bf
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mkevac/debugcharts v0.0.0-20191222103121-ae1c48aa8615
@@ -31,15 +31,5 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 )
-
-replace github.com/mhchlib/logger v0.0.0-20201023050446-420de20374cc => ../logger
-
-replace github.com/mhchlib/mconfig-api v0.0.0-20201023050446-420de20374cc => ../mconfig-api
-
-replace github.com/mhchlib/mregister v0.0.0-20201023050446-420de20374cc => ../mregister
-
-//replace go.etcd.io/etcd v3.3.25+incompatible => go.etcd.io/etcd v3.3.25+incompatible
-//
-//replace github.com/coreos/etcd v3.3.25+incompatible => go.etcd.io/etcd v3.3.25+incompatible
 
 replace google.golang.org/grpc v1.27.0 => google.golang.org/grpc v1.26.0

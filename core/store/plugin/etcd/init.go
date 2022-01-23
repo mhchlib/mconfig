@@ -15,7 +15,7 @@ func init() {
 }
 
 func GracefulStop() error {
-
+	log.Info("graceful stop etcd store")
 	return nil
 }
 
